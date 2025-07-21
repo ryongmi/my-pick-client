@@ -292,7 +292,7 @@ export function MainContent() {
   };
 
   return (
-    <main className={cn(
+    <div className={cn(
       'flex-1 max-w-6xl mx-auto p-4 sm:p-6 transition-all duration-300',
       !sidebarOpen && 'ml-0'
     )}>
@@ -403,6 +403,6 @@ export function MainContent() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
