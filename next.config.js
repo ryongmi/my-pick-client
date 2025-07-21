@@ -1,14 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
+  // Next.js 15에서 App Router는 기본값이므로 experimental 설정 제거
   images: {
-    domains: [
-      'i.ytimg.com',
-      'yt3.ggpht.com',
-      'pbs.twimg.com',
-      'abs.twimg.com'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'yt3.ggpht.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pbs.twimg.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'abs.twimg.com',
+        pathname: '/**',
+      },
     ],
   },
   env: {
@@ -20,9 +34,18 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
   
-  // SSR 설정
-  reactStrictMode: true,
-  swcMinify: true,
+  // Next.js 15 새로운 최적화 기능
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
+  },
   
   // 개발 환경 설정
   webpack: (config, { dev, isServer }) => {
@@ -44,4 +67,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+export default nextConfig;

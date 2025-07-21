@@ -40,8 +40,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg mx-auto mb-4" />
           <CardTitle className="text-2xl font-bold">MyPick</CardTitle>
@@ -160,6 +159,5 @@ export default function LoginPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
   );
 }

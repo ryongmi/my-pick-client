@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/hooks/redux';
@@ -28,6 +29,7 @@ const MOCK_CREATORS = [
 
 export function Sidebar() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { sidebarOpen, filters } = useUI();
 
   const handleCreatorFilter = (creatorId: string) => {
@@ -58,10 +60,7 @@ export function Sidebar() {
 
   return (
     <aside 
-      className={cn(
-        'w-64 bg-background h-[calc(100vh-4rem)] sticky top-16 border-r overflow-y-auto transition-all duration-300 flex-shrink-0',
-        !sidebarOpen && '-translate-x-full'
-      )}
+      className="w-64 bg-background h-[calc(100vh-4rem)] border-r overflow-y-auto flex-shrink-0"
     >
       <div className="p-4">
         {/* 사이드바 헤더 */}
@@ -138,6 +137,7 @@ export function Sidebar() {
         <Button
           variant="outline"
           className="w-full mt-4 border-dashed"
+          onClick={() => router.push('/creators')}
         >
           <Plus className="h-4 w-4 mr-2" />
           크리에이터 추가
