@@ -1,5 +1,9 @@
 import { Creator, Platform } from '@/types';
 
+// 고정된 날짜를 사용하여 데이터 변경을 방지
+const MOCK_DATE = '2024-01-15T10:30:00Z';
+const MOCK_UPDATE_DATE = '2024-01-16T15:45:00Z';
+
 export const mockCreators: Creator[] = [
   {
     id: 'ado',
@@ -14,7 +18,7 @@ export const mockCreators: Creator[] = [
         url: 'https://youtube.com/@Ado1024',
         isActive: true,
         followerCount: 3200000,
-        lastSync: new Date().toISOString(),
+        lastSync: MOCK_DATE,
       },
       {
         type: 'twitter',
@@ -23,7 +27,7 @@ export const mockCreators: Creator[] = [
         url: 'https://twitter.com/ado1024imokenp',
         isActive: true,
         followerCount: 1800000,
-        lastSync: new Date().toISOString(),
+        lastSync: MOCK_DATE,
       },
     ],
     description: '日本のシンガーソングライター。様々な楽曲を歌います。',
@@ -32,7 +36,7 @@ export const mockCreators: Creator[] = [
     contentCount: 234,
     totalViews: 150000000,
     createdAt: '2023-01-15T00:00:00Z',
-    updatedAt: new Date().toISOString(),
+    updatedAt: MOCK_UPDATE_DATE,
   },
   {
     id: 'hikakin',
@@ -47,7 +51,7 @@ export const mockCreators: Creator[] = [
         url: 'https://youtube.com/@HikakinTV',
         isActive: true,
         followerCount: 11000000,
-        lastSync: new Date().toISOString(),
+        lastSync: MOCK_DATE,
       },
       {
         type: 'twitter',
@@ -56,7 +60,7 @@ export const mockCreators: Creator[] = [
         url: 'https://twitter.com/hikakin',
         isActive: true,
         followerCount: 4500000,
-        lastSync: new Date().toISOString(),
+        lastSync: MOCK_DATE,
       },
     ],
     description: '日本最大級のYouTuber！エンターテイメント動画をお届け！',
@@ -65,7 +69,7 @@ export const mockCreators: Creator[] = [
     contentCount: 5670,
     totalViews: 8500000000,
     createdAt: '2022-05-20T00:00:00Z',
-    updatedAt: new Date().toISOString(),
+    updatedAt: MOCK_UPDATE_DATE,
   },
   {
     id: 'kuzuha',
@@ -80,7 +84,7 @@ export const mockCreators: Creator[] = [
         url: 'https://youtube.com/@kuzuha',
         isActive: true,
         followerCount: 2100000,
-        lastSync: new Date().toISOString(),
+        lastSync: MOCK_DATE,
       },
       {
         type: 'twitter',
@@ -89,7 +93,7 @@ export const mockCreators: Creator[] = [
         url: 'https://twitter.com/Kuzuha_Channel',
         isActive: true,
         followerCount: 950000,
-        lastSync: new Date().toISOString(),
+        lastSync: MOCK_DATE,
       },
     ],
     description: 'にじさんじ所属のバーチャルライバー。ゲーム実況や雑談配信を行っています。',
@@ -98,7 +102,7 @@ export const mockCreators: Creator[] = [
     contentCount: 1890,
     totalViews: 650000000,
     createdAt: '2023-03-10T00:00:00Z',
-    updatedAt: new Date().toISOString(),
+    updatedAt: MOCK_UPDATE_DATE,
   },
 ];
 

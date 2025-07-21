@@ -67,7 +67,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
 
   const handleQuickAdd = async (creator: Creator) => {
     try {
-      await mockFollowCreator(creator.id);
+      await dispatch(followCreator(creator.id)).unwrap();
       onAddCreator(creator);
       handleClose();
     } catch (error) {
@@ -78,7 +78,6 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
   const handleClose = () => {
     setSearchTerm('');
     setSearchResults([]);
-    setIsSearching(false);
     onClose();
   };
 
@@ -156,10 +155,10 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
 
                 <Button 
                   onClick={handleSearch}
-                  disabled={!searchTerm.trim() || isSearching}
+                  disabled={!searchTerm.trim() || isLoading}
                   className="w-full"
                 >
-                  {isSearching ? (
+                  {isLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                       검색 중...
@@ -220,6 +219,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
                           variant="default"
                           onClick={() => handleQuickAdd(creator)}
                           className="h-8"
+                          disabled={isFollowing}
                         >
                           <Plus className="h-3 w-3 mr-1" />
                           구독
@@ -246,7 +246,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
               {searchResults.length === 0 && (
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    {popularCreators.filter(creator => !isCreatorFollowed(creator.id)).map((creator) => (
+                    {creators.filter(creator => !isCreatorFollowed(creator.id)).map((creator) => (
                       <div
                         key={creator.id}
                         className="flex items-center justify-between p-3 border border-input rounded-md hover:border-primary/50 transition-colors"
@@ -278,6 +278,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
                           variant="default"
                           onClick={() => handleQuickAdd(creator)}
                           className="h-8"
+                          disabled={isFollowing}
                         >
                           <Plus className="h-3 w-3 mr-1" />
                           구독
