@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '@/types';
-import { authApi } from '@/lib/api';
+// 실제 API 대신 Mock API 사용
+// import { authApi } from '@/lib/api';
+import { mockAuthApi } from '@/lib/mockApi';
 
 interface AuthState {
   user: User | null;
@@ -25,9 +27,22 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string; rememberMe: boolean }, { rejectWithValue }) => {
     try {
-      const response = await authApi.login(credentials);
-      return { ...response.data, rememberMe: credentials.rememberMe };
+      console.log('=== loginUser thunk start ===');
+      console.log('Credentials:', credentials);
+      
+      // 실제 API 호출 대신 Mock API 사용
+      // const response = await authApi.login(credentials);
+      const response = await mockAuthApi.login(credentials);
+      
+      console.log('Mock API response:', response);
+      console.log('Response data:', response.data);
+      
+      const result = { ...response.data, rememberMe: credentials.rememberMe };
+      console.log('Final thunk result:', result);
+      
+      return result;
     } catch (error: any) {
+      console.error('Login error in thunk:', error);
       return rejectWithValue(error.message);
     }
   }
@@ -37,7 +52,8 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData: { name: string; email: string; password: string }, { rejectWithValue }) => {
     try {
-      const response = await authApi.register(userData);
+      // const response = await authApi.register(userData);
+      const response = await mockAuthApi.register(userData);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -49,7 +65,8 @@ export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
-      await authApi.logout();
+      // await authApi.logout();
+      await mockAuthApi.logout();
       return;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -61,7 +78,8 @@ export const refreshToken = createAsyncThunk(
   'auth/refreshToken',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await authApi.refreshToken();
+      // const response = await authApi.refreshToken();
+      const response = await mockAuthApi.refreshToken();
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -73,7 +91,8 @@ export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (profileData: Partial<User>, { rejectWithValue }) => {
     try {
-      const response = await authApi.updateProfile(profileData);
+      // const response = await authApi.updateProfile(profileData);
+      const response = await mockAuthApi.updateProfile(profileData);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -96,10 +115,12 @@ const authSlice = createSlice({
       state.error = null;
     },
     clearCredentials: (state) => {
+      console.log('Clearing credentials...');
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
+      console.log('Credentials cleared, user:', state.user);
     },
     setRememberMe: (state, action: PayloadAction<boolean>) => {
       state.rememberMe = action.payload;
@@ -113,12 +134,24 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
+        console.log('=== loginUser.fulfilled ===');
+        console.log('Action payload:', action.payload);
+        console.log('Action payload data:', action.payload.data);
+        
         state.isLoading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+        
+        // response.data.data 구조 확인
+        const userData = action.payload.data || action.payload;
+        console.log('User data to store:', userData);
+        
+        state.user = userData.user;
+        state.token = userData.token;
         state.isAuthenticated = true;
         state.rememberMe = action.payload.rememberMe;
         state.error = null;
+        
+        console.log('Updated state user:', state.user);
+        console.log('Updated state token:', state.token);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -163,9 +196,11 @@ const authSlice = createSlice({
     // Refresh token
     builder
       .addCase(refreshToken.fulfilled, (state, action) => {
-        state.token = action.payload.token;
-        state.user = action.payload.user;
-        state.isAuthenticated = true;
+        if (action.payload) {
+          state.token = action.payload.token;
+          state.user = action.payload.user;
+          state.isAuthenticated = true;
+        }
       })
       .addCase(refreshToken.rejected, (state) => {
         state.user = null;

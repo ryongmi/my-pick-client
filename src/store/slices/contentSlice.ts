@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Content, ContentFilter } from '@/types';
-import { contentApi } from '@/lib/api';
+// import { contentApi } from '@/lib/api';
+import { mockContentApi } from '@/lib/mockApi';
 
 interface ContentState {
   // 콘텐츠 데이터
@@ -92,7 +93,8 @@ export const fetchContent = createAsyncThunk(
     sortBy?: string;
   } = {}, { rejectWithValue }) => {
     try {
-      const response = await contentApi.getContent(params);
+      // const response = await contentApi.getContent(params);
+      const response = await mockContentApi.getContent(params);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -123,7 +125,8 @@ export const bookmarkContent = createAsyncThunk(
   'content/bookmarkContent',
   async (id: string, { rejectWithValue }) => {
     try {
-      await contentApi.bookmarkContent(id);
+      // await contentApi.bookmarkContent(id);
+      await mockContentApi.bookmarkContent(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -135,7 +138,8 @@ export const removeBookmark = createAsyncThunk(
   'content/removeBookmark',
   async (id: string, { rejectWithValue }) => {
     try {
-      await contentApi.removeBookmark(id);
+      // await contentApi.removeBookmark(id);
+      await mockContentApi.removeBookmark(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -147,7 +151,8 @@ export const likeContent = createAsyncThunk(
   'content/likeContent',
   async (id: string, { rejectWithValue }) => {
     try {
-      await contentApi.likeContent(id);
+      // await contentApi.likeContent(id);
+      await mockContentApi.likeContent(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -159,7 +164,8 @@ export const unlikeContent = createAsyncThunk(
   'content/unlikeContent',
   async (id: string, { rejectWithValue }) => {
     try {
-      await contentApi.unlikeContent(id);
+      // await contentApi.unlikeContent(id);
+      await mockContentApi.unlikeContent(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);

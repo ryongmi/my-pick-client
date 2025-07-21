@@ -9,7 +9,6 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
 
 // Slice imports
 import authSlice from './slices/authSlice';
@@ -18,6 +17,30 @@ import creatorSlice from './slices/creatorSlice';
 import contentSlice from './slices/contentSlice';
 import notificationSlice from './slices/notificationSlice';
 import adminSlice from './slices/adminSlice';
+
+// Storage
+let storage;
+if (typeof window !== 'undefined') {
+  const createWebStorage = () => {
+    return require('redux-persist/lib/storage').default;
+  };
+  storage = createWebStorage();
+} else {
+  const createNoopStorage = () => {
+    return {
+      getItem() {
+        return Promise.resolve(null);
+      },
+      setItem() {
+        return Promise.resolve();
+      },
+      removeItem() {
+        return Promise.resolve();
+      },
+    };
+  };
+  storage = createNoopStorage();
+}
 
 // Root reducer
 const rootReducer = combineReducers({

@@ -1,13 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, Clock, Heart, Bookmark, Play, Youtube, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAppDispatch } from '@/hooks/redux';
 import { useUI, useContent } from '@/hooks/redux';
 import { setPlatformFilter, setSortBy } from '@/store/slices/uiSlice';
-import { toggleBookmarkOptimistic, toggleLikeOptimistic } from '@/store/slices/contentSlice';
+import { 
+  fetchContent, 
+  toggleBookmarkOptimistic, 
+  toggleLikeOptimistic, 
+  bookmarkContent, 
+  removeBookmark, 
+  likeContent, 
+  unlikeContent 
+} from '@/store/slices/contentSlice';
 import { cn } from '@/lib/utils';
 import { formatNumber, formatDate } from '@/lib/utils';
 
@@ -71,22 +79,65 @@ const MOCK_CONTENT = [
 export function MainContent() {
   const dispatch = useAppDispatch();
   const { filters, sidebarOpen } = useUI();
+  const { contents, isLoading } = useContent();
   const [selectedPlatform, setSelectedPlatform] = useState('all');
+
+  // 컴포넌트 마운트 시 콘텐츠 로드
+  useEffect(() => {
+    dispatch(fetchContent({
+      creators: filters.selectedCreators,
+      platforms: [selectedPlatform],
+      sortBy: 'newest'
+    }));
+  }, [dispatch, filters.selectedCreators, selectedPlatform]);
 
   const handlePlatformFilter = (platform: string) => {
     setSelectedPlatform(platform);
     dispatch(setPlatformFilter([platform]));
   };
 
-  const handleBookmark = (contentId: string) => {
+  const handleBookmark = async (contentId: string) => {
+    // 낙관적 업데이트
     dispatch(toggleBookmarkOptimistic(contentId));
+    
+    // 실제 API 호출
+    const content = contents.find(c => c.id === contentId);
+    try {
+      if (content?.isBookmarked) {
+        await dispatch(removeBookmark(contentId)).unwrap();
+      } else {
+        await dispatch(bookmarkContent(contentId)).unwrap();
+      }
+    } catch (error) {
+      // 에러 시 롤백
+      dispatch(toggleBookmarkOptimistic(contentId));
+      console.error('북마크 처리 실패:', error);
+    }
   };
 
-  const handleLike = (contentId: string) => {
+  const handleLike = async (contentId: string) => {
+    // 낙관적 업데이트
     dispatch(toggleLikeOptimistic(contentId));
+    
+    // 실제 API 호출
+    const content = contents.find(c => c.id === contentId);
+    try {
+      if (content?.isLiked) {
+        await dispatch(unlikeContent(contentId)).unwrap();
+      } else {
+        await dispatch(likeContent(contentId)).unwrap();
+      }
+    } catch (error) {
+      // 에러 시 롤백
+      dispatch(toggleLikeOptimistic(contentId));
+      console.error('좋아요 처리 실패:', error);
+    }
   };
 
-  const filteredContent = MOCK_CONTENT.filter(content => {
+  // Redux store에서 가져온 콘텐츠 사용 (모크 데이터 대신)
+  const displayContent = contents.length > 0 ? contents : MOCK_CONTENT;
+  
+  const filteredContent = displayContent.filter(content => {
     // 크리에이터 필터
     const creatorMatch = filters.selectedCreators.includes('all') || 
                         filters.selectedCreators.includes(content.creator.id);
@@ -320,7 +371,29 @@ export function MainContent() {
 
       {/* 콘텐츠 타임라인 */}
       <div className="space-y-6">
-        {filteredContent.map(renderContentCard)}
+      {isLoading ? (
+            // 로딩 상태
+            <div className="space-y-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+                  <div className="flex">
+                    <div className="w-64 h-36 bg-gray-200 rounded"></div>
+                    <div className="flex-1 p-4">
+                      <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredContent.length > 0 ? (
+            filteredContent.map(renderContentCard)
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">선택한 필터에 맞는 콘텐츠가 없습니다.</p>
+            </div>
+          )}
         
         {/* 로딩 인디케이터 */}
         <div className="py-8 text-center">

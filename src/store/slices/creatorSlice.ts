@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Creator, CreatorStats } from '@/types';
-import { creatorApi } from '@/lib/api';
+// import { creatorApi } from '@/lib/api';
+import { mockCreatorApi } from '@/lib/mockApi';
 
 interface CreatorState {
   // 크리에이터 데이터
@@ -78,7 +79,8 @@ export const fetchCreators = createAsyncThunk(
     sortBy?: string;
   } = {}, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.getCreators(params);
+      // const response = await creatorApi.getCreators(params);
+      const response = await mockCreatorApi.getCreators(params);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -96,7 +98,8 @@ export const fetchMoreCreators = createAsyncThunk(
     sortBy?: string;
   }, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.getCreators(params);
+      // const response = await creatorApi.getCreators(params);
+      const response = await mockCreatorApi.getCreators(params);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -108,7 +111,8 @@ export const fetchCreatorById = createAsyncThunk(
   'creator/fetchCreatorById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.getCreator(id);
+      // const response = await creatorApi.getCreator(id);
+      const response = await mockCreatorApi.getCreator(id);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -120,7 +124,8 @@ export const fetchCreatorStats = createAsyncThunk(
   'creator/fetchCreatorStats',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.getCreatorStats(id);
+      // const response = await creatorApi.getCreatorStats(id);
+      const response = await mockCreatorApi.getCreatorStats(id);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -132,7 +137,8 @@ export const followCreator = createAsyncThunk(
   'creator/followCreator',
   async (id: string, { rejectWithValue }) => {
     try {
-      await creatorApi.followCreator(id);
+      // await creatorApi.followCreator(id);
+      await mockCreatorApi.followCreator(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -144,7 +150,8 @@ export const unfollowCreator = createAsyncThunk(
   'creator/unfollowCreator',
   async (id: string, { rejectWithValue }) => {
     try {
-      await creatorApi.unfollowCreator(id);
+      // await creatorApi.unfollowCreator(id);
+      await mockCreatorApi.unfollowCreator(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);

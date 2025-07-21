@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { DashboardStats, User, Creator } from '@/types';
-import { adminApi } from '@/lib/api';
+// import { adminApi } from '@/lib/api';
+import { mockAdminApi } from '@/lib/mockApi';
 
 interface AdminState {
   // 대시보드 통계
@@ -100,7 +101,8 @@ export const fetchDashboardStats = createAsyncThunk(
   'admin/fetchDashboardStats',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await adminApi.getDashboardStats();
+      // const response = await adminApi.getDashboardStats();
+      const response = await mockAdminApi.getDashboardStats();
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -118,7 +120,8 @@ export const fetchUsers = createAsyncThunk(
     status?: string;
   } = {}, { rejectWithValue }) => {
     try {
-      const response = await adminApi.getUsers(params);
+      // const response = await adminApi.getUsers(params);
+      const response = await mockAdminApi.getUsers(params);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -130,7 +133,8 @@ export const approveCreator = createAsyncThunk(
   'admin/approveCreator',
   async (id: string, { rejectWithValue }) => {
     try {
-      await adminApi.approveCreator(id);
+      // await adminApi.approveCreator(id);
+      await mockAdminApi.approveCreator(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -142,7 +146,8 @@ export const rejectCreator = createAsyncThunk(
   'admin/rejectCreator',
   async (id: string, { rejectWithValue }) => {
     try {
-      await adminApi.rejectCreator(id);
+      // await adminApi.rejectCreator(id);
+      await mockAdminApi.rejectCreator(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);

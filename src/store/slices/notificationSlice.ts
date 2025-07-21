@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Notification } from '@/types';
-import { notificationApi } from '@/lib/api';
+// import { notificationApi } from '@/lib/api';
+import { mockNotificationApi } from '@/lib/mockApi';
 
 interface NotificationState {
   notifications: Notification[];
@@ -55,7 +56,8 @@ export const fetchNotifications = createAsyncThunk(
   'notification/fetchNotifications',
   async (params: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
     try {
-      const response = await notificationApi.getNotifications(params.page, params.limit);
+      // const response = await notificationApi.getNotifications(params.page, params.limit);
+      const response = await mockNotificationApi.getNotifications(params.page, params.limit);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -67,7 +69,8 @@ export const fetchUnreadCount = createAsyncThunk(
   'notification/fetchUnreadCount',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await notificationApi.getUnreadCount();
+      // const response = await notificationApi.getUnreadCount();
+      const response = await mockNotificationApi.getUnreadCount();
       return response.data.count;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -79,7 +82,8 @@ export const markAsRead = createAsyncThunk(
   'notification/markAsRead',
   async (id: string, { rejectWithValue }) => {
     try {
-      await notificationApi.markAsRead(id);
+      // await notificationApi.markAsRead(id);
+      await mockNotificationApi.markAsRead(id);
       return id;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -91,7 +95,8 @@ export const markAllAsRead = createAsyncThunk(
   'notification/markAllAsRead',
   async (_, { rejectWithValue }) => {
     try {
-      await notificationApi.markAllAsRead();
+      // await notificationApi.markAllAsRead();
+      await mockNotificationApi.markAllAsRead();
       return;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -103,7 +108,8 @@ export const updateNotificationSettings = createAsyncThunk(
   'notification/updateSettings',
   async (settings: any, { rejectWithValue }) => {
     try {
-      await notificationApi.updateSettings(settings);
+      // await notificationApi.updateSettings(settings);
+      await mockNotificationApi.updateSettings(settings);
       return settings;
     } catch (error: any) {
       return rejectWithValue(error.message);

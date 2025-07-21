@@ -20,6 +20,10 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
   
+  // SSR 설정
+  reactStrictMode: true,
+  swcMinify: true,
+  
   // 개발 환경 설정
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
@@ -29,6 +33,14 @@ const nextConfig = {
       }
     }
     return config
+  },
+  
+  // TypeScript 에러 무시 (개발 시에만)
+  typescript: {
+    ignoreBuildErrors: process.env.NODE_ENV === 'development',
+  },
+  eslint: {
+    ignoreDuringBuilds: process.env.NODE_ENV === 'development',
   },
 }
 

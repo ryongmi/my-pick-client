@@ -12,6 +12,7 @@ import {
   closeAllDropdowns,
   setCurrentView 
 } from '@/store/slices/uiSlice';
+import { logoutUser } from '@/store/slices/authSlice';
 import { cn } from '@/lib/utils';
 
 export function Header() {
@@ -19,8 +20,22 @@ export function Header() {
   const { user, isAuthenticated } = useAuth();
   const { dropdowns, currentView } = useUI();
 
+  // 디버깅: 사용자 상태 로그
+  console.log('Header render - User:', user);
+  console.log('Header render - IsAuthenticated:', isAuthenticated);
+  console.log('Header render - Dropdowns:', dropdowns);
+  console.log('Header render - CurrentView:', currentView);
+
   useEffect(() => {
-    const handleClickOutside = () => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // 드롭다운 내부나 드롭다운 트리거 버튼을 클릭한 경우는 제외
+      if (
+        target.closest('[data-dropdown]') || 
+        target.closest('[data-dropdown-trigger]')
+      ) {
+        return;
+      }
       dispatch(closeAllDropdowns());
     };
 
@@ -74,6 +89,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
+              data-dropdown-trigger
               onClick={(e) => {
                 e.stopPropagation();
                 dispatch(toggleDropdown('dashboard'));
@@ -83,7 +99,10 @@ export function Header() {
             </Button>
             
             {dropdowns.dashboard && (
-              <div className="absolute right-0 mt-2 w-80 bg-background rounded-lg shadow-lg border z-50">
+              <div 
+                className="absolute right-0 mt-2 w-80 bg-background rounded-lg shadow-lg border z-50"
+                data-dropdown
+              >
                 <div className="p-4 border-b">
                   <h3 className="font-semibold">대시보드</h3>
                 </div>
@@ -111,6 +130,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
+              data-dropdown-trigger
               onClick={(e) => {
                 e.stopPropagation();
                 dispatch(toggleDropdown('notification'));
@@ -121,7 +141,10 @@ export function Header() {
             </Button>
             
             {dropdowns.notification && (
-              <div className="absolute right-0 mt-2 w-80 bg-background rounded-lg shadow-lg border z-50">
+              <div 
+                className="absolute right-0 mt-2 w-80 bg-background rounded-lg shadow-lg border z-50"
+                data-dropdown
+              >
                 <div className="p-4 border-b flex justify-between items-center">
                   <h3 className="font-semibold">알림</h3>
                   <Button variant="ghost" size="sm">모두 읽음</Button>
@@ -149,42 +172,90 @@ export function Header() {
           <div className="relative">
             <Button
               variant="ghost"
+              data-dropdown-trigger
               onClick={(e) => {
                 e.stopPropagation();
                 dispatch(toggleDropdown('profile'));
               }}
               className="flex items-center space-x-2"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600" />
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                {user?.name?.charAt(0) || '사'}
+              </div>
               <span className="text-sm font-medium hidden sm:inline">
                 {user?.name || '사용자님'}
               </span>
             </Button>
             
             {dropdowns.profile && (
-              <div className="absolute right-0 mt-2 w-48 bg-background rounded-lg shadow-lg border z-50">
+              <div 
+                className="absolute right-0 mt-2 w-48 bg-background rounded-lg shadow-lg border z-50"
+                data-dropdown
+              >
                 <div className="p-1">
                   <Button 
                     variant="ghost" 
                     className="w-full justify-start"
-                    onClick={() => dispatch(setCurrentView('profile'))}
+                    onClick={() => {
+                      dispatch(setCurrentView('profile'));
+                      dispatch(closeAllDropdowns());
+                    }}
                   >
+                    <span className="mr-2">👤</span>
                     내 프로필
                   </Button>
-                  <Button variant="ghost" className="w-full justify-start">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => {
+                      dispatch(closeAllDropdowns());
+                    }}
+                  >
+                    <span className="mr-2">⚙️</span>
                     설정
                   </Button>
+                  {/* 디버깅: 관리자 버튼 렌더링 확인 */}
+                  {console.log('Admin button render check - User role:', user?.role, 'Condition result:', user?.role === 'admin')}
                   {user?.role === 'admin' && (
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start"
-                      onClick={() => dispatch(setCurrentView('admin'))}
+                      className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      onClick={(e) => {
+                        console.log('=== Admin Button Click Debug ===');
+                        console.log('Event:', e);
+                        console.log('User:', user);
+                        console.log('User role:', user?.role);
+                        console.log('Current view:', currentView);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        try {
+                          dispatch(setCurrentView('admin'));
+                          console.log('Dispatched setCurrentView(admin)');
+                          
+                          dispatch(closeAllDropdowns());
+                          console.log('Dispatched closeAllDropdowns()');
+                        } catch (error) {
+                          console.error('Error in admin button click:', error);
+                        }
+                        
+                        console.log('=== End Debug ===');
+                      }}
                     >
+                      <span className="mr-2">🛠️</span>
                       관리자 페이지
                     </Button>
                   )}
                   <div className="border-t my-1" />
-                  <Button variant="ghost" className="w-full justify-start text-red-600">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => {
+                      dispatch(logoutUser());
+                      dispatch(closeAllDropdowns());
+                    }}
+                  >
+                    <span className="mr-2">🚪</span>
                     로그아웃
                   </Button>
                 </div>
