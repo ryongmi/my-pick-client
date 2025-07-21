@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { X, Search, Plus, Youtube, Twitter, Instagram } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Search, Plus, Youtube, Twitter, Instagram, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+// Mock 데이터 import
+import { mockGetCreators, mockFollowCreator, mockGetFollowedCreators } from '@/data/creators';
+import { Creator } from '@/types';
 
 interface QuickCreatorAddModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddCreator: (creator: { name: string; displayName: string; platform: string; url: string }) => void;
+  onAddCreator: (creator: Creator) => void;
 }
 
 // 플랫폼 타입 정의
@@ -18,69 +21,108 @@ const PLATFORMS = [
   { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'text-pink-500' },
 ];
 
-// 빠른 추천 크리에이터 (UX 개선용)
-const SUGGESTED_CREATORS = [
-  { name: 'PewDiePie', platform: 'youtube', displayName: 'PewDiePie', description: '게임 & 엔터테인먼트' },
-  { name: 'MrBeast', platform: 'youtube', displayName: 'MrBeast', description: '챌린지 & 자선' },
-  { name: 'BLACKPINK', platform: 'youtube', displayName: 'BLACKPINK', description: 'K-POP' },
-  { name: 'IU_official', platform: 'instagram', displayName: '아이유', description: 'K-POP 가수' },
-];
+// 인기 크리에이터 (서비스에 등록된 크리에이터 중에서)
+const getPopularCreators = async () => {
+  const response = await mockGetCreators({ sortBy: 'followers', limit: 4 });
+  return response.data;
+};
 
 export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCreatorAddModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<Creator[]>([]);
+  const [popularCreators, setPopularCreators] = useState<Creator[]>([]);
+  const [followedCreators, setFollowedCreators] = useState<Creator[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [step, setStep] = useState<'search' | 'add'>('search'); // 단계별 UX
+  const [isLoading, setIsLoading] = useState(false);
 
-  if (!isOpen) return null;
+  // 모달이 열릴 때 크리에이터와 구독 정보 로드
+  useEffect(() => {
+    if (isOpen) {
+      loadData();
+    }
+  }, [isOpen]);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [popular, followed] = await Promise.all([
+        mockGetCreators({ sortBy: 'followers', limit: 20 }), // 모든 크리에이터 로드
+        Promise.resolve(mockGetFollowedCreators())
+      ]);
+      setPopularCreators(popular.data);
+      setFollowedCreators(followed);
+    } catch (error) {
+      console.error('데이터 로드 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
     
     setIsSearching(true);
-    // 실제로는 API 호출을 여기서 수행
-    setTimeout(() => {
+    try {
+      const response = await mockGetCreators({
+        search: searchTerm,
+        limit: 10
+      });
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error('검색 실패:', error);
+    } finally {
       setIsSearching(false);
-      setStep('add');
-    }, 1000);
+    }
   };
 
-  const handleQuickAdd = (creator: typeof SUGGESTED_CREATORS[0]) => {
-    onAddCreator({
-      name: creator.name,
-      displayName: creator.displayName,
-      platform: creator.platform,
-      url: `https://${creator.platform}.com/${creator.name}`
-    });
-    handleClose();
-  };
-
-  const handleManualAdd = () => {
-    if (!searchTerm.trim() || !selectedPlatform) return;
-    
-    onAddCreator({
-      name: searchTerm,
-      displayName: searchTerm,
-      platform: selectedPlatform,
-      url: `https://${selectedPlatform}.com/${searchTerm}`
-    });
-    handleClose();
+  const handleQuickAdd = async (creator: Creator) => {
+    try {
+      await mockFollowCreator(creator.id);
+      onAddCreator(creator);
+      handleClose();
+    } catch (error) {
+      console.error('크리에이터 추가 실패:', error);
+    }
   };
 
   const handleClose = () => {
     setSearchTerm('');
-    setSelectedPlatform('');
-    setStep('search');
+    setSearchResults([]);
     setIsSearching(false);
     onClose();
   };
 
-  const getPlatformIcon = (platformId: string) => {
-    const platform = PLATFORMS.find(p => p.id === platformId);
-    if (!platform) return null;
-    const Icon = platform.icon;
-    return <Icon className={cn('h-4 w-4', platform.color)} />;
+  const getPlatformIcon = (platformType: string) => {
+    switch (platformType) {
+      case 'youtube':
+        return <Youtube className="h-4 w-4 text-red-600" />;
+      case 'twitter':
+        return <Twitter className="h-4 w-4 text-blue-400" />;
+      case 'instagram':
+        return <Instagram className="h-4 w-4 text-pink-500" />;
+      default:
+        return null;
+    }
   };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
+
+  const isCreatorFollowed = (creatorId: string) => {
+    return followedCreators.some(c => c.id === creatorId);
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -90,7 +132,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
           <div>
             <h2 className="text-lg font-semibold">크리에이터 빠른 추가</h2>
             <p className="text-sm text-muted-foreground">
-              {step === 'search' ? '관심있는 크리에이터를 찾아보세요' : '추가할 크리에이터 정보를 확인하세요'}
+              등록된 크리에이터를 검색하고 구독하세요
             </p>
           </div>
           <Button
@@ -104,7 +146,12 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
         </div>
 
         <div className="p-4 space-y-4 max-h-[calc(90vh-100px)] overflow-y-auto">
-          {step === 'search' && (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-2" />
+              <span className="text-sm text-muted-foreground">로딩 중...</span>
+            </div>
+          ) : (
             <>
               {/* 검색 섹션 */}
               <div className="space-y-3">
@@ -112,42 +159,17 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <input
                     type="text"
-                    placeholder="채널명, 사용자명 또는 URL 입력..."
+                    placeholder="크리에이터 이름으로 검색..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                     className="w-full pl-10 pr-4 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
-                
-                {/* 플랫폼 선택 */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">플랫폼 선택</label>
-                  <div className="flex gap-2">
-                    {PLATFORMS.map((platform) => {
-                      const Icon = platform.icon;
-                      return (
-                        <button
-                          key={platform.id}
-                          onClick={() => setSelectedPlatform(platform.id)}
-                          className={cn(
-                            'flex items-center gap-2 px-3 py-2 rounded-md border transition-all text-sm',
-                            selectedPlatform === platform.id
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-input hover:border-primary/50'
-                          )}
-                        >
-                          <Icon className={cn('h-4 w-4', platform.color)} />
-                          {platform.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
 
                 <Button 
                   onClick={handleSearch}
-                  disabled={!searchTerm.trim() || !selectedPlatform || isSearching}
+                  disabled={!searchTerm.trim() || isSearching}
                   className="w-full"
                 >
                   {isSearching ? (
@@ -164,85 +186,134 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
                 </Button>
               </div>
 
-              {/* 구분선 */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-muted"></div>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">또는</span>
-                </div>
-              </div>
-
-              {/* 추천 크리에이터 섹션 */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">인기 크리에이터</h3>
-                <div className="space-y-2">
-                  {SUGGESTED_CREATORS.map((creator, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 border border-input rounded-md hover:border-primary/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        {getPlatformIcon(creator.platform)}
-                        <div>
-                          <p className="font-medium text-sm">{creator.displayName}</p>
-                          <p className="text-xs text-muted-foreground">{creator.description}</p>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleQuickAdd(creator)}
-                        className="h-8"
+              {/* 검색 결과 */}
+              {searchResults.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium">검색 결과</h3>
+                  <div className="space-y-2">
+                    {searchResults.map((creator) => (
+                      <div
+                        key={creator.id}
+                        className="flex items-center justify-between p-3 border border-input rounded-md hover:border-primary/50 transition-colors"
                       >
-                        <Plus className="h-3 w-3 mr-1" />
-                        추가
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {step === 'add' && (
-            <>
-              {/* 검색 결과 확인 */}
-              <div className="space-y-4">
-                <div className="p-4 border border-input rounded-md bg-muted/50">
-                  <div className="flex items-center gap-3 mb-3">
-                    {getPlatformIcon(selectedPlatform)}
-                    <div>
-                      <p className="font-medium">{searchTerm}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {PLATFORMS.find(p => p.id === selectedPlatform)?.name}
-                      </p>
-                    </div>
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            'w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm',
+                            creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
+                            creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
+                            creator.id === 'kuzuha' ? 'bg-gradient-to-r from-green-400 to-teal-500' :
+                            'bg-gradient-to-r from-gray-400 to-gray-600'
+                          )}>
+                            {creator.displayName.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-sm">{creator.displayName}</p>
+                              {creator.isVerified && (
+                                <Star className="h-3 w-3 text-blue-500 fill-current" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {formatNumber(creator.followerCount)} 팔로워
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              {creator.platforms.map((platform, index) => (
+                                <div key={index} className="flex items-center gap-1">
+                                  {getPlatformIcon(platform.type)}
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatNumber(platform.followerCount)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant={isCreatorFollowed(creator.id) ? "outline" : "default"}
+                          onClick={() => handleQuickAdd(creator)}
+                          disabled={isCreatorFollowed(creator.id)}
+                          className="h-8"
+                        >
+                          {isCreatorFollowed(creator.id) ? (
+                            '구독 중'
+                          ) : (
+                            <>
+                              <Plus className="h-3 w-3 mr-1" />
+                              구독
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    이 크리에이터를 내 목록에 추가하시겠습니까?
-                  </p>
                 </div>
+              )}
 
-                {/* 액션 버튼 */}
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setStep('search')}
-                    className="flex-1"
-                  >
-                    다시 검색
-                  </Button>
-                  <Button
-                    onClick={handleManualAdd}
-                    className="flex-1"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    추가하기
-                  </Button>
+              {/* 구분선 */}
+              {searchResults.length === 0 && (
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-muted"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">등록된 크리에이터</span>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* 등록된 크리에이터 섹션 */}
+              {searchResults.length === 0 && (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    {popularCreators.map((creator) => (
+                      <div
+                        key={creator.id}
+                        className="flex items-center justify-between p-3 border border-input rounded-md hover:border-primary/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            'w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm',
+                            creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
+                            creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
+                            creator.id === 'kuzuha' ? 'bg-gradient-to-r from-green-400 to-teal-500' :
+                            'bg-gradient-to-r from-gray-400 to-gray-600'
+                          )}>
+                            {creator.displayName.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-sm">{creator.displayName}</p>
+                              {creator.isVerified && (
+                                <Star className="h-3 w-3 text-blue-500 fill-current" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {formatNumber(creator.followerCount)} 팔로워
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant={isCreatorFollowed(creator.id) ? "outline" : "default"}
+                          onClick={() => handleQuickAdd(creator)}
+                          disabled={isCreatorFollowed(creator.id)}
+                          className="h-8"
+                        >
+                          {isCreatorFollowed(creator.id) ? (
+                            '구독 중'
+                          ) : (
+                            <>
+                              <Plus className="h-3 w-3 mr-1" />
+                              구독
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

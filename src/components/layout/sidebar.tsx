@@ -9,6 +9,7 @@ import { useUI, useCreator } from '@/hooks/redux';
 import { setCreatorFilter } from '@/store/slices/uiSlice';
 import { cn } from '@/lib/utils';
 import { QuickCreatorAddModal } from '@/components/dashboard/quick-creator-add-modal';
+import { Creator } from '@/types';
 
 const MOCK_CREATORS = [
   {
@@ -61,7 +62,7 @@ export function Sidebar() {
     return filters.selectedCreators.includes(creatorId) || filters.selectedCreators.includes('all');
   };
 
-  const handleQuickAddCreator = (creator: { name: string; displayName: string; platform: string; url: string }) => {
+  const handleQuickAddCreator = (creator: Creator) => {
     console.log('빠른 크리에이터 추가:', creator);
     // 실제로는 Redux 액션을 디스패치하여 크리에이터를 추가
     // dispatch(addCreator(creator));
