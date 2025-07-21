@@ -679,7 +679,7 @@ export function AdminView() {
   };
 
   return (
-    <div className="w-full max-w-none">
+    <div className="w-full max-w-6xl mx-auto">
       <div className="space-y-6">
         {/* 관리자 메뉴 탭 */}
         <div className="border-b border-gray-200">
