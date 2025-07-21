@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
 import { useAppDispatch, useUI } from '@/hooks/redux';
 import { setIsMobile } from '@/store/slices/uiSlice';
+import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -27,12 +28,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="mt-16 flex">
-        {sidebarOpen && <Sidebar />}
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
-      </div>
+      {sidebarOpen && <Sidebar />}
+      <main className={cn(
+        "mt-16 overflow-auto",
+        sidebarOpen ? "ml-64" : "ml-0"
+      )}>
+        {children}
+      </main>
     </div>
   );
 }

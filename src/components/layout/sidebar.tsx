@@ -60,7 +60,7 @@ export function Sidebar() {
 
   return (
     <aside 
-      className="w-64 bg-background h-[calc(100vh-4rem)] border-r overflow-y-auto flex-shrink-0"
+      className="fixed left-0 top-16 w-64 bg-background h-[calc(100vh-4rem)] border-r overflow-y-auto z-40"
     >
       <div className="p-4">
         {/* 사이드바 헤더 */}
