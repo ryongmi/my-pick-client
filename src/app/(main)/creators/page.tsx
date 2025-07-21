@@ -191,74 +191,82 @@ export default function CreatorsPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                <h3 className="text-sm font-medium">
-                  {searchResults.length > 0 
-                    ? `검색 결과 (${searchResults.length}개)` 
-                    : `등록된 크리에이터 (${allCreators.length}개)`
-                  }
-                </h3>
-                <div className="space-y-2">
-                  {(searchResults.length > 0 ? searchResults : allCreators).map((creator) => {
-                    const isFollowed = followedCreators.some(c => c.id === creator.id);
-                    return (
-                      <div
-                        key={creator.id}
-                        className="flex items-center justify-between p-4 border border-input rounded-md hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={cn(
-                            'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold',
-                            creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
-                            creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
-                            creator.id === 'kuzuha' ? 'bg-gradient-to-r from-green-400 to-teal-500' :
-                            'bg-gradient-to-r from-gray-400 to-gray-600'
-                          )}>
-                            {creator.displayName.charAt(0)}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-medium">{creator.displayName}</h4>
-                              {creator.isVerified && (
-                                <Star className="h-4 w-4 text-blue-500 fill-current" />
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              팔로워 {formatNumber(creator.followerCount)} • {creator.contentCount}개 콘텐츠
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              {creator.platforms.map((platform, index) => (
-                                <div key={index} className="flex items-center gap-1">
-                                  {getPlatformIcon(platform.type)}
-                                  <span className="text-xs text-muted-foreground">
-                                    {formatNumber(platform.followerCount)}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                {(() => {
+                  const creatorsToShow = searchResults.length > 0 ? searchResults : allCreators;
+                  // 구독 중인 크리에이터 제외
+                  const unfollowedCreators = creatorsToShow.filter(creator => 
+                    !followedCreators.some(followed => followed.id === creator.id)
+                  );
+                  
+                  return (
+                    <>
+                      <h3 className="text-sm font-medium">
+                        {searchResults.length > 0 
+                          ? `검색 결과 (${unfollowedCreators.length}개)` 
+                          : `등록된 크리에이터 (${unfollowedCreators.length}개)`
+                        }
+                      </h3>
+                      {unfollowedCreators.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          {searchResults.length > 0 
+                            ? '검색된 크리에이터가 없습니다.' 
+                            : '구독 가능한 크리에이터가 없습니다.'
+                          }
                         </div>
-                        <Button
-                          variant={isFollowed ? "outline" : "default"}
-                          size="sm"
-                          onClick={() => handleFollowToggle(creator)}
-                          className={isFollowed ? "border-red-200 text-red-600 hover:bg-red-50" : ""}
-                        >
-                          {isFollowed ? (
-                            <>
-                              <Users className="h-4 w-4 mr-1" />
-                              구독 취소
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="h-4 w-4 mr-1" />
-                              구독하기
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {unfollowedCreators.map((creator) => (
+                            <div
+                              key={creator.id}
+                              className="flex items-center justify-between p-4 border border-input rounded-md hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={cn(
+                                  'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold',
+                                  creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
+                                  creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
+                                  creator.id === 'kuzuha' ? 'bg-gradient-to-r from-green-400 to-teal-500' :
+                                  'bg-gradient-to-r from-gray-400 to-gray-600'
+                                )}>
+                                  {creator.displayName.charAt(0)}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-medium">{creator.displayName}</h4>
+                                    {creator.isVerified && (
+                                      <Star className="h-4 w-4 text-blue-500 fill-current" />
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    팔로워 {formatNumber(creator.followerCount)} • {creator.contentCount}개 콘텐츠
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    {creator.platforms.map((platform, index) => (
+                                      <div key={index} className="flex items-center gap-1">
+                                        {getPlatformIcon(platform.type)}
+                                        <span className="text-xs text-muted-foreground">
+                                          {formatNumber(platform.followerCount)}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleFollowToggle(creator)}
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                구독하기
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
           </CardContent>

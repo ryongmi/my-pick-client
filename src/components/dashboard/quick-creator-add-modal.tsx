@@ -191,7 +191,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium">검색 결과</h3>
                   <div className="space-y-2">
-                    {searchResults.map((creator) => (
+                    {searchResults.filter(creator => !isCreatorFollowed(creator.id)).map((creator) => (
                       <div
                         key={creator.id}
                         className="flex items-center justify-between p-3 border border-input rounded-md hover:border-primary/50 transition-colors"
@@ -230,19 +230,12 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
                         </div>
                         <Button
                           size="sm"
-                          variant={isCreatorFollowed(creator.id) ? "outline" : "default"}
+                          variant="default"
                           onClick={() => handleQuickAdd(creator)}
-                          disabled={isCreatorFollowed(creator.id)}
                           className="h-8"
                         >
-                          {isCreatorFollowed(creator.id) ? (
-                            '구독 중'
-                          ) : (
-                            <>
-                              <Plus className="h-3 w-3 mr-1" />
-                              구독
-                            </>
-                          )}
+                          <Plus className="h-3 w-3 mr-1" />
+                          구독
                         </Button>
                       </div>
                     ))}
@@ -266,7 +259,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
               {searchResults.length === 0 && (
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    {popularCreators.map((creator) => (
+                    {popularCreators.filter(creator => !isCreatorFollowed(creator.id)).map((creator) => (
                       <div
                         key={creator.id}
                         className="flex items-center justify-between p-3 border border-input rounded-md hover:border-primary/50 transition-colors"
@@ -295,19 +288,12 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
                         </div>
                         <Button
                           size="sm"
-                          variant={isCreatorFollowed(creator.id) ? "outline" : "default"}
+                          variant="default"
                           onClick={() => handleQuickAdd(creator)}
-                          disabled={isCreatorFollowed(creator.id)}
                           className="h-8"
                         >
-                          {isCreatorFollowed(creator.id) ? (
-                            '구독 중'
-                          ) : (
-                            <>
-                              <Plus className="h-3 w-3 mr-1" />
-                              구독
-                            </>
-                          )}
+                          <Plus className="h-3 w-3 mr-1" />
+                          구독
                         </Button>
                       </div>
                     ))}
