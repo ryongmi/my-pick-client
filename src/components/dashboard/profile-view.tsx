@@ -229,9 +229,10 @@ export function ProfileView() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* 프로필 헤더 */}
-      <Card className="mb-6">
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="space-y-6">
+        {/* 프로필 헤더 */}
+        <Card>
         <div className="h-48 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-t-lg" />
         <CardContent className="px-6 pb-6">
           <div className="flex items-center -mt-16">
@@ -253,10 +254,10 @@ export function ProfileView() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+        </Card>
 
-      {/* 통계 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        {/* 통계 카드 */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-3xl font-bold text-indigo-600">{MOCK_USER_STATS.followedCreators}</p>
@@ -280,11 +281,11 @@ export function ProfileView() {
             <p className="text-3xl font-bold text-red-600">{MOCK_USER_STATS.likes}</p>
             <p className="text-sm text-muted-foreground mt-1">좋아요</p>
           </CardContent>
-        </Card>
-      </div>
+          </Card>
+        </div>
 
-      {/* 탭 메뉴 */}
-      <Card>
+        {/* 탭 메뉴 */}
+        <Card>
         <div className="border-b">
           <nav className="flex -mb-px">
             {tabs.map((tab) => {
@@ -308,10 +309,11 @@ export function ProfileView() {
           </nav>
         </div>
 
-        <CardContent className="p-6">
-          {renderTabContent()}
-        </CardContent>
-      </Card>
+          <CardContent className="p-6">
+            {renderTabContent()}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

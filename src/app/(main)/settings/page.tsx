@@ -8,16 +8,18 @@ export const metadata: Metadata = {
 export default function SettingsPage() {
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          설정
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          애플리케이션 설정을 관리하세요
-        </p>
-      </div>
-      
-      <div className="grid gap-6 max-w-2xl">
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              설정
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              애플리케이션 설정을 관리하세요
+            </p>
+          </div>
+          
+          <div className="space-y-6">
         {/* 알림 설정 */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
@@ -94,10 +96,12 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* 저장 버튼 */}
-        <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
-          설정 저장
-        </button>
+            {/* 저장 버튼 */}
+            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+              설정 저장
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
