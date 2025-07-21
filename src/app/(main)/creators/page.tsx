@@ -6,7 +6,9 @@ import { Search, Plus, Users, Youtube, Twitter, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { mockGetCreators, mockFollowCreator, mockUnfollowCreator, mockGetFollowedCreators } from '@/data/creators';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { fetchCreators, followCreator, unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
+import { mockGetFollowedCreators } from '@/data/creators';
 import { Creator } from '@/types';
 
 // export const metadata: Metadata = {
@@ -17,32 +19,42 @@ import { Creator } from '@/types';
 export default function CreatorsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Creator[]>([]);
-  const [allCreators, setAllCreators] = useState<Creator[]>([]);
-  const [followedCreators, setFollowedCreators] = useState<Creator[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('followers');
+  
+  const dispatch = useAppDispatch();
+  const { creators, followedCreators, isLoading, isFollowing, error } = useAppSelector(state => state.creator);
 
   // 초기 데이터 로드
   useEffect(() => {
     const loadInitialData = async () => {
-      setIsLoading(true);
       try {
-        const [allResponse, followed] = await Promise.all([
-          mockGetCreators({ sortBy: sortBy, platform: selectedPlatform }),
-          Promise.resolve(mockGetFollowedCreators())
-        ]);
-        setAllCreators(allResponse.data);
-        setFollowedCreators(followed);
+        // Redux를 통해 크리에이터 데이터 로드
+        await dispatch(fetchCreators({ 
+          sortBy: sortBy, 
+          platform: selectedPlatform 
+        })).unwrap();
+        
+        // 팔로우된 크리에이터 데이터 로드 (mock에서 가져와서 Redux에 저장)
+        const followed = mockGetFollowedCreators();
+        dispatch(updateFollowedCreators(followed));
       } catch (error) {
         console.error('초기 데이터 로드 실패:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
     loadInitialData();
-  }, [sortBy, selectedPlatform]);
+  }, [dispatch, sortBy, selectedPlatform]);
+
+  // 구독 상태 변경 이벤트 리스너
+  useEffect(() => {
+    const handleFollowChange = () => {
+      const followed = mockGetFollowedCreators();
+      dispatch(updateFollowedCreators(followed));
+    };
+
+    window.addEventListener('followersChanged', handleFollowChange);
+    return () => window.removeEventListener('followersChanged', handleFollowChange);
+  }, [dispatch]);
 
   // 검색 함수
   const handleSearch = async () => {
@@ -51,20 +63,17 @@ export default function CreatorsPage() {
       return;
     }
 
-    setIsSearching(true);
     try {
-      // API 호출 (현재는 mock 사용)
-      const response = await mockGetCreators({
+      // Redux를 통해 검색
+      const response = await dispatch(fetchCreators({
         search: searchTerm,
         platform: selectedPlatform,
         sortBy: sortBy,
         limit: 10
-      });
+      })).unwrap();
       setSearchResults(response.data);
     } catch (error) {
       console.error('검색 오류:', error);
-    } finally {
-      setIsSearching(false);
     }
   };
 
@@ -88,12 +97,13 @@ export default function CreatorsPage() {
     
     try {
       if (isFollowed) {
-        await mockUnfollowCreator(creator.id);
-        setFollowedCreators(prev => prev.filter(c => c.id !== creator.id));
+        await dispatch(unfollowCreator(creator.id)).unwrap();
       } else {
-        await mockFollowCreator(creator.id);
-        setFollowedCreators(prev => [...prev, creator]);
+        await dispatch(followCreator(creator.id)).unwrap();
       }
+      
+      // 다른 컴포넌트들에게 알림
+      window.dispatchEvent(new CustomEvent('followersChanged'));
     } catch (error) {
       console.error('팔로우 처리 오류:', error);
     }
@@ -155,8 +165,8 @@ export default function CreatorsPage() {
                   className="w-full pl-10 pr-4 py-2 border border-input rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
-              <Button onClick={handleSearch} disabled={isSearching}>
-                {isSearching ? '검색 중...' : '검색'}
+              <Button onClick={handleSearch} disabled={isLoading}>
+                {isLoading ? '검색 중...' : '검색'}
               </Button>
             </div>
 
@@ -192,7 +202,7 @@ export default function CreatorsPage() {
             ) : (
               <div className="space-y-3">
                 {(() => {
-                  const creatorsToShow = searchResults.length > 0 ? searchResults : allCreators;
+                  const creatorsToShow = searchResults.length > 0 ? searchResults : creators;
                   // 구독 중인 크리에이터 제외
                   const unfollowedCreators = creatorsToShow.filter(creator => 
                     !followedCreators.some(followed => followed.id === creator.id)
@@ -245,7 +255,7 @@ export default function CreatorsPage() {
                                       <div key={index} className="flex items-center gap-1">
                                         {getPlatformIcon(platform.type)}
                                         <span className="text-xs text-muted-foreground">
-                                          {formatNumber(platform.followerCount)}
+                                          {formatNumber(platform?.followerCount ?? 0)}
                                         </span>
                                       </div>
                                     ))}
@@ -256,6 +266,7 @@ export default function CreatorsPage() {
                                 variant="default"
                                 size="sm"
                                 onClick={() => handleFollowToggle(creator)}
+                                disabled={isFollowing}
                               >
                                 <Plus className="h-4 w-4 mr-1" />
                                 구독하기
@@ -321,6 +332,7 @@ export default function CreatorsPage() {
                       size="sm"
                       onClick={() => handleFollowToggle(creator)}
                       className="border-red-200 text-red-600 hover:bg-red-50"
+                      disabled={isFollowing}
                     >
                       구독 취소
                     </Button>

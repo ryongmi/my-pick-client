@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { X, Search, Plus, Youtube, Twitter, Instagram, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { fetchCreators, followCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { cn } from '@/lib/utils';
-// Mock 데이터 import
-import { mockGetCreators, mockFollowCreator, mockGetFollowedCreators } from '@/data/creators';
+import { mockGetFollowedCreators } from '@/data/creators';
 import { Creator } from '@/types';
 
 interface QuickCreatorAddModalProps {
@@ -21,40 +22,29 @@ const PLATFORMS = [
   { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'text-pink-500' },
 ];
 
-// 인기 크리에이터 (서비스에 등록된 크리에이터 중에서)
-const getPopularCreators = async () => {
-  const response = await mockGetCreators({ sortBy: 'followers', limit: 4 });
-  return response.data;
-};
-
 export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCreatorAddModalProps) {
+  const dispatch = useAppDispatch();
+  const { creators, followedCreators, isLoading, isFollowing } = useAppSelector(state => state.creator);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Creator[]>([]);
-  const [popularCreators, setPopularCreators] = useState<Creator[]>([]);
-  const [followedCreators, setFollowedCreators] = useState<Creator[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   // 모달이 열릴 때 크리에이터와 구독 정보 로드
   useEffect(() => {
     if (isOpen) {
       loadData();
     }
-  }, [isOpen]);
+  }, [isOpen, dispatch]);
 
   const loadData = async () => {
-    setIsLoading(true);
     try {
-      const [popular, followed] = await Promise.all([
-        mockGetCreators({ sortBy: 'followers', limit: 20 }), // 모든 크리에이터 로드
-        Promise.resolve(mockGetFollowedCreators())
-      ]);
-      setPopularCreators(popular.data);
-      setFollowedCreators(followed);
+      // Redux를 통해 크리에이터 데이터 로드
+      await dispatch(fetchCreators({ sortBy: 'followers', limit: 20 })).unwrap();
+      
+      // 팔로우된 크리에이터 데이터 로드
+      const followed = mockGetFollowedCreators();
+      dispatch(updateFollowedCreators(followed));
     } catch (error) {
       console.error('데이터 로드 실패:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -64,17 +54,14 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
       return;
     }
     
-    setIsSearching(true);
     try {
-      const response = await mockGetCreators({
+      const response = await dispatch(fetchCreators({
         search: searchTerm,
         limit: 10
-      });
+      })).unwrap();
       setSearchResults(response.data);
     } catch (error) {
       console.error('검색 실패:', error);
-    } finally {
-      setIsSearching(false);
     }
   };
 

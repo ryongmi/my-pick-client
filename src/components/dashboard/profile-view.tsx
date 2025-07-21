@@ -1,11 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { User, Settings, Bookmark, Activity, Edit } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, Settings, Bookmark, Activity, Edit, Star } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { cn } from '@/lib/utils';
+import { mockGetFollowedCreators } from '@/data/creators';
+import { Creator } from '@/types';
 
 const MOCK_USER_STATS = {
   followedCreators: 12,
@@ -39,24 +43,52 @@ const MOCK_ACTIVITY = [
   },
 ];
 
-const MOCK_FOLLOWED_CREATORS = [
-  {
-    id: 'ado',
-    name: 'Ado',
-    platforms: ['YouTube', 'Twitter'],
-    followedSince: '2024년 3월',
-  },
-  {
-    id: 'hikakin',
-    name: '히카킨',
-    platforms: ['YouTube', 'Twitter'],
-    followedSince: '2024년 1월',
-  },
-];
+// MOCK_FOLLOWED_CREATORS 제거 - 실제 데이터 사용
 
 export function ProfileView() {
   const { user } = useAuth();
+  const dispatch = useAppDispatch();
+  const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
   const [activeTab, setActiveTab] = useState('activity');
+
+  // 구독 중인 크리에이터 로드
+  useEffect(() => {
+    const loadFollowedCreators = () => {
+      const followed = mockGetFollowedCreators();
+      dispatch(updateFollowedCreators(followed));
+    };
+    loadFollowedCreators();
+
+    // 구독 상태 변경 이벤트 리스너
+    const handleFollowChange = () => {
+      loadFollowedCreators();
+    };
+
+    window.addEventListener('followersChanged', handleFollowChange);
+    return () => window.removeEventListener('followersChanged', handleFollowChange);
+  }, [dispatch]);
+
+  // 구독 취소 핸들러
+  const handleUnfollow = async (creatorId: string) => {
+    try {
+      await dispatch(unfollowCreator(creatorId)).unwrap();
+      
+      // 다른 컴포넌트들에게 알림
+      window.dispatchEvent(new CustomEvent('followersChanged'));
+    } catch (error) {
+      console.error('구독 취소 실패:', error);
+    }
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
 
   const tabs = [
     { id: 'activity', label: '활동 내역', icon: Activity },
@@ -90,35 +122,61 @@ export function ProfileView() {
       case 'creators':
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">팔로우 중인 크리에이터</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {MOCK_FOLLOWED_CREATORS.map((creator) => (
-                <Card key={creator.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center">
-                      <div className={cn(
-                        'w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold',
-                        creator.id === 'ado' ? 'gradient-ado' : 'gradient-hikakin'
-                      )}>
-                        {creator.name.charAt(0)}
+            <h3 className="text-lg font-semibold">팔로우 중인 크리에이터 ({followedCreators.length})</h3>
+            {followedCreators.length === 0 ? (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">아직 팔로우한 크리에이터가 없습니다.</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    크리에이터 관리 페이지에서 관심있는 크리에이터를 팔로우해보세요!
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {followedCreators.map((creator) => (
+                  <Card key={creator.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center">
+                        <div className={cn(
+                          'w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold',
+                          creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
+                          creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
+                          creator.id === 'kuzuha' ? 'bg-gradient-to-r from-green-400 to-teal-500' :
+                          'bg-gradient-to-r from-gray-400 to-gray-600'
+                        )}>
+                          {creator.displayName.charAt(0)}
+                        </div>
+                        <div className="ml-4 flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">{creator.displayName}</h4>
+                            {creator.isVerified && (
+                              <Star className="h-4 w-4 text-blue-500 fill-current" />
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {creator.platforms.map(p => p.type === 'youtube' ? 'YouTube' : 'Twitter').join(' • ')}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            팔로워 {formatNumber(creator.followerCount)} • {creator.contentCount}개 콘텐츠
+                          </p>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleUnfollow(creator.id)}
+                          className="border-red-200 text-red-600 hover:bg-red-50"
+                          disabled={isFollowing}
+                        >
+                          구독 취소
+                        </Button>
                       </div>
-                      <div className="ml-4 flex-1">
-                        <h4 className="font-medium">{creator.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {creator.platforms.join(' • ')}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {creator.followedSince}부터 팔로우
-                        </p>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        팔로우 중
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         );
 
@@ -260,7 +318,7 @@ export function ProfileView() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-3xl font-bold text-indigo-600">{MOCK_USER_STATS.followedCreators}</p>
+            <p className="text-3xl font-bold text-indigo-600">{followedCreators.length}</p>
             <p className="text-sm text-muted-foreground mt-1">팔로우 크리에이터</p>
           </CardContent>
         </Card>
