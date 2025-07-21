@@ -5,9 +5,9 @@ import {
   Users, Star, Video, Settings, BarChart, Database, 
   Search, Filter, MoreHorizontal, ExternalLink, 
   CheckCircle, Clock, XCircle, TrendingUp, TrendingDown,
-  Eye, Calendar, Tag, Hash
+  Square, CheckSquare
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/hooks/redux';
 import { useAdmin } from '@/hooks/redux';
@@ -15,6 +15,8 @@ import { setCurrentAdminPage } from '@/store/slices/adminSlice';
 import { cn } from '@/lib/utils';
 import { mockCreators } from '@/data/creators';
 import { Creator } from '@/types';
+import { CreatorAddModal } from './creator-add-modal';
+import { BulkOperations, BulkAction } from './bulk-operations';
 
 const ADMIN_MENU_ITEMS = [
   { id: 'dashboard', label: '대시보드', icon: BarChart },
@@ -77,7 +79,6 @@ const MOCK_POPULAR_CREATORS = [
 // 관리자 페이지용 크리에이터 데이터 가공
 const transformCreatorForAdmin = (creator: Creator) => {
   const youtubeData = creator.platforms.find(p => p.type === 'youtube');
-  const twitterData = creator.platforms.find(p => p.type === 'twitter');
   
   return {
     id: creator.id,
@@ -110,6 +111,7 @@ export function AdminView() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCreators, setSelectedCreators] = useState<string[]>([]);
   const [adminCreatorsData, setAdminCreatorsData] = useState<any[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Mock 데이터를 관리자 페이지 형식으로 변환
   useEffect(() => {
@@ -177,6 +179,94 @@ export function AdminView() {
     const matchesStatus = statusFilter === 'all' || creator.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  // 일괄 작업 핸들러
+  const handleSelectAll = () => {
+    setSelectedCreators(filteredCreators.map(creator => creator.id));
+  };
+
+  const handleSelectNone = () => {
+    setSelectedCreators([]);
+  };
+
+  const handleCreatorSelect = (creatorId: string) => {
+    setSelectedCreators(prev => 
+      prev.includes(creatorId) 
+        ? prev.filter(id => id !== creatorId)
+        : [...prev, creatorId]
+    );
+  };
+
+  const handleBulkAction = (action: BulkAction, creatorIds: string[]) => {
+    console.log(`일괄 작업: ${action}`, creatorIds);
+    
+    switch (action) {
+      case 'activate':
+        setAdminCreatorsData(prev => 
+          prev.map(creator => 
+            creatorIds.includes(creator.id) 
+              ? { ...creator, status: 'active' }
+              : creator
+          )
+        );
+        break;
+      case 'deactivate':
+        setAdminCreatorsData(prev => 
+          prev.map(creator => 
+            creatorIds.includes(creator.id) 
+              ? { ...creator, status: 'inactive' }
+              : creator
+          )
+        );
+        break;
+      case 'delete':
+        setAdminCreatorsData(prev => 
+          prev.filter(creator => !creatorIds.includes(creator.id))
+        );
+        break;
+      case 'export':
+        // 내보내기 로직
+        const exportData = adminCreatorsData.filter(creator => 
+          creatorIds.includes(creator.id)
+        );
+        console.log('내보내기 데이터:', exportData);
+        break;
+      case 'refresh':
+        // 새로고침 로직
+        console.log('데이터 새로고침');
+        break;
+    }
+    
+    setSelectedCreators([]);
+  };
+
+  const handleAddCreator = (formData: any) => {
+    const newCreator = {
+      id: `creator_${Date.now()}`,
+      name: formData.name,
+      displayName: formData.displayName,
+      platform: formData.platforms[0]?.type || 'YouTube',
+      channelUrl: formData.platforms[0]?.url || '',
+      subscriberCount: 0,
+      totalVideos: 0,
+      avgViews: 0,
+      status: 'pending',
+      verificationStatus: 'pending',
+      joinedDate: new Date().toISOString().split('T')[0],
+      lastActivity: new Date().toISOString().split('T')[0],
+      contentCategories: ['신규'],
+      monthlyGrowth: 0,
+      engagementRate: 0,
+      topVideo: {
+        title: '아직 영상 없음',
+        views: 0,
+        uploadDate: new Date().toISOString().split('T')[0]
+      }
+    };
+    
+    setAdminCreatorsData(prev => [newCreator, ...prev]);
+    console.log('새 크리에이터 추가:', newCreator);
+  };
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -331,8 +421,7 @@ export function AdminView() {
           <p className="text-muted-foreground">등록된 크리에이터와 채널 정보를 관리합니다.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">일괄 작업</Button>
-          <Button>크리에이터 추가</Button>
+          <Button onClick={() => setShowAddModal(true)}>크리에이터 추가</Button>
         </div>
       </div>
 
@@ -384,6 +473,19 @@ export function AdminView() {
         </Card>
       </div>
 
+      {/* 일괄 작업 */}
+      <Card>
+        <CardContent className="p-4">
+          <BulkOperations
+            selectedCreators={selectedCreators}
+            totalCreators={filteredCreators.length}
+            onSelectAll={handleSelectAll}
+            onSelectNone={handleSelectNone}
+            onBulkAction={handleBulkAction}
+          />
+        </CardContent>
+      </Card>
+
       {/* 검색 및 필터 */}
       <Card>
         <CardContent className="p-4">
@@ -428,6 +530,20 @@ export function AdminView() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
+                  <th className="text-left p-4 font-medium text-sm w-12">
+                    <button
+                      onClick={() => selectedCreators.length === filteredCreators.length ? handleSelectNone() : handleSelectAll()}
+                      className="p-1"
+                    >
+                      {selectedCreators.length === filteredCreators.length && filteredCreators.length > 0 ? (
+                        <CheckSquare className="h-4 w-4 text-blue-600" />
+                      ) : selectedCreators.length > 0 ? (
+                        <CheckSquare className="h-4 w-4 text-blue-500" />
+                      ) : (
+                        <Square className="h-4 w-4 text-gray-400" />
+                      )}
+                    </button>
+                  </th>
                   <th className="text-left p-4 font-medium text-sm">크리에이터</th>
                   <th className="text-left p-4 font-medium text-sm">구독자</th>
                   <th className="text-left p-4 font-medium text-sm">성장률</th>
@@ -439,7 +555,22 @@ export function AdminView() {
               </thead>
               <tbody>
                 {filteredCreators.map((creator) => (
-                  <tr key={creator.id} className="border-b hover:bg-gray-50">
+                  <tr key={creator.id} className={cn(
+                    "border-b hover:bg-gray-50",
+                    selectedCreators.includes(creator.id) && "bg-blue-50"
+                  )}>
+                    <td className="p-4">
+                      <button
+                        onClick={() => handleCreatorSelect(creator.id)}
+                        className="p-1"
+                      >
+                        {selectedCreators.includes(creator.id) ? (
+                          <CheckSquare className="h-4 w-4 text-blue-600" />
+                        ) : (
+                          <Square className="h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                    </td>
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
                         <div className={cn(
@@ -459,7 +590,7 @@ export function AdminView() {
                           </div>
                           <p className="text-sm text-muted-foreground">{creator.platform}</p>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {creator.contentCategories.slice(0, 2).map((category, index) => (
+                            {creator.contentCategories.slice(0, 2).map((category: string, index: number) => (
                               <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
                                 {category}
                               </span>
@@ -526,6 +657,13 @@ export function AdminView() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 크리에이터 추가 모달 */}
+      <CreatorAddModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSubmit={handleAddCreator}
+      />
     </div>
   );
 
