@@ -173,12 +173,21 @@ export function Sidebar() {
                     ).join(' • ')}
                   </p>
                 </div>
-                {/* 새 콘텐츠 카운트는 실제 데이터가 있을 때 표시 */}
-                {Math.random() > 0.5 && (
-                  <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
-                    {Math.floor(Math.random() * 5) + 1} 새 콘텐츠
-                  </span>
-                )}
+                {/* 새 콘텐츠 카운트 - 크리에이터별 고정값 */}
+                {(() => {
+                  // 크리에이터별 고정된 새 콘텐츠 수 (실제로는 서버에서 가져올 데이터)
+                  const newContentCounts: Record<string, number> = {
+                    'ado': 3,
+                    'hikakin': 1,
+                    'kuzuha': 5
+                  };
+                  const count = newContentCounts[creator.id];
+                  return count ? (
+                    <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
+                      {count} 새 콘텐츠
+                    </span>
+                  ) : null;
+                })()}
               </div>
             ))
           )}
