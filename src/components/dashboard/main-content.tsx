@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAppDispatch } from '@/hooks/redux';
 import { useUI, useContent } from '@/hooks/redux';
-import { setPlatformFilter, setSortBy } from '@/store/slices/uiSlice';
+import { setPlatformFilter } from '@/store/slices/uiSlice';
 import { 
   fetchContent, 
   toggleBookmarkOptimistic, 
@@ -78,7 +78,7 @@ const MOCK_CONTENT = [
 
 export function MainContent() {
   const dispatch = useAppDispatch();
-  const { filters, sidebarOpen } = useUI();
+  const { filters } = useUI();
   const { contents, isLoading } = useContent();
   const [selectedPlatform, setSelectedPlatform] = useState('all');
 
@@ -292,12 +292,10 @@ export function MainContent() {
   };
 
   return (
-    <div className={cn(
-      'flex-1 max-w-6xl mx-auto p-4 sm:p-6 transition-all duration-300',
-      !sidebarOpen && 'ml-0'
-    )}>
-      {/* 필터 상태 표시 */}
-      <div className="bg-background rounded-lg shadow-sm mb-6 p-4 border">
+    <div className="w-full max-w-6xl mx-auto">
+      <div className="space-y-6">
+        {/* 필터 상태 표시 */}
+        <div className="bg-background rounded-lg shadow-sm p-4 border">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <span className="text-sm text-muted-foreground">현재 필터:</span>
@@ -319,10 +317,10 @@ export function MainContent() {
             필터 초기화
           </Button>
         </div>
-      </div>
+        </div>
 
-      {/* 플랫폼 필터 탭 */}
-      <div className="bg-background rounded-lg shadow-sm mb-6 border">
+        {/* 플랫폼 필터 탭 */}
+        <div className="bg-background rounded-lg shadow-sm border">
         <div className="flex items-center border-b overflow-x-auto">
           <button
             onClick={() => handlePlatformFilter('all')}
@@ -366,11 +364,11 @@ export function MainContent() {
               <option>조회수순</option>
             </select>
           </div>
+          </div>
         </div>
-      </div>
 
-      {/* 콘텐츠 타임라인 */}
-      <div className="space-y-6">
+        {/* 콘텐츠 타임라인 */}
+        <div className="space-y-6">
       {isLoading ? (
             // 로딩 상태
             <div className="space-y-6">
@@ -401,6 +399,7 @@ export function MainContent() {
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
             <span className="text-muted-foreground">더 많은 콘텐츠를 불러오는 중...</span>
           </div>
+        </div>
         </div>
       </div>
     </div>
