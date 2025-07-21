@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { useAppDispatch } from '@/hooks/redux';
 import { useUI, useCreator } from '@/hooks/redux';
 import { setCreatorFilter } from '@/store/slices/uiSlice';
 import { cn } from '@/lib/utils';
+import { QuickCreatorAddModal } from '@/components/dashboard/quick-creator-add-modal';
 
 const MOCK_CREATORS = [
   {
@@ -31,6 +33,7 @@ export function Sidebar() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { sidebarOpen, filters } = useUI();
+  const [showQuickAddModal, setShowQuickAddModal] = useState(false);
 
   const handleCreatorFilter = (creatorId: string) => {
     if (creatorId === 'all') {
@@ -58,6 +61,13 @@ export function Sidebar() {
     return filters.selectedCreators.includes(creatorId) || filters.selectedCreators.includes('all');
   };
 
+  const handleQuickAddCreator = (creator: { name: string; displayName: string; platform: string; url: string }) => {
+    console.log('빠른 크리에이터 추가:', creator);
+    // 실제로는 Redux 액션을 디스패치하여 크리에이터를 추가
+    // dispatch(addCreator(creator));
+    setShowQuickAddModal(false);
+  };
+
   return (
     <aside 
       className="fixed left-0 top-16 w-64 bg-background h-[calc(100vh-4rem)] border-r overflow-y-auto z-40"
@@ -66,7 +76,12 @@ export function Sidebar() {
         {/* 사이드바 헤더 */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">내 크리에이터</h2>
-          <Button variant="ghost" size="icon">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setShowQuickAddModal(true)}
+            className="hover:bg-primary/10"
+          >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
@@ -142,6 +157,13 @@ export function Sidebar() {
           <Plus className="h-4 w-4 mr-2" />
           크리에이터 추가
         </Button>
+
+        {/* 빠른 크리에이터 추가 모달 */}
+        <QuickCreatorAddModal
+          isOpen={showQuickAddModal}
+          onClose={() => setShowQuickAddModal(false)}
+          onAddCreator={handleQuickAddCreator}
+        />
       </div>
     </aside>
   );
