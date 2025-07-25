@@ -34,6 +34,16 @@ import {
   mockUpdateUser, 
   mockDeleteUser 
 } from '@/data/admin';
+import {
+  mockGetUsers,
+  mockGetUserDetail,
+  mockUpdateUser as mockUpdateMyPickUser,
+  mockGetCreatorApplications,
+  mockProcessCreatorApplication,
+  mockExecuteBulkAction,
+  mockGetUserStats,
+  mockGetDashboard
+} from '@/data/userManagement';
 
 // Mock API 응답 포맷
 const createMockResponse = <T>(data: T, success = true, message?: string) => ({
@@ -304,4 +314,55 @@ export const mockAdminApi = {
   getCreators: (params?: any) => mockApiClient.getPaginated('/admin/creators', params),
   approveCreator: (id: string) => mockApiClient.post(`/admin/creators/${id}/approve`),
   rejectCreator: (id: string) => mockApiClient.post(`/admin/creators/${id}/reject`),
+};
+
+// MyPick 사용자 관리 전용 API
+export const mockUserManagementApi = {
+  // 사용자 목록 조회
+  getUsers: async (params?: any) => {
+    console.log('[MOCK USER MANAGEMENT API] getUsers', params);
+    return await mockGetUsers(params);
+  },
+
+  // 사용자 상세 정보 조회
+  getUserDetail: async (userId: string) => {
+    console.log('[MOCK USER MANAGEMENT API] getUserDetail', userId);
+    return await mockGetUserDetail(userId);
+  },
+
+  // 사용자 정보 업데이트
+  updateUser: async (params: any) => {
+    console.log('[MOCK USER MANAGEMENT API] updateUser', params);
+    return await mockUpdateMyPickUser(params);
+  },
+
+  // 크리에이터 신청 목록 조회
+  getCreatorApplications: async () => {
+    console.log('[MOCK USER MANAGEMENT API] getCreatorApplications');
+    return await mockGetCreatorApplications();
+  },
+
+  // 크리에이터 신청 처리 (승인/거부)
+  processCreatorApplication: async (params: any) => {
+    console.log('[MOCK USER MANAGEMENT API] processCreatorApplication', params);
+    return await mockProcessCreatorApplication(params);
+  },
+
+  // 일괄 작업 실행
+  executeBulkAction: async (action: any) => {
+    console.log('[MOCK USER MANAGEMENT API] executeBulkAction', action);
+    return await mockExecuteBulkAction(action);
+  },
+
+  // 사용자 통계 조회
+  getUserStats: async () => {
+    console.log('[MOCK USER MANAGEMENT API] getUserStats');
+    return await mockGetUserStats();
+  },
+
+  // 대시보드 데이터 조회
+  getDashboard: async () => {
+    console.log('[MOCK USER MANAGEMENT API] getDashboard');
+    return await mockGetDashboard();
+  },
 };

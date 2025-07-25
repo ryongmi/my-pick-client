@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Plus, Trash2, ExternalLink, Youtube, Twitter, Instagram } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,11 @@ import { Platform } from '@/types';
 import { useAppSelector } from '@/hooks/redux';
 import { selectEnabledPlatforms } from '@/store/slices/platformSlice';
 
-interface CreatorAddModalProps {
+interface CreatorEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreatorFormData) => void;
+  creator?: any; // 수정할 크리에이터 데이터
 }
 
 interface CreatorFormData {
@@ -48,7 +49,7 @@ const getPlatformColor = (platformName: string) => {
   return colorMap[platformName.toLowerCase()] || 'text-gray-500';
 };
 
-export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalProps) {
+export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: CreatorEditModalProps) {
   // Redux에서 활성화된 플랫폼 가져오기
   const enabledPlatforms = useAppSelector(selectEnabledPlatforms);
   
@@ -63,6 +64,33 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const isEditMode = !!creator;
+
+  // 크리에이터 데이터가 변경되면 폼 초기화
+  useEffect(() => {
+    if (creator && isOpen) {
+      setFormData({
+        name: creator.name || '',
+        displayName: creator.displayName || '',
+        description: creator.description || '',
+        platforms: creator.platforms || [
+          { 
+            type: 'youtube', 
+            username: creator.name || '', 
+            url: creator.channelUrl || '' 
+          }
+        ],
+      });
+    } else if (!creator && isOpen) {
+      // 새 생성 모드
+      setFormData({
+        name: '',
+        displayName: '',
+        description: '',
+        platforms: [{ type: defaultPlatformType as Platform['type'], username: '', url: '' }],
+      });
+    }
+  }, [creator, isOpen]);
 
   if (!isOpen) return null;
 
@@ -136,7 +164,9 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
     e.preventDefault();
     if (validateForm()) {
       onSubmit(formData);
-      handleReset();
+      if (!isEditMode) {
+        handleReset();
+      }
       onClose();
     }
   };
@@ -151,6 +181,13 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
     setErrors({});
   };
 
+  const handleCancel = () => {
+    if (!isEditMode) {
+      handleReset();
+    }
+    onClose();
+  };
+
   const getDynamicPlatformIcon = (type: Platform['type']) => {
     return getPlatformIcon(type);
   };
@@ -162,9 +199,14 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
           <CardHeader className="border-b">
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle className="text-xl">새 크리에이터 추가</CardTitle>
+                <CardTitle className="text-xl">
+                  {isEditMode ? '크리에이터 수정' : '새 크리에이터 추가'}
+                </CardTitle>
                 <CardDescription>
-                  크리에이터 정보와 소셜 미디어 플랫폼을 등록하세요
+                  {isEditMode 
+                    ? '크리에이터 정보를 수정하세요'
+                    : '크리에이터 정보와 소셜 미디어 플랫폼을 등록하세요'
+                  }
                 </CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={onClose}>
@@ -245,7 +287,7 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
                   <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                     <ExternalLink className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">활성화된 플랫폼이 없습니다</h3>
-                    <p className="text-gray-600 mb-4">크리에이터를 추가하려면 먼저 플랫폼을 활성화해주세요.</p>
+                    <p className="text-gray-600 mb-4">크리에이터를 {isEditMode ? '수정' : '추가'}하려면 먼저 플랫폼을 활성화해주세요.</p>
                     <Button variant="outline" onClick={onClose}>
                       플랫폼 관리로 이동
                     </Button>
@@ -341,22 +383,21 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    handleReset();
-                    onClose();
-                  }}
+                  onClick={handleCancel}
                 >
                   취소
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleReset}
-                >
-                  초기화
-                </Button>
+                {!isEditMode && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleReset}
+                  >
+                    초기화
+                  </Button>
+                )}
                 <Button type="submit">
-                  크리에이터 추가
+                  {isEditMode ? '수정 완료' : '크리에이터 추가'}
                 </Button>
               </div>
             </form>

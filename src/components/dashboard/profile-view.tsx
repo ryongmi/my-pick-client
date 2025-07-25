@@ -1,21 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Settings, Bookmark, Activity, Edit, Star } from 'lucide-react';
+import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, Twitter, Eye, Clock, Heart } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/redux';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
+import { fetchBookmarks, removeBookmark, toggleBookmarkOptimistic } from '@/store/slices/contentSlice';
 import { cn } from '@/lib/utils';
+import { formatNumber, formatDate } from '@/lib/utils';
 import { mockGetFollowedCreators } from '@/data/creators';
 import { Creator } from '@/types';
 
 const MOCK_USER_STATS = {
   followedCreators: 12,
-  watchedContent: 847,
+  watchedContent: 12500,
   bookmarks: 234,
-  likes: 1200,
+  likes: 25600,
 };
 
 const MOCK_ACTIVITY = [
@@ -49,6 +51,7 @@ export function ProfileView() {
   const { user } = useAuth();
   const dispatch = useAppDispatch();
   const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
+  const { bookmarkedContents, isLoadingBookmarks } = useAppSelector(state => state.content);
   const [activeTab, setActiveTab] = useState('activity');
 
   // 구독 중인 크리에이터 로드
@@ -68,6 +71,18 @@ export function ProfileView() {
     return () => window.removeEventListener('followersChanged', handleFollowChange);
   }, [dispatch]);
 
+  // 컴포넌트 마운트 시 북마크 데이터 로드
+  useEffect(() => {
+    dispatch(fetchBookmarks());
+  }, [dispatch]);
+
+  // 북마크 탭 클릭 시 데이터 새로고침
+  useEffect(() => {
+    if (activeTab === 'bookmarks') {
+      dispatch(fetchBookmarks());
+    }
+  }, [dispatch, activeTab]);
+
   // 구독 취소 핸들러
   const handleUnfollow = async (creatorId: string) => {
     try {
@@ -77,6 +92,22 @@ export function ProfileView() {
       window.dispatchEvent(new CustomEvent('followersChanged'));
     } catch (error) {
       console.error('구독 취소 실패:', error);
+    }
+  };
+
+  // 북마크 해제 핸들러
+  const handleRemoveBookmark = async (contentId: string) => {
+    // 낙관적 업데이트
+    dispatch(toggleBookmarkOptimistic(contentId));
+    
+    try {
+      await dispatch(removeBookmark(contentId)).unwrap();
+      // 북마크 목록 새로고침
+      dispatch(fetchBookmarks());
+    } catch (error) {
+      // 에러 시 롤백
+      dispatch(toggleBookmarkOptimistic(contentId));
+      console.error('북마크 해제 실패:', error);
     }
   };
 
@@ -183,16 +214,126 @@ export function ProfileView() {
       case 'bookmarks':
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">북마크한 콘텐츠</h3>
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Bookmark className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">아직 북마크한 콘텐츠가 없습니다.</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  좋아하는 콘텐츠에 북마크를 추가해보세요!
-                </p>
-              </CardContent>
-            </Card>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">북마크한 콘텐츠</h3>
+              {bookmarkedContents.length > 0 && (
+                <p className="text-sm text-muted-foreground">{bookmarkedContents.length}개</p>
+              )}
+            </div>
+            
+            {isLoadingBookmarks ? (
+              // 로딩 상태
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+                    <div className="flex">
+                      <div className="w-48 h-28 bg-gray-200 rounded"></div>
+                      <div className="flex-1 p-4">
+                        <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : bookmarkedContents.length === 0 ? (
+              // 빈 상태
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Bookmark className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">아직 북마크한 콘텐츠가 없습니다.</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    좋아하는 콘텐츠에 북마크를 추가해보세요!
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              // 북마크 콘텐츠 목록
+              <div className="space-y-4">
+                {bookmarkedContents.map((content) => (
+                  <Card key={content.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="flex flex-col sm:flex-row">
+                      {/* 썸네일 */}
+                      <div className="relative w-full sm:w-48 h-32 sm:h-28 flex-shrink-0">
+                        {content.platform === 'youtube' ? (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                            <Play className="h-8 w-8 text-white" />
+                          </div>
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center">
+                            <div className="text-2xl">🎵</div>
+                          </div>
+                        )}
+                        {content.duration && (
+                          <span className="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-1 rounded">
+                            {content.duration}
+                          </span>
+                        )}
+                        <div className="absolute top-2 left-2 text-white text-xs px-2 py-1 rounded flex items-center">
+                          {content.platform === 'youtube' ? (
+                            <>
+                              <Youtube className="h-3 w-3 mr-1 text-red-600" />
+                              <span className="bg-red-600 px-1 rounded">YouTube</span>
+                            </>
+                          ) : (
+                            <>
+                              <Twitter className="h-3 w-3 mr-1 text-blue-400" />
+                              <span className="bg-blue-400 px-1 rounded">Twitter</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* 콘텐츠 정보 */}
+                      <div className="p-4 flex-1">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-sm mb-2 line-clamp-2">{content.title}</h4>
+                            <div className="flex items-center text-xs text-muted-foreground mb-2 space-x-3">
+                              <div className="flex items-center">
+                                <div className={cn(
+                                  'w-4 h-4 rounded-full mr-1 flex items-center justify-center text-white text-xs font-bold',
+                                  content.creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
+                                  content.creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
+                                  'bg-gradient-to-r from-gray-400 to-gray-600'
+                                )}>
+                                  {content.creator.displayName.charAt(0)}
+                                </div>
+                                <span className="font-medium">{content.creator.displayName}</span>
+                              </div>
+                              {content.viewCount && (
+                                <div className="flex items-center">
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  <span>{formatNumber(content.viewCount)}회</span>
+                                </div>
+                              )}
+                              <div className="flex items-center">
+                                <Clock className="h-3 w-3 mr-1" />
+                                <span>{formatDate(content.publishedAt, 'relative')}</span>
+                              </div>
+                            </div>
+                            {content.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-2">
+                                {content.description}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveBookmark(content.id)}
+                            className="text-red-600 hover:bg-red-50 ml-2"
+                          >
+                            <Bookmark className="h-4 w-4 fill-current" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         );
 
@@ -318,25 +459,25 @@ export function ProfileView() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-3xl font-bold text-indigo-600">{followedCreators.length}</p>
+            <p className="text-3xl font-bold text-indigo-600">{formatNumber(followedCreators.length)}</p>
             <p className="text-sm text-muted-foreground mt-1">팔로우 크리에이터</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-3xl font-bold text-green-600">{MOCK_USER_STATS.watchedContent}</p>
+            <p className="text-3xl font-bold text-green-600">{formatNumber(MOCK_USER_STATS.watchedContent)}</p>
             <p className="text-sm text-muted-foreground mt-1">시청한 콘텐츠</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-3xl font-bold text-purple-600">{MOCK_USER_STATS.bookmarks}</p>
+            <p className="text-3xl font-bold text-purple-600">{formatNumber(bookmarkedContents.length)}</p>
             <p className="text-sm text-muted-foreground mt-1">북마크</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-3xl font-bold text-red-600">{MOCK_USER_STATS.likes}</p>
+            <p className="text-3xl font-bold text-red-600">{formatNumber(MOCK_USER_STATS.likes)}</p>
             <p className="text-sm text-muted-foreground mt-1">좋아요</p>
           </CardContent>
           </Card>

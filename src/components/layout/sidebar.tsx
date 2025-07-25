@@ -57,29 +57,29 @@ export function Sidebar() {
   }, [dispatch]);
 
   const handleCreatorFilter = (creatorId: string) => {
-    if (creatorId === 'all') {
-      dispatch(setCreatorFilter(['all']));
+    const currentFilters = filters.selectedCreators;
+    
+    if (currentFilters.includes('all')) {
+      // "전체"가 선택된 상태에서 특정 크리에이터 클릭
+      dispatch(setCreatorFilter([creatorId]));
     } else {
-      const currentFilters = filters.selectedCreators;
-      if (currentFilters.includes('all')) {
-        dispatch(setCreatorFilter([creatorId]));
-      } else {
-        if (currentFilters.includes(creatorId)) {
-          const newFilters = currentFilters.filter(id => id !== creatorId);
-          if (newFilters.length === 0) {
-            dispatch(setCreatorFilter(['all']));
-          } else {
-            dispatch(setCreatorFilter(newFilters));
-          }
+      if (currentFilters.includes(creatorId)) {
+        // 이미 선택된 크리에이터 → 제거
+        const newFilters = currentFilters.filter(id => id !== creatorId);
+        if (newFilters.length === 0) {
+          dispatch(setCreatorFilter(['all'])); // 아무도 선택 안됨 → 전체 선택
         } else {
-          dispatch(setCreatorFilter([...currentFilters, creatorId]));
+          dispatch(setCreatorFilter(newFilters));
         }
+      } else {
+        // 새 크리에이터 → 추가
+        dispatch(setCreatorFilter([...currentFilters, creatorId]));
       }
     }
   };
 
   const isCreatorSelected = (creatorId: string) => {
-    return filters.selectedCreators.includes(creatorId) || filters.selectedCreators.includes('all');
+    return filters.selectedCreators.includes(creatorId) && !filters.selectedCreators.includes('all');
   };
 
   const handleQuickAddCreator = async (creator: Creator) => {
@@ -113,34 +113,6 @@ export function Sidebar() {
           </Button>
         </div>
 
-        {/* 크리에이터 필터 칩 */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          <button
-            onClick={() => handleCreatorFilter('all')}
-            className={cn(
-              'px-3 py-1 rounded-full text-sm font-medium transition-all',
-              filters.selectedCreators.includes('all')
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-            )}
-          >
-            전체
-          </button>
-          {followedCreators.map((creator) => (
-            <button
-              key={creator.id}
-              onClick={() => handleCreatorFilter(creator.id)}
-              className={cn(
-                'px-3 py-1 rounded-full text-sm font-medium transition-all',
-                isCreatorSelected(creator.id) && !filters.selectedCreators.includes('all')
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-              )}
-            >
-              {creator.displayName}
-            </button>
-          ))}
-        </div>
 
         {/* 크리에이터 리스트 */}
         <div className="space-y-3">
@@ -153,18 +125,40 @@ export function Sidebar() {
             followedCreators.map((creator) => (
               <div
                 key={creator.id}
-                className="flex items-center p-3 rounded-lg hover:bg-muted cursor-pointer"
+                className={cn(
+                  "flex items-center p-3 rounded-lg cursor-pointer transition-colors",
+                  isCreatorSelected(creator.id)
+                    ? "bg-primary/10 border border-primary/20"
+                    : "hover:bg-muted"
+                )}
                 onClick={() => handleCreatorFilter(creator.id)}
               >
-                <div className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm',
-                  creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
-                  creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
-                  creator.id === 'kuzuha' ? 'bg-gradient-to-r from-green-400 to-teal-500' :
-                  'bg-gradient-to-r from-gray-400 to-gray-600'
-                )}>
-                  {creator.displayName.charAt(0)}
-                </div>
+                {creator.avatar ? (
+                  <img 
+                    src={creator.avatar} 
+                    alt={creator.displayName}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className={cn(
+                    'w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm',
+                    creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
+                    creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
+                    creator.id === 'kuzuha' ? 'bg-gradient-to-r from-green-400 to-teal-500' :
+                    creator.id === 'mrbeast' ? 'bg-gradient-to-r from-orange-400 to-red-500' :
+                    creator.id === 'pewdiepie' ? 'bg-gradient-to-r from-red-400 to-pink-500' :
+                    creator.id === 'marques' ? 'bg-gradient-to-r from-blue-500 to-purple-600' :
+                    creator.id === 'emma' ? 'bg-gradient-to-r from-purple-400 to-pink-400' :
+                    creator.id === 'dude_perfect' ? 'bg-gradient-to-r from-green-500 to-blue-500' :
+                    creator.id === 'ninja' ? 'bg-gradient-to-r from-blue-600 to-cyan-400' :
+                    creator.id === 'veritasium' ? 'bg-gradient-to-r from-indigo-500 to-purple-500' :
+                    creator.id === 'gordon_ramsay' ? 'bg-gradient-to-r from-red-500 to-orange-500' :
+                    creator.id === 'kurzgesagt' ? 'bg-gradient-to-r from-cyan-400 to-blue-500' :
+                    'bg-gradient-to-r from-gray-400 to-gray-600'
+                  )}>
+                    {creator.displayName.charAt(0)}
+                  </div>
+                )}
                 <div className="ml-3 flex-1">
                   <p className="font-medium text-sm">{creator.displayName}</p>
                   <p className="text-xs text-muted-foreground">

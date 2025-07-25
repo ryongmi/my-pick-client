@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Eye, Clock, Heart, Bookmark, Play, Youtube, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useAppDispatch } from '@/hooks/redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useUI, useContent } from '@/hooks/redux';
-import { setPlatformFilter } from '@/store/slices/uiSlice';
+import { setPlatformFilter, clearFilters } from '@/store/slices/uiSlice';
+import { setSelectedPlatform, selectSelectedPlatform } from '@/store/slices/platformSlice';
 import { 
   fetchContent, 
+  fetchMoreContent,
   toggleBookmarkOptimistic, 
   toggleLikeOptimistic, 
   bookmarkContent, 
@@ -18,6 +20,7 @@ import {
 } from '@/store/slices/contentSlice';
 import { cn } from '@/lib/utils';
 import { formatNumber, formatDate } from '@/lib/utils';
+import { PlatformFilter } from '@/components/dashboard/platform-filter';
 
 const MOCK_CONTENT = [
   {
@@ -79,11 +82,18 @@ const MOCK_CONTENT = [
 export function MainContent() {
   const dispatch = useAppDispatch();
   const { filters } = useUI();
-  const { contents, isLoading } = useContent();
-  const [selectedPlatform, setSelectedPlatform] = useState('all');
+  const { contents, isLoading, hasMore, isLoadingMore, pagination } = useContent();
+  const { followedCreators } = useAppSelector(state => state.creator);
+  const selectedPlatform = useAppSelector(selectSelectedPlatform);
+  const loadingRef = useRef<HTMLDivElement>(null);
 
   // 컴포넌트 마운트 시 콘텐츠 로드
   useEffect(() => {
+    console.log('[DEBUG] Fetching content with filters:', {
+      creators: filters.selectedCreators,
+      platforms: [selectedPlatform],
+      sortBy: 'newest'
+    });
     dispatch(fetchContent({
       creators: filters.selectedCreators,
       platforms: [selectedPlatform],
@@ -91,9 +101,75 @@ export function MainContent() {
     }));
   }, [dispatch, filters.selectedCreators, selectedPlatform]);
 
+  // contents 배열 변경 감지 (디버깅용)
+  useEffect(() => {
+    console.log('[DEBUG] Contents updated:', {
+      count: contents.length,
+      hasMore,
+      isLoadingMore,
+      currentPage: pagination.page
+    });
+  }, [contents, hasMore, isLoadingMore, pagination.page]);
+
+  // 무한 스크롤 로직
+  const loadMoreContent = useCallback(() => {
+    if (hasMore && !isLoadingMore && !isLoading) {
+      console.log('[DEBUG] Loading more content:', {
+        nextPage: pagination.page + 1,
+        creators: filters.selectedCreators,
+        platforms: [selectedPlatform]
+      });
+      dispatch(fetchMoreContent({
+        page: pagination.page + 1,
+        creators: filters.selectedCreators,
+        platforms: [selectedPlatform],
+        sortBy: 'newest'
+      }));
+    } else {
+      console.log('[DEBUG] Cannot load more:', {
+        hasMore,
+        isLoadingMore,
+        isLoading
+      });
+    }
+  }, [dispatch, hasMore, isLoadingMore, isLoading, pagination.page, filters.selectedCreators, selectedPlatform]);
+
+  // Intersection Observer를 사용한 스크롤 감지
+  useEffect(() => {
+    const loadingElement = loadingRef.current;
+    if (!loadingElement || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMoreContent();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadingElement);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [loadMoreContent, hasMore]);
+
   const handlePlatformFilter = (platform: string) => {
-    setSelectedPlatform(platform);
+    dispatch(setSelectedPlatform(platform));
     dispatch(setPlatformFilter([platform]));
+  };
+
+  // 크리에이터 이름을 정확히 가져오는 함수
+  const getCreatorDisplayName = (creatorId: string) => {
+    const creator = followedCreators.find(c => c.id === creatorId);
+    return creator?.displayName || creatorId;
+  };
+
+  // 필터 초기화 함수
+  const handleClearFilters = () => {
+    dispatch(clearFilters());
+    dispatch(setSelectedPlatform('all'));
   };
 
   const handleBookmark = async (contentId: string) => {
@@ -134,13 +210,21 @@ export function MainContent() {
     }
   };
 
-  // Redux store에서 가져온 콘텐츠 사용 (모크 데이터 대신)
-  const displayContent = contents.length > 0 ? contents : MOCK_CONTENT;
+  // Redux store에서 가져온 콘텐츠 사용 (무한스크롤 반영)
+  const displayContent = contents;
   
   const filteredContent = displayContent.filter(content => {
-    // 크리에이터 필터
-    const creatorMatch = filters.selectedCreators.includes('all') || 
-                        filters.selectedCreators.includes(content.creator.id);
+    // 크리에이터 필터 - 팔로우한 크리에이터 기준으로 필터링
+    let creatorMatch = false;
+    
+    if (filters.selectedCreators.includes('all')) {
+      // 전체 보기 시 팔로우한 크리에이터인지 확인
+      const followedCreatorIds = followedCreators.map(c => c.id);
+      creatorMatch = followedCreatorIds.includes(content.creator.id);
+    } else {
+      // 특정 크리에이터 선택 시
+      creatorMatch = filters.selectedCreators.includes(content.creator.id);
+    }
     
     // 플랫폼 필터
     const platformMatch = selectedPlatform === 'all' || content.platform === selectedPlatform;
@@ -307,65 +391,28 @@ export function MainContent() {
               ) : (
                 filters.selectedCreators.map(creatorId => (
                   <span key={creatorId} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                    {creatorId === 'ado' ? 'Ado' : '히카킨'}
+                    {getCreatorDisplayName(creatorId)}
                   </span>
                 ))
               )}
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="text-muted-foreground">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-muted-foreground hover:text-foreground"
+            onClick={handleClearFilters}
+          >
             필터 초기화
           </Button>
         </div>
         </div>
 
-        {/* 플랫폼 필터 탭 */}
-        <div className="bg-background rounded-lg shadow-sm border">
-        <div className="flex items-center border-b overflow-x-auto">
-          <button
-            onClick={() => handlePlatformFilter('all')}
-            className={cn(
-              'px-4 sm:px-6 py-3 font-medium transition-colors whitespace-nowrap border-b-2',
-              selectedPlatform === 'all'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            )}
-          >
-            전체
-          </button>
-          <button
-            onClick={() => handlePlatformFilter('youtube')}
-            className={cn(
-              'px-4 sm:px-6 py-3 font-medium transition-colors whitespace-nowrap border-b-2 flex items-center',
-              selectedPlatform === 'youtube'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            )}
-          >
-            <Youtube className="h-4 w-4 mr-2 text-red-600" />
-            YouTube
-          </button>
-          <button
-            onClick={() => handlePlatformFilter('twitter')}
-            className={cn(
-              'px-4 sm:px-6 py-3 font-medium transition-colors whitespace-nowrap border-b-2 flex items-center',
-              selectedPlatform === 'twitter'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            )}
-          >
-            <Twitter className="h-4 w-4 mr-2 text-blue-400" />
-            Twitter
-          </button>
-          <div className="ml-auto px-4">
-            <select className="text-sm border border-input rounded px-3 py-1 bg-background">
-              <option>최신순</option>
-              <option>인기순</option>
-              <option>조회수순</option>
-            </select>
-          </div>
-          </div>
-        </div>
+        {/* 동적 플랫폼 필터 */}
+        <PlatformFilter
+          selectedPlatform={selectedPlatform}
+          onPlatformChange={handlePlatformFilter}
+        />
 
         {/* 콘텐츠 타임라인 */}
         <div className="space-y-6">
@@ -393,13 +440,31 @@ export function MainContent() {
             </div>
           )}
         
-        {/* 로딩 인디케이터 */}
-        <div className="py-8 text-center">
-          <div className="inline-flex items-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
-            <span className="text-muted-foreground">더 많은 콘텐츠를 불러오는 중...</span>
+        {/* 무한 스크롤 로딩 인디케이터 */}
+        {hasMore && (
+          <div 
+            ref={loadingRef}
+            className="py-8 text-center"
+          >
+            {isLoadingMore ? (
+              <div className="inline-flex items-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
+                <span className="text-muted-foreground">더 많은 콘텐츠를 불러오는 중...</span>
+              </div>
+            ) : (
+              <div className="text-muted-foreground text-sm">
+                스크롤하여 더 많은 콘텐츠 보기
+              </div>
+            )}
           </div>
-        </div>
+        )}
+        
+        {/* 모든 콘텐츠 로드 완료 메시지 */}
+        {!hasMore && !isLoading && filteredContent.length > 0 && (
+          <div className="py-8 text-center">
+            <span className="text-muted-foreground text-sm">모든 콘텐츠를 불러왔습니다</span>
+          </div>
+        )}
         </div>
       </div>
     </div>

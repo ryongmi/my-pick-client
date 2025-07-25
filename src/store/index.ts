@@ -17,6 +17,8 @@ import creatorSlice from './slices/creatorSlice';
 import contentSlice from './slices/contentSlice';
 import notificationSlice from './slices/notificationSlice';
 import adminSlice from './slices/adminSlice';
+import platformSlice from './slices/platformSlice';
+import userManagementSlice from './slices/userManagementSlice';
 
 // Storage
 let storage;
@@ -50,13 +52,15 @@ const rootReducer = combineReducers({
   content: contentSlice,
   notification: notificationSlice,
   admin: adminSlice,
+  platform: platformSlice,
+  userManagement: userManagementSlice,
 });
 
 // Persist config
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth', 'ui'], // 지속할 slice들
+  whitelist: ['auth', 'ui', 'platform'], // 지속할 slice들 (플랫폼 설정 포함)
   blacklist: ['content', 'notification'], // 새로고침 시 초기화할 slice들
 };
 

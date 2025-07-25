@@ -113,7 +113,24 @@ export const fetchMoreContent = createAsyncThunk(
     sortBy?: string;
   }, { rejectWithValue }) => {
     try {
-      const response = await contentApi.getContent(params);
+      // const response = await contentApi.getContent(params);
+      const response = await mockContentApi.getContent(params);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const fetchBookmarks = createAsyncThunk(
+  'content/fetchBookmarks',
+  async (params: {
+    page?: number;
+    limit?: number;
+  } = {}, { rejectWithValue }) => {
+    try {
+      // const response = await contentApi.getBookmarks(params.page, params.limit);
+      const response = await mockContentApi.getBookmarks(params.page, params.limit);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -241,6 +258,11 @@ const contentSlice = createSlice({
         const content = state.contents.find(c => c.id === contentId);
         if (content) {
           content.isBookmarked = true;
+          // bookmarkedContents 배열에도 추가 (중복 방지)
+          const isAlreadyBookmarked = state.bookmarkedContents.some(c => c.id === contentId);
+          if (!isAlreadyBookmarked) {
+            state.bookmarkedContents.push(content);
+          }
         }
       });
 
@@ -251,7 +273,43 @@ const contentSlice = createSlice({
         const content = state.contents.find(c => c.id === contentId);
         if (content) {
           content.isBookmarked = false;
+          // bookmarkedContents 배열에서도 제거
+          state.bookmarkedContents = state.bookmarkedContents.filter(c => c.id !== contentId);
         }
+      });
+
+    // Fetch more content (infinite scroll)
+    builder
+      .addCase(fetchMoreContent.pending, (state) => {
+        state.isLoadingMore = true;
+        state.error = null;
+      })
+      .addCase(fetchMoreContent.fulfilled, (state, action) => {
+        state.isLoadingMore = false;
+        // 기존 콘텐츠에 새 콘텐츠 추가
+        state.contents = [...state.contents, ...action.payload.data];
+        state.pagination = action.payload.pagination;
+        state.hasMore = action.payload.pagination.hasNext;
+      })
+      .addCase(fetchMoreContent.rejected, (state, action) => {
+        state.isLoadingMore = false;
+        state.error = action.payload as string;
+      });
+
+    // Fetch bookmarks
+    builder
+      .addCase(fetchBookmarks.pending, (state) => {
+        state.isLoadingBookmarks = true;
+        state.error = null;
+      })
+      .addCase(fetchBookmarks.fulfilled, (state, action) => {
+        state.isLoadingBookmarks = false;
+        state.bookmarkedContents = action.payload.data;
+        state.bookmarkPagination = action.payload.pagination;
+      })
+      .addCase(fetchBookmarks.rejected, (state, action) => {
+        state.isLoadingBookmarks = false;
+        state.error = action.payload as string;
       });
   },
 });

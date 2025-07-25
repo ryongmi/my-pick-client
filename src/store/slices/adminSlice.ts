@@ -53,7 +53,7 @@ interface AdminState {
   };
   
   // 현재 관리자 페이지
-  currentAdminPage: 'dashboard' | 'users' | 'creators' | 'content' | 'api' | 'analytics' | 'settings';
+  currentAdminPage: 'dashboard' | 'users' | 'creators' | 'platforms' | 'content' | 'api' | 'analytics' | 'settings';
 }
 
 const initialState: AdminState = {
