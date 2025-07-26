@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { ProfileView } from '@/components/dashboard/profile-view';
+import { ProfileView } from '@/components/main/dashboard/profile-view';
 
 export const metadata: Metadata = {
   title: 'MyPick 프로필',

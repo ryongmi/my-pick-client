@@ -135,11 +135,11 @@ export const fetchCreatorStats = createAsyncThunk(
 
 export const followCreator = createAsyncThunk(
   'creator/followCreator',
-  async (id: string, { rejectWithValue }) => {
+  async (creator: Creator, { rejectWithValue }) => {
     try {
-      // await creatorApi.followCreator(id);
-      await mockCreatorApi.followCreator(id);
-      return id;
+      // await creatorApi.followCreator(creator.id);
+      await mockCreatorApi.followCreator(creator.id);
+      return creator;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -311,12 +311,16 @@ const creatorSlice = createSlice({
       })
       .addCase(followCreator.fulfilled, (state, action) => {
         state.isFollowing = false;
-        const creatorId = action.payload;
+        const creator = action.payload;
         
-        // 팔로우된 크리에이터 목록에 추가
-        const creator = state.creators.find(c => c.id === creatorId);
-        if (creator && !state.followedCreators.find(c => c.id === creatorId)) {
+        // 팔로우된 크리에이터 목록에 추가 (중복 체크)
+        if (!state.followedCreators.find(c => c.id === creator.id)) {
           state.followedCreators.push(creator);
+        }
+        
+        // creators 목록에도 추가 (없는 경우)
+        if (!state.creators.find(c => c.id === creator.id)) {
+          state.creators.push(creator);
         }
       })
       .addCase(followCreator.rejected, (state, action) => {

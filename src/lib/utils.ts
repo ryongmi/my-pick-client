@@ -16,12 +16,12 @@ export function formatDate(date: string | Date, format: 'short' | 'long' | 'rela
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    if (minutes < 1) return '방금 전';
-    if (minutes < 60) return `${minutes}분 전`;
-    if (hours < 24) return `${hours}시간 전`;
-    if (days < 7) return `${days}일 전`;
-    if (days < 30) return `${Math.floor(days / 7)}주 전`;
-    if (days < 365) return `${Math.floor(days / 30)}개월 전`;
+    if (minutes < 1) {return '방금 전';}
+    if (minutes < 60) {return `${minutes}분 전`;}
+    if (hours < 24) {return `${hours}시간 전`;}
+    if (days < 7) {return `${days}일 전`;}
+    if (days < 30) {return `${Math.floor(days / 7)}주 전`;}
+    if (days < 365) {return `${Math.floor(days / 30)}개월 전`;}
     return `${Math.floor(days / 365)}년 전`;
   }
 
@@ -43,7 +43,17 @@ export function formatDate(date: string | Date, format: 'short' | 'long' | 'rela
 }
 
 // 숫자 포맷팅
-export function formatNumber(num: number): string {
+export function formatNumber(num: number, compact?: boolean): string {
+  if (compact) {
+    if (num >= 1000000) {
+      return Math.floor(num / 1000000) + 'M';
+    }
+    if (num >= 1000) {
+      return Math.floor(num / 1000) + 'K';
+    }
+    return num.toString();
+  }
+  
   if (num >= 1000000) {
     return (num / 1000000).toFixed(1) + 'M';
   }
@@ -84,7 +94,7 @@ export function extractYouTubeVideoId(url: string): string | null {
 
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) return match[1];
+    if (match) {return match[1];}
   }
   return null;
 }
@@ -120,14 +130,14 @@ export function getPlatformColor(platform: string): string {
 
 // 텍스트 생략
 export function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
+  if (text.length <= maxLength) {return text;}
   return text.slice(0, maxLength) + '...';
 }
 
 // 파일 크기 포맷팅
 export function formatFileSize(bytes: number): string {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) {return '0 Bytes';}
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
 }
@@ -146,20 +156,20 @@ export function getPasswordStrength(password: string): {
   let score = 0;
   const feedback: string[] = [];
 
-  if (password.length >= 8) score += 1;
-  else feedback.push('최소 8자 이상');
+  if (password.length >= 8) {score += 1;}
+  else {feedback.push('최소 8자 이상');}
 
-  if (/[a-z]/.test(password)) score += 1;
-  else feedback.push('소문자 포함');
+  if (/[a-z]/.test(password)) {score += 1;}
+  else {feedback.push('소문자 포함');}
 
-  if (/[A-Z]/.test(password)) score += 1;
-  else feedback.push('대문자 포함');
+  if (/[A-Z]/.test(password)) {score += 1;}
+  else {feedback.push('대문자 포함');}
 
-  if (/\d/.test(password)) score += 1;
-  else feedback.push('숫자 포함');
+  if (/\d/.test(password)) {score += 1;}
+  else {feedback.push('숫자 포함');}
 
-  if (/[^a-zA-Z\d]/.test(password)) score += 1;
-  else feedback.push('특수문자 포함');
+  if (/[^a-zA-Z\d]/.test(password)) {score += 1;}
+  else {feedback.push('특수문자 포함');}
 
   const strengthText = ['매우 약함', '약함', '보통', '강함', '매우 강함'][score];
   return {
@@ -196,7 +206,7 @@ export function getInitials(name: string): string {
 // 로컬 스토리지 헬퍼
 export const storage = {
   get: <T>(key: string, defaultValue: T): T => {
-    if (typeof window === 'undefined') return defaultValue;
+    if (typeof window === 'undefined') {return defaultValue;}
     try {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : defaultValue;
@@ -205,7 +215,7 @@ export const storage = {
     }
   },
   set: <T>(key: string, value: T): void => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
@@ -213,7 +223,7 @@ export const storage = {
     }
   },
   remove: (key: string): void => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
     localStorage.removeItem(key);
   },
 };

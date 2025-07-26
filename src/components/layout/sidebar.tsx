@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useUI } from '@/hooks/redux';
-import { setCreatorFilter } from '@/store/slices/uiSlice';
+import { setCreatorFilter, setSidebarOpen } from '@/store/slices/uiSlice';
 import { followCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { cn } from '@/lib/utils';
-import { QuickCreatorAddModal } from '@/components/dashboard/quick-creator-add-modal';
+import { QuickCreatorAddModal } from '@/components/admin/creators/quick-creator-add-modal';
 import { Creator } from '@/types';
 import { mockGetFollowedCreators } from '@/data/creators';
 
@@ -35,9 +35,10 @@ const MOCK_CREATORS = [
 export function Sidebar() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { sidebarOpen, filters } = useUI();
+  const { sidebarOpen, filters, isMobile } = useUI();
   const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   // 구독 중인 크리에이터 로드
   useEffect(() => {
@@ -55,6 +56,55 @@ export function Sidebar() {
     window.addEventListener('followersChanged', handleFollowChange);
     return () => window.removeEventListener('followersChanged', handleFollowChange);
   }, [dispatch]);
+
+  // 외부 클릭 감지 및 사이드바 닫기
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      
+      // 햄버거 버튼 클릭은 무시
+      if (target.closest('[data-sidebar-toggle]')) {
+        return;
+      }
+      
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        dispatch(setSidebarOpen(false));
+      }
+    };
+
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        dispatch(setSidebarOpen(false));
+      }
+    };
+
+    // 약간의 지연을 두어 클릭 이벤트와 충돌 방지
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscKey);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [sidebarOpen, dispatch]);
+
+  // 사이드바 열릴 때 body 스크롤 방지 (모바일)
+  useEffect(() => {
+    if (sidebarOpen && isMobile) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [sidebarOpen, isMobile]);
 
   const handleCreatorFilter = (creatorId: string) => {
     const currentFilters = filters.selectedCreators;
@@ -84,7 +134,7 @@ export function Sidebar() {
 
   const handleQuickAddCreator = async (creator: Creator) => {
     try {
-      await dispatch(followCreator(creator.id)).unwrap();
+      await dispatch(followCreator(creator)).unwrap();
       
       // 다른 컴포넌트들에게 알림
       window.dispatchEvent(new CustomEvent('followersChanged'));
@@ -96,9 +146,32 @@ export function Sidebar() {
   };
 
   return (
-    <aside 
-      className="fixed left-0 top-16 w-64 bg-background h-[calc(100vh-4rem)] border-r overflow-y-auto z-40"
-    >
+    <>
+      {/* 배경 오버레이 (모바일에서만 표시) */}
+      {sidebarOpen && isMobile && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
+          onClick={() => dispatch(setSidebarOpen(false))}
+        />
+      )}
+      
+      {/* 사이드바 */}
+      <aside 
+        ref={sidebarRef}
+        className={cn(
+          "fixed top-16 bg-background h-[calc(100vh-4rem)] border-r overflow-y-auto z-50 transition-transform duration-300 ease-in-out",
+          // 데스크톱: 왼쪽에서 슬라이드, 부분 오버레이
+          "md:left-0 md:w-64",
+          // 모바일: 전체 너비로 왼쪽에서 슬라이드
+          "left-0 w-80 max-w-[85vw]",
+          // 배경 효과
+          "backdrop-blur-sm bg-background/95 shadow-xl",
+          // 애니메이션
+          sidebarOpen 
+            ? "translate-x-0" 
+            : "-translate-x-full"
+        )}
+      >
       <div className="p-4">
         {/* 사이드바 헤더 */}
         <div className="flex justify-between items-center mb-4">
@@ -205,5 +278,6 @@ export function Sidebar() {
         />
       </div>
     </aside>
+    </>
   );
 }

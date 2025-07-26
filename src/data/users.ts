@@ -51,7 +51,7 @@ export const mockLogin = async (email: string, password: string) => {
     throw new Error('비밀번호가 올바르지 않습니다.');
   }
   
-  const token = mockAuthTokens[user.role as keyof typeof mockAuthTokens] || mockAuthTokens.user;
+  const token = mockAuthTokens[user.role] || mockAuthTokens.user;
   
   return {
     user,

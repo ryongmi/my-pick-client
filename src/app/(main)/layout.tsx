@@ -28,11 +28,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      {sidebarOpen && <Sidebar />}
-      <main className={cn(
-        "mt-16 overflow-auto",
-        sidebarOpen ? "ml-64" : "ml-0"
-      )}>
+      {sidebarOpen ? <Sidebar /> : null}
+      <main className="mt-16 overflow-auto">
         {children}
       </main>
     </div>

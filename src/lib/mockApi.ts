@@ -42,7 +42,8 @@ import {
   mockProcessCreatorApplication,
   mockExecuteBulkAction,
   mockGetUserStats,
-  mockGetDashboard
+  mockGetDashboard,
+  mockGetApprovalHistory
 } from '@/data/userManagement';
 
 // Mock API 응답 포맷
@@ -84,6 +85,16 @@ export const mockApiClient = {
     if (url === '/notifications/unread-count') {
       const result = await mockGetUnreadCount();
       return { data: createMockResponse(result) };
+    }
+    
+    if (url === '/creator-application/status') {
+      // Mock: 현재 사용자의 크리에이터 신청 상태 조회
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const storedApplication = localStorage.getItem('creatorApplication');
+      if (storedApplication) {
+        return { data: createMockResponse(JSON.parse(storedApplication)) };
+      }
+      return { data: createMockResponse(null) };
     }
     
     throw new Error(`Mock API: GET ${url} not implemented`);
@@ -135,6 +146,24 @@ export const mockApiClient = {
       const creatorId = url.split('/')[3];
       const result = await mockRejectCreator(creatorId);
       return { data: createMockResponse(result) };
+    }
+    
+    if (url === '/creator-application') {
+      // Mock: 크리에이터 신청 제출
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const application = {
+        id: `app_${Date.now()}`,
+        userId: 'current-user-id',
+        status: 'pending',
+        appliedAt: new Date().toISOString(),
+        applicationData: data,
+        user: {
+          id: 'current-user-id',
+          name: '사용자',
+          email: 'user@example.com',
+        }
+      };
+      return { data: createMockResponse(application) };
     }
     
     throw new Error(`Mock API: POST ${url} not implemented`);
@@ -365,4 +394,22 @@ export const mockUserManagementApi = {
     console.log('[MOCK USER MANAGEMENT API] getDashboard');
     return await mockGetDashboard();
   },
+
+  // 크리에이터 승인 내역 조회
+  getApprovalHistory: async (params?: any) => {
+    console.log('[MOCK USER MANAGEMENT API] getApprovalHistory', params);
+    return await mockGetApprovalHistory(params);
+  },
+};
+
+// 크리에이터 신청 API
+export const mockCreatorApplicationApi = {
+  // 크리에이터 신청 제출
+  submitApplication: (data: any) => mockApiClient.post('/creator-application', data),
+  
+  // 재신청
+  resubmitApplication: (data: any) => mockApiClient.post('/creator-application', data),
+  
+  // 신청 상태 조회
+  getApplicationStatus: () => mockApiClient.get('/creator-application/status'),
 };

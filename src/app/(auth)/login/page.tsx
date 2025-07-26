@@ -93,11 +93,9 @@ export default function LoginPage() {
               </label>
             </div>
             
-            {error && (
-              <div className="text-red-600 text-sm bg-red-50 p-3 rounded">
+            {error ? <div className="text-red-600 text-sm bg-red-50 p-3 rounded">
                 {error}
-              </div>
-            )}
+              </div> : null}
             
             <Button
               type="submit"

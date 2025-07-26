@@ -243,9 +243,7 @@ export default function CreatorsPage() {
                                 <div>
                                   <div className="flex items-center gap-2">
                                     <h4 className="font-medium">{creator.displayName}</h4>
-                                    {creator.isVerified && (
-                                      <Star className="h-4 w-4 text-blue-500 fill-current" />
-                                    )}
+                                    {creator.isVerified ? <Star className="h-4 w-4 text-blue-500 fill-current" /> : null}
                                   </div>
                                   <p className="text-sm text-muted-foreground">
                                     팔로워 {formatNumber(creator.followerCount)} • {creator.contentCount}개 콘텐츠
@@ -318,9 +316,7 @@ export default function CreatorsPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium text-sm">{creator.displayName}</h4>
-                          {creator.isVerified && (
-                            <Star className="h-3 w-3 text-blue-500 fill-current" />
-                          )}
+                          {creator.isVerified ? <Star className="h-3 w-3 text-blue-500 fill-current" /> : null}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {formatNumber(creator.followerCount)} 팔로워

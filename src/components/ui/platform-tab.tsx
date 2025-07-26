@@ -34,14 +34,12 @@ export const PlatformTab = forwardRef<HTMLButtonElement, PlatformTabProps>(
         role="tab"
         aria-selected={isSelected}
       >
-        {IconComponent && (
-          <IconComponent 
+        {IconComponent ? <IconComponent 
             className={cn(
               'h-4 w-4 mr-2',
               platform.color
             )} 
-          />
-        )}
+          /> : null}
         <span>{platform.displayName}</span>
       </button>
     );

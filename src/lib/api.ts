@@ -49,17 +49,17 @@ class ApiClient {
   }
 
   private getToken(): string | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined') {return null;}
     return localStorage.getItem('authToken');
   }
 
   private setToken(token: string): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
     localStorage.setItem('authToken', token);
   }
 
   private removeToken(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
     localStorage.removeItem('authToken');
   }
 

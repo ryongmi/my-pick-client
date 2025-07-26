@@ -12,7 +12,9 @@ import {
   GetUsersRequest,
   GetUsersResponse,
   UpdateUserRequest,
-  CreatorApplicationAction
+  CreatorApplicationAction,
+  GetApprovalHistoryRequest,
+  GetApprovalHistoryResponse
 } from '@/types/userManagement';
 
 // Mock 사용자 데이터
@@ -265,7 +267,7 @@ export const mockMyPickUsers: MyPickUser[] = [
       currentMonth: 0,
       dailyLimit: 50,
       monthlyLimit: 1000,
-      lastUsedAt: null,
+      lastUsedAt: '2024-07-20T10:15:00Z',
       quotaExceeded: false,
     },
     creatorApplication: {
@@ -301,6 +303,111 @@ export const mockMyPickUsers: MyPickUser[] = [
 
 // Mock 크리에이터 신청 데이터
 export const mockCreatorApplications: CreatorApplication[] = [
+  // 승인된 신청들
+  {
+    id: 'app1',
+    userId: '1',
+    status: 'approved',
+    appliedAt: '2024-01-10T09:00:00Z',
+    reviewedAt: '2024-01-12T14:30:00Z',
+    reviewedBy: '관리자',
+    applicationData: {
+      channelName: '김철수의 Tech Talk',
+      channelId: 'UC123456789',
+      channelUrl: 'https://youtube.com/c/kimcs-tech',
+      subscriberCount: 25000,
+      contentCategory: 'Technology & Programming',
+      description: '최신 기술 트렌드와 프로그래밍 팁을 공유합니다.',
+      sampleVideos: ['v1', 'v2', 'v3'],
+      businessEmail: 'business@kimcs.com',
+      socialLinks: {
+        website: 'https://kimcs.dev',
+        twitter: '@kimcs_dev',
+      }
+    },
+    user: {
+      id: '1',
+      name: '김철수',
+      email: 'kimcs@example.com',
+      avatar: '/avatars/user1.jpg',
+    }
+  },
+  {
+    id: 'app2',
+    userId: '2',
+    status: 'approved',
+    appliedAt: '2024-02-15T11:20:00Z',
+    reviewedAt: '2024-02-16T16:45:00Z',
+    reviewedBy: '관리자',
+    applicationData: {
+      channelName: '이영희의 요리교실',
+      channelId: 'UC987654321',
+      channelUrl: 'https://youtube.com/c/leeyh-cooking',
+      subscriberCount: 18000,
+      contentCategory: 'Food & Cooking',
+      description: '간단하고 맛있는 요리 레시피를 알려드립니다.',
+      sampleVideos: ['v4', 'v5', 'v6'],
+      businessEmail: 'cooking@leeyh.com',
+      socialLinks: {
+        instagram: '@leeyh_cooking',
+      }
+    },
+    user: {
+      id: '2',
+      name: '이영희',
+      email: 'leeyh@example.com',
+      avatar: '/avatars/user2.jpg',
+    }
+  },
+  // 거부된 신청들
+  {
+    id: 'app3',
+    userId: '7',
+    status: 'rejected',
+    appliedAt: '2024-06-10T13:15:00Z',
+    reviewedAt: '2024-06-12T10:20:00Z',
+    reviewedBy: '관리자',
+    rejectionReason: '구독자 수 기준 미달 (최소 1,000명 이상)',
+    applicationData: {
+      channelName: '작은 채널',
+      channelId: 'UC111111111',
+      channelUrl: 'https://youtube.com/c/small-channel',
+      subscriberCount: 500,
+      contentCategory: 'Entertainment',
+      description: '일상과 취미를 공유하는 채널입니다.',
+      sampleVideos: ['v12', 'v13'],
+      businessEmail: 'small@channel.com',
+    },
+    user: {
+      id: '7',
+      name: '박소영',
+      email: 'park@example.com',
+    }
+  },
+  {
+    id: 'app4',
+    userId: '8',
+    status: 'rejected',
+    appliedAt: '2024-07-01T08:30:00Z',
+    reviewedAt: '2024-07-02T15:45:00Z',
+    reviewedBy: '관리자',
+    rejectionReason: '부적절한 콘텐츠로 인한 거부',
+    applicationData: {
+      channelName: '문제 채널',
+      channelId: 'UC222222222',
+      channelUrl: 'https://youtube.com/c/problem-channel',
+      subscriberCount: 5000,
+      contentCategory: 'Entertainment',
+      description: '다양한 엔터테인먼트 콘텐츠',
+      sampleVideos: ['v14', 'v15'],
+    },
+    user: {
+      id: '8',
+      name: '최문제',
+      email: 'choi@example.com',
+    }
+  },
+  // 대기 중인 신청들
   {
     id: 'app5',
     userId: '5',
@@ -318,6 +425,11 @@ export const mockCreatorApplications: CreatorApplication[] = [
       socialLinks: {
         instagram: '@choije_beauty',
       }
+    },
+    user: {
+      id: '5',
+      name: '최지은',
+      email: 'choije@example.com',
     }
   },
   {
@@ -338,6 +450,11 @@ export const mockCreatorApplications: CreatorApplication[] = [
         instagram: '@korea_travel',
         website: 'https://korea-travel.guide'
       }
+    },
+    user: {
+      id: '6',
+      name: '정민수',
+      email: 'jms@example.com',
     }
   },
 ];
@@ -690,6 +807,99 @@ export const mockGetDashboard = async (): Promise<UserManagementDashboard> => {
       databaseStatus: 'healthy',
       averageResponseTime: 245,
       errorRate: 0.2,
+    },
+  };
+};
+
+// 크리에이터 승인 내역 조회
+export const mockGetApprovalHistory = async (params: GetApprovalHistoryRequest = {}): Promise<GetApprovalHistoryResponse> => {
+  const { page = 1, limit = 20, filters = {} } = params;
+  
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // 승인/거부된 신청만 필터링
+  let filteredApplications = mockCreatorApplications.filter(app => app.status !== 'pending');
+  
+  // 필터 적용
+  if (filters.search) {
+    const searchLower = filters.search.toLowerCase();
+    filteredApplications = filteredApplications.filter(app => 
+      app.applicationData.channelName.toLowerCase().includes(searchLower) ||
+      app.user?.name.toLowerCase().includes(searchLower) ||
+      app.user?.email.toLowerCase().includes(searchLower)
+    );
+  }
+  
+  if (filters.status && filters.status !== 'all') {
+    filteredApplications = filteredApplications.filter(app => app.status === filters.status);
+  }
+  
+  if (filters.reviewedBy) {
+    filteredApplications = filteredApplications.filter(app => 
+      app.reviewedBy?.toLowerCase().includes(filters.reviewedBy?.toLowerCase() || '')
+    );
+  }
+  
+  if (filters.dateRange) {
+    const startDate = new Date(filters.dateRange.start);
+    const endDate = new Date(filters.dateRange.end);
+    filteredApplications = filteredApplications.filter(app => {
+      if (!app.reviewedAt) {return false;}
+      const reviewDate = new Date(app.reviewedAt);
+      return reviewDate >= startDate && reviewDate <= endDate;
+    });
+  }
+  
+  // 정렬
+  const sortBy = filters.sortBy || 'reviewedAt';
+  const sortOrder = filters.sortOrder || 'desc';
+  
+  filteredApplications.sort((a, b) => {
+    let aValue: any, bValue: any;
+    
+    switch (sortBy) {
+      case 'reviewedAt':
+        aValue = a.reviewedAt ? new Date(a.reviewedAt).getTime() : 0;
+        bValue = b.reviewedAt ? new Date(b.reviewedAt).getTime() : 0;
+        break;
+      case 'appliedAt':
+        aValue = new Date(a.appliedAt).getTime();
+        bValue = new Date(b.appliedAt).getTime();
+        break;
+      case 'channelName':
+        aValue = a.applicationData.channelName.toLowerCase();
+        bValue = b.applicationData.channelName.toLowerCase();
+        break;
+      case 'subscriberCount':
+        aValue = a.applicationData.subscriberCount;
+        bValue = b.applicationData.subscriberCount;
+        break;
+      default:
+        aValue = a.reviewedAt ? new Date(a.reviewedAt).getTime() : 0;
+        bValue = b.reviewedAt ? new Date(b.reviewedAt).getTime() : 0;
+    }
+    
+    if (sortOrder === 'asc') {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+  
+  // 페이지네이션
+  const total = filteredApplications.length;
+  const totalPages = Math.ceil(total / limit);
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const applications = filteredApplications.slice(start, end);
+  
+  return {
+    applications,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
     },
   };
 };

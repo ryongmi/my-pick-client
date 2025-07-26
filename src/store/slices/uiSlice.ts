@@ -4,6 +4,7 @@ import { Notification } from '@/types';
 interface UIState {
   // 사이드바 및 네비게이션
   sidebarOpen: boolean;
+  adminSidebarOpen: boolean;
   currentView: 'user' | 'admin' | 'profile';
   
   // 모달 및 드롭다운
@@ -47,6 +48,7 @@ interface UIState {
 
 const initialState: UIState = {
   sidebarOpen: true,
+  adminSidebarOpen: true,
   currentView: 'user',
   activeModal: null,
   dropdowns: {
@@ -82,6 +84,14 @@ const uiSlice = createSlice({
       state.sidebarOpen = action.payload;
     },
     
+    // 관리자 사이드바 토글
+    toggleAdminSidebar: (state) => {
+      state.adminSidebarOpen = !state.adminSidebarOpen;
+    },
+    setAdminSidebarOpen: (state, action: PayloadAction<boolean>) => {
+      state.adminSidebarOpen = action.payload;
+    },
+    
     // 현재 뷰 변경
     setCurrentView: (state, action: PayloadAction<'user' | 'admin' | 'profile'>) => {
       state.currentView = action.payload;
@@ -107,7 +117,7 @@ const uiSlice = createSlice({
       // 다른 드롭다운들은 모두 닫고 현재 것만 토글
       Object.keys(state.dropdowns).forEach(key => {
         if (key === dropdown) {
-          state.dropdowns[key as keyof UIState['dropdowns']] = !state.dropdowns[key as keyof UIState['dropdowns']];
+          state.dropdowns[key] = !state.dropdowns[key];
         } else {
           state.dropdowns[key as keyof UIState['dropdowns']] = false;
         }
@@ -193,6 +203,7 @@ const uiSlice = createSlice({
       // 모바일에서는 사이드바 기본적으로 닫기
       if (action.payload) {
         state.sidebarOpen = false;
+        state.adminSidebarOpen = false;
       }
     },
     
@@ -216,6 +227,8 @@ const uiSlice = createSlice({
 export const {
   toggleSidebar,
   setSidebarOpen,
+  toggleAdminSidebar,
+  setAdminSidebarOpen,
   setCurrentView,
   openModal,
   closeModal,

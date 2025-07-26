@@ -4,14 +4,12 @@ import {
   MyPickUser, 
   UserManagementFilter, 
   CreatorApplication,
-  UserStats,
-  UserDetailInfo,
   BulkAction,
-  BulkActionResult,
   CreatorApplicationAction,
   GetUsersRequest,
-  GetUsersResponse,
-  UpdateUserRequest
+  UpdateUserRequest,
+  CreatorApprovalHistoryFilter,
+  GetApprovalHistoryRequest
 } from '@/types/userManagement';
 // import { userManagementApi } from '@/lib/api';
 import { mockUserManagementApi } from '@/lib/mockApi';
@@ -48,6 +46,22 @@ const initialState: UserManagementState = {
   creatorApplications: [],
   pendingApplicationsCount: 0,
   
+  // 크리에이터 승인 내역
+  approvalHistory: [],
+  approvalHistoryPagination: {
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+  },
+  approvalHistoryFilters: {
+    search: '',
+    status: 'all',
+    reviewedBy: '',
+    sortBy: 'reviewedAt',
+    sortOrder: 'desc',
+  },
+  
   // 통계
   stats: null,
   dashboard: null,
@@ -56,6 +70,7 @@ const initialState: UserManagementState = {
   isLoading: false,
   isLoadingDetail: false,
   isProcessingBulkAction: false,
+  isLoadingApprovalHistory: false,
   
   // 에러 상태
   error: null,
@@ -67,6 +82,9 @@ const initialState: UserManagementState = {
     bulkAction: false,
     apiLimitSettings: false,
   },
+  
+  // 현재 활성 탭
+  activeTab: 'users',
 };
 
 // Async Thunks
@@ -137,6 +155,20 @@ export const processCreatorApplication = createAsyncThunk(
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message || '크리에이터 신청 처리에 실패했습니다.');
+    }
+  }
+);
+
+// 크리에이터 승인 내역 조회
+export const fetchApprovalHistory = createAsyncThunk(
+  'userManagement/fetchApprovalHistory',
+  async (params: GetApprovalHistoryRequest = {}, { rejectWithValue }) => {
+    try {
+      // const response = await userManagementApi.getApprovalHistory(params);
+      const response = await mockUserManagementApi.getApprovalHistory(params);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || '승인 내역을 불러오는데 실패했습니다.');
     }
   }
 );
@@ -270,6 +302,26 @@ const userManagementSlice = createSlice({
       state.filters.sortBy = action.payload.sortBy;
       state.filters.sortOrder = action.payload.sortOrder;
     },
+
+    // 활성 탭 설정
+    setActiveTab: (state, action: PayloadAction<'users' | 'approvalHistory'>) => {
+      state.activeTab = action.payload;
+    },
+
+    // 승인 내역 필터 설정
+    setApprovalHistoryFilters: (state, action: PayloadAction<Partial<CreatorApprovalHistoryFilter>>) => {
+      state.approvalHistoryFilters = { ...state.approvalHistoryFilters, ...action.payload };
+      // 필터 변경시 첫 페이지로 이동
+      state.approvalHistoryPagination.page = 1;
+    },
+
+    // 승인 내역 페이지네이션 설정
+    setApprovalHistoryPagination: (state, action: PayloadAction<{ page: number; limit?: number }>) => {
+      state.approvalHistoryPagination.page = action.payload.page;
+      if (action.payload.limit) {
+        state.approvalHistoryPagination.limit = action.payload.limit;
+      }
+    },
   },
   extraReducers: (builder) => {
     // 사용자 목록 조회
@@ -339,6 +391,34 @@ const userManagementSlice = createSlice({
         }
         // 대기 중인 신청 수 업데이트
         state.pendingApplicationsCount = state.creatorApplications.filter(app => app.status === 'pending').length;
+        
+        // 승인 내역에도 추가 (승인/거부된 경우)
+        if (processedApplication.status !== 'pending') {
+          const historyIndex = state.approvalHistory.findIndex(app => app.id === processedApplication.id);
+          if (historyIndex === -1) {
+            // 새로 추가
+            state.approvalHistory.unshift(processedApplication);
+          } else {
+            // 기존 항목 업데이트
+            state.approvalHistory[historyIndex] = processedApplication;
+          }
+        }
+      });
+
+    // 크리에이터 승인 내역 조회
+    builder
+      .addCase(fetchApprovalHistory.pending, (state) => {
+        state.isLoadingApprovalHistory = true;
+        state.error = null;
+      })
+      .addCase(fetchApprovalHistory.fulfilled, (state, action) => {
+        state.isLoadingApprovalHistory = false;
+        state.approvalHistory = action.payload.applications;
+        state.approvalHistoryPagination = action.payload.pagination;
+      })
+      .addCase(fetchApprovalHistory.rejected, (state, action) => {
+        state.isLoadingApprovalHistory = false;
+        state.error = action.payload as string;
       });
 
     // 일괄 작업 실행
@@ -417,6 +497,9 @@ export const {
   updateCreatorApplicationInList,
   setSearchQuery,
   setSorting,
+  setActiveTab,
+  setApprovalHistoryFilters,
+  setApprovalHistoryPagination,
 } = userManagementSlice.actions;
 
 export default userManagementSlice.reducer;

@@ -75,7 +75,7 @@ export interface CreatorApplication {
     channelId: string;
     channelUrl: string;
     subscriberCount: number;
-    contentCategory: string;
+    contentCategory: string | string[]; // 기존 호환성을 위해 둘 다 허용
     description: string;
     sampleVideos: string[];
     businessEmail?: string;
@@ -84,6 +84,14 @@ export interface CreatorApplication {
       twitter?: string;
       website?: string;
     };
+  };
+
+  // 신청자 정보 (조인된 데이터)
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string;
   };
 }
 
@@ -124,6 +132,19 @@ export interface UserManagementFilter {
     end: string;
   };
   sortBy: 'name' | 'email' | 'createdAt' | 'lastLoginAt' | 'videoCount';
+  sortOrder: 'asc' | 'desc';
+}
+
+// 크리에이터 승인 내역 필터
+export interface CreatorApprovalHistoryFilter {
+  search: string; // 채널명, 신청자명으로 검색
+  status: 'all' | 'approved' | 'rejected';
+  reviewedBy: string; // 검토자별 필터
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+  sortBy: 'reviewedAt' | 'appliedAt' | 'channelName' | 'subscriberCount';
   sortOrder: 'asc' | 'desc';
 }
 
@@ -255,6 +276,16 @@ export interface UserManagementState {
   creatorApplications: CreatorApplication[];
   pendingApplicationsCount: number;
   
+  // 크리에이터 승인 내역
+  approvalHistory: CreatorApplication[];
+  approvalHistoryPagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  approvalHistoryFilters: CreatorApprovalHistoryFilter;
+  
   // 통계
   stats: UserStats | null;
   dashboard: UserManagementDashboard | null;
@@ -263,6 +294,7 @@ export interface UserManagementState {
   isLoading: boolean;
   isLoadingDetail: boolean;
   isProcessingBulkAction: boolean;
+  isLoadingApprovalHistory: boolean;
   
   // 에러 상태
   error: string | null;
@@ -274,6 +306,9 @@ export interface UserManagementState {
     bulkAction: boolean;
     apiLimitSettings: boolean;
   };
+  
+  // 현재 활성 탭
+  activeTab: 'users' | 'approvalHistory';
 }
 
 // API 요청/응답 타입
@@ -299,6 +334,24 @@ export interface CreatorApplicationAction {
   action: 'approve' | 'reject';
   reason?: string;
   reviewedBy: string;
+}
+
+// 크리에이터 승인 내역 조회 요청
+export interface GetApprovalHistoryRequest {
+  page?: number;
+  limit?: number;
+  filters?: Partial<CreatorApprovalHistoryFilter>;
+}
+
+// 크리에이터 승인 내역 조회 응답
+export interface GetApprovalHistoryResponse {
+  applications: CreatorApplication[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 // 내보내기 타입
