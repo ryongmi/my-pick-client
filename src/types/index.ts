@@ -1,3 +1,7 @@
+// Core 패키지 타입 import
+import type { ResponseFormat } from '@krgeobuk/core/interfaces/format';
+import type { PaginatedResult, PaginatedResultBase } from '@krgeobuk/core/interfaces/typeorm';
+
 // 기본 타입 정의
 export interface User {
   id: string;
@@ -9,56 +13,94 @@ export interface User {
   updatedAt: string;
 }
 
+// Creator 타입 - 서버 구조에 맞게 수정
 export interface Creator {
   id: string;
+  userId?: string; // 서버 필드 (선택적)
   name: string;
   displayName: string;
-  avatar: string;
-  platforms: Platform[];
+  avatar?: string; // 선택적으로 변경
+  platforms?: Platform[]; // 서버에서는 별도 엔티티로 관리
   description?: string;
   isVerified: boolean;
-  followerCount: number;
-  contentCount: number;
-  totalViews: number;
+  category: string; // 서버 필드 추가
+  tags?: string[]; // 서버 필드 추가
+  followerCount?: number; // 계산 필드로 변경
+  contentCount?: number; // 계산 필드로 변경
+  totalViews?: number; // 계산 필드로 변경
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Platform {
-  type: 'youtube' | 'twitter' | 'instagram' | 'tiktok';
-  platformId: string;
-  username: string;
-  url: string;
-  isActive: boolean;
-  followerCount?: number;
-  lastSync?: string;
+// 크리에이터 상세 정보 (플랫폼 포함)
+export interface CreatorWithPlatforms extends Creator {
+  platforms: Platform[];
 }
 
+// Platform 타입 - 서버 구조에 맞게 확장
+export interface Platform {
+  id?: string; // 서버에서 생성되는 ID
+  type: 'youtube' | 'twitter' | 'instagram' | 'tiktok';
+  platformId: string;
+  username?: string;
+  url: string;
+  displayName?: string; // 서버 필드 추가
+  isActive: boolean;
+  followerCount?: number;
+  contentCount?: number; // 서버 필드 추가
+  totalViews?: number; // 서버 필드 추가
+  lastSync?: string;
+  lastSyncAt?: Date; // 서버 필드명
+  syncStatus?: 'active' | 'error' | 'disabled'; // 서버 필드 추가
+  // 영상 동기화 관련 필드
+  videoSyncStatus?: 'never_synced' | 'in_progress' | 'completed' | 'failed';
+  lastVideoSyncAt?: Date;
+  totalVideoCount?: number;
+  syncedVideoCount?: number;
+  failedVideoCount?: number;
+  lastSyncError?: string;
+}
+
+// Content 타입 - 서버 구조에 맞게 수정
 export interface Content {
   id: string;
-  creator: Creator;
+  type: 'youtube_video' | 'twitter_post' | 'instagram_post'; // 서버 필드
+  creator?: Creator; // 서버에서는 creatorId로 연결
+  creatorId: string; // 서버 필드
   platform: Platform['type'];
+  platformId: string; // 서버 필드
   title: string;
   description?: string;
   thumbnail?: string;
   url: string;
   publishedAt: string;
+  duration?: number; // 서버에서는 초 단위 number
+  // 통계 정보는 별도 엔티티로 분리됨
   viewCount?: number;
   likeCount?: number;
   commentCount?: number;
-  duration?: string; // YouTube용
+  shares?: number; // 서버 필드
+  engagementRate?: number; // 서버 필드
+  // 사용자 상호작용 정보
   isBookmarked?: boolean;
   isLiked?: boolean;
+  watchedAt?: Date;
+  watchDuration?: number;
+  rating?: number;
   metadata?: ContentMetadata;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
+// ContentMetadata - 서버 구조에 맞게 확장
 export interface ContentMetadata {
-  tags?: string[];
-  category?: string;
-  language?: string;
-  isLive?: boolean;
+  tags: string[]; // 서버에서 필수 필드
+  category: string; // 서버에서 필수 필드
+  language: string; // 서버에서 필수 필드
+  isLive: boolean; // 서버에서 필수 필드
+  quality?: 'sd' | 'hd' | '4k'; // 서버 필드
+  ageRestriction?: boolean; // 서버 필드명 수정
   isPremium?: boolean;
-  ageRestricted?: boolean;
 }
 
 // YouTube 특화 타입
@@ -132,14 +174,10 @@ export interface Notification {
   actionUrl?: string;
 }
 
-// API 응답 타입
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  error?: string;
-}
+// 타입 별칭 - 기존 코드 호환성 유지
+export type ApiResponse<T> = ResponseFormat<T>;
 
+// PaginatedResponse - Core 패키지와 호환되는 구조로 변환
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: {
@@ -150,7 +188,13 @@ export interface PaginatedResponse<T> {
     hasNext: boolean;
     hasPrev: boolean;
   };
+  success?: boolean;
+  message?: string;
 }
+
+// Core 패키지 타입 재export (직접 사용을 위해)
+export type { ResponseFormat, PaginatedResult, PaginatedResultBase };
+
 
 // 폼 타입
 export interface LoginForm {
@@ -226,12 +270,34 @@ export interface UserSettings {
   };
 }
 
-// 에러 타입
+// 사용자 구독 관련 타입 (서버 중간테이블)
+export interface UserSubscription {
+  userId: string;
+  creatorId: string;
+  notificationEnabled: boolean;
+  subscribedAt: Date;
+}
+
+// 사용자 상호작용 타입 (서버 중간테이블)
+export interface UserInteraction {
+  userId: string;
+  contentId: string;
+  isBookmarked: boolean;
+  isLiked: boolean;
+  watchedAt?: Date;
+  watchDuration?: number;
+  rating?: number;
+}
+
+// 에러 타입 - krgeobuk 서버 에러 형식
 export interface AppError {
   code: string;
   message: string;
   details?: any;
   timestamp: string;
+  // krgeobuk 서버 추가 필드
+  statusCode?: number;
+  path?: string;
 }
 
 // 이벤트 타입

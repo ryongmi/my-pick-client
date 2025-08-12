@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Content, ContentFilter } from '@/types';
-// import { contentApi } from '@/lib/api';
-import { mockContentApi } from '@/lib/mockApi';
+import { contentApi, errorUtils } from '@/lib/api';
 
 interface ContentState {
   // 콘텐츠 데이터
@@ -93,11 +92,11 @@ export const fetchContent = createAsyncThunk(
     sortBy?: string;
   } = {}, { rejectWithValue }) => {
     try {
-      // const response = await contentApi.getContent(params);
-      const response = await mockContentApi.getContent(params);
+      const response = await contentApi.getContent(params);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -113,11 +112,11 @@ export const fetchMoreContent = createAsyncThunk(
     sortBy?: string;
   }, { rejectWithValue }) => {
     try {
-      // const response = await contentApi.getContent(params);
-      const response = await mockContentApi.getContent(params);
+      const response = await contentApi.getContent(params);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -129,11 +128,11 @@ export const fetchBookmarks = createAsyncThunk(
     limit?: number;
   } = {}, { rejectWithValue }) => {
     try {
-      // const response = await contentApi.getBookmarks(params.page, params.limit);
-      const response = await mockContentApi.getBookmarks(params.page, params.limit);
+      const response = await contentApi.getBookmarks(params.page, params.limit);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -142,11 +141,11 @@ export const bookmarkContent = createAsyncThunk(
   'content/bookmarkContent',
   async (id: string, { rejectWithValue }) => {
     try {
-      // await contentApi.bookmarkContent(id);
-      await mockContentApi.bookmarkContent(id);
+      await contentApi.bookmarkContent(id);
       return id;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -155,11 +154,11 @@ export const removeBookmark = createAsyncThunk(
   'content/removeBookmark',
   async (id: string, { rejectWithValue }) => {
     try {
-      // await contentApi.removeBookmark(id);
-      await mockContentApi.removeBookmark(id);
+      await contentApi.removeBookmark(id);
       return id;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -168,11 +167,11 @@ export const likeContent = createAsyncThunk(
   'content/likeContent',
   async (id: string, { rejectWithValue }) => {
     try {
-      // await contentApi.likeContent(id);
-      await mockContentApi.likeContent(id);
+      await contentApi.likeContent(id);
       return id;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -181,11 +180,11 @@ export const unlikeContent = createAsyncThunk(
   'content/unlikeContent',
   async (id: string, { rejectWithValue }) => {
     try {
-      // await contentApi.unlikeContent(id);
-      await mockContentApi.unlikeContent(id);
+      await contentApi.unlikeContent(id);
       return id;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -242,9 +241,9 @@ const contentSlice = createSlice({
       })
       .addCase(fetchContent.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.contents = action.payload.data;
-        state.pagination = action.payload.pagination;
-        state.hasMore = action.payload.pagination.hasNext;
+        state.contents = (action.payload as any).data || [];
+        state.pagination = (action.payload as any).pagination || state.pagination;
+        state.hasMore = (action.payload as any).pagination?.hasNext || false;
       })
       .addCase(fetchContent.rejected, (state, action) => {
         state.isLoading = false;
@@ -287,9 +286,9 @@ const contentSlice = createSlice({
       .addCase(fetchMoreContent.fulfilled, (state, action) => {
         state.isLoadingMore = false;
         // 기존 콘텐츠에 새 콘텐츠 추가
-        state.contents = [...state.contents, ...action.payload.data];
-        state.pagination = action.payload.pagination;
-        state.hasMore = action.payload.pagination.hasNext;
+        state.contents = [...state.contents, ...((action.payload as any).data || [])];
+        state.pagination = (action.payload as any).pagination || state.pagination;
+        state.hasMore = (action.payload as any).pagination?.hasNext || false;
       })
       .addCase(fetchMoreContent.rejected, (state, action) => {
         state.isLoadingMore = false;
@@ -304,8 +303,8 @@ const contentSlice = createSlice({
       })
       .addCase(fetchBookmarks.fulfilled, (state, action) => {
         state.isLoadingBookmarks = false;
-        state.bookmarkedContents = action.payload.data;
-        state.bookmarkPagination = action.payload.pagination;
+        state.bookmarkedContents = (action.payload as any).data || [];
+        state.bookmarkPagination = (action.payload as any).pagination || state.bookmarkPagination;
       })
       .addCase(fetchBookmarks.rejected, (state, action) => {
         state.isLoadingBookmarks = false;

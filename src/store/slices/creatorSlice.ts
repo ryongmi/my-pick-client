@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Creator, CreatorStats } from '@/types';
-// import { creatorApi } from '@/lib/api';
-import { mockCreatorApi } from '@/lib/mockApi';
+import { creatorApi, errorUtils } from '@/lib/api';
 
 interface CreatorState {
   // 크리에이터 데이터
@@ -79,11 +78,11 @@ export const fetchCreators = createAsyncThunk(
     sortBy?: string;
   } = {}, { rejectWithValue }) => {
     try {
-      // const response = await creatorApi.getCreators(params);
-      const response = await mockCreatorApi.getCreators(params);
+      const response = await creatorApi.getCreators(params);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -98,11 +97,11 @@ export const fetchMoreCreators = createAsyncThunk(
     sortBy?: string;
   }, { rejectWithValue }) => {
     try {
-      // const response = await creatorApi.getCreators(params);
-      const response = await mockCreatorApi.getCreators(params);
+      const response = await creatorApi.getCreators(params);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -111,11 +110,11 @@ export const fetchCreatorById = createAsyncThunk(
   'creator/fetchCreatorById',
   async (id: string, { rejectWithValue }) => {
     try {
-      // const response = await creatorApi.getCreator(id);
-      const response = await mockCreatorApi.getCreator(id);
+      const response = await creatorApi.getCreator(id);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -124,37 +123,37 @@ export const fetchCreatorStats = createAsyncThunk(
   'creator/fetchCreatorStats',
   async (id: string, { rejectWithValue }) => {
     try {
-      // const response = await creatorApi.getCreatorStats(id);
-      const response = await mockCreatorApi.getCreatorStats(id);
+      const response = await creatorApi.getCreatorStats(id);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
 
 export const followCreator = createAsyncThunk(
   'creator/followCreator',
-  async (creator: Creator, { rejectWithValue }) => {
+  async ({ creator, userId }: { creator: Creator; userId: string }, { rejectWithValue }) => {
     try {
-      // await creatorApi.followCreator(creator.id);
-      await mockCreatorApi.followCreator(creator.id);
+      await creatorApi.followCreator(creator.id, userId);
       return creator;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
 
 export const unfollowCreator = createAsyncThunk(
   'creator/unfollowCreator',
-  async (id: string, { rejectWithValue }) => {
+  async ({ creatorId, userId }: { creatorId: string; userId: string }, { rejectWithValue }) => {
     try {
-      // await creatorApi.unfollowCreator(id);
-      await mockCreatorApi.unfollowCreator(id);
-      return id;
+      await creatorApi.unfollowCreator(creatorId, userId);
+      return creatorId;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -166,7 +165,8 @@ export const addCreator = createAsyncThunk(
       const response = await creatorApi.addCreator(creatorData);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -178,7 +178,8 @@ export const syncCreator = createAsyncThunk(
       await creatorApi.syncCreator(id);
       return id;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -250,9 +251,9 @@ const creatorSlice = createSlice({
       })
       .addCase(fetchCreators.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.creators = action.payload.data;
-        state.pagination = action.payload.pagination;
-        state.hasMore = action.payload.pagination.hasNext;
+        state.creators = (action.payload as any).data || [];
+        state.pagination = (action.payload as any).pagination || state.pagination;
+        state.hasMore = (action.payload as any).pagination?.hasNext || false;
       })
       .addCase(fetchCreators.rejected, (state, action) => {
         state.isLoading = false;
@@ -266,9 +267,9 @@ const creatorSlice = createSlice({
       })
       .addCase(fetchMoreCreators.fulfilled, (state, action) => {
         state.isLoadingMore = false;
-        state.creators = [...state.creators, ...action.payload.data];
-        state.pagination = action.payload.pagination;
-        state.hasMore = action.payload.pagination.hasNext;
+        state.creators = [...state.creators, ...((action.payload as any).data || [])];
+        state.pagination = (action.payload as any).pagination || state.pagination;
+        state.hasMore = (action.payload as any).pagination?.hasNext || false;
       })
       .addCase(fetchMoreCreators.rejected, (state, action) => {
         state.isLoadingMore = false;
@@ -283,7 +284,7 @@ const creatorSlice = createSlice({
       })
       .addCase(fetchCreatorById.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.selectedCreator = action.payload;
+        state.selectedCreator = (action.payload as any) || null;
       })
       .addCase(fetchCreatorById.rejected, (state, action) => {
         state.isLoading = false;
@@ -297,7 +298,7 @@ const creatorSlice = createSlice({
       })
       .addCase(fetchCreatorStats.fulfilled, (state, action) => {
         state.isLoadingStats = false;
-        state.creatorStats = action.payload;
+        state.creatorStats = (action.payload as any) || null;
       })
       .addCase(fetchCreatorStats.rejected, (state, action) => {
         state.isLoadingStats = false;
@@ -353,7 +354,10 @@ const creatorSlice = createSlice({
       })
       .addCase(addCreator.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.creators.unshift(action.payload);
+        const newCreator = action.payload as any;
+        if (newCreator) {
+          state.creators.unshift(newCreator);
+        }
       })
       .addCase(addCreator.rejected, (state, action) => {
         state.isLoading = false;

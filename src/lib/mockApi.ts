@@ -1,23 +1,9 @@
-// Mock API 클라이언트 - 백엔드 없이 테스트용
+// Mock API 클라이언트 - 알림 시스템과 일부 인증 기능만 유지
 import { 
   mockLogin, 
   mockRegister, 
   mockUpdateProfile 
 } from '@/data/users';
-import { 
-  mockGetCreators, 
-  mockGetCreator, 
-  mockFollowCreator, 
-  mockUnfollowCreator 
-} from '@/data/creators';
-import { 
-  mockGetContent, 
-  mockBookmarkContent, 
-  mockRemoveBookmark, 
-  mockLikeContent, 
-  mockUnlikeContent, 
-  mockGetBookmarks 
-} from '@/data/content';
 import { 
   mockGetNotifications, 
   mockGetUnreadCount, 
@@ -25,26 +11,6 @@ import {
   mockMarkAllAsRead, 
   mockUpdateNotificationSettings 
 } from '@/data/notifications';
-import { 
-  mockGetDashboardStats, 
-  mockGetAdminUsers, 
-  mockGetAdminCreators, 
-  mockApproveCreator, 
-  mockRejectCreator, 
-  mockUpdateUser, 
-  mockDeleteUser 
-} from '@/data/admin';
-import {
-  mockGetUsers,
-  mockGetUserDetail,
-  mockUpdateUser as mockUpdateMyPickUser,
-  mockGetCreatorApplications,
-  mockProcessCreatorApplication,
-  mockExecuteBulkAction,
-  mockGetUserStats,
-  mockGetDashboard,
-  mockGetApprovalHistory
-} from '@/data/userManagement';
 
 // Mock API 응답 포맷
 const createMockResponse = <T>(data: T, success = true, message?: string) => ({
@@ -53,48 +19,15 @@ const createMockResponse = <T>(data: T, success = true, message?: string) => ({
   message,
 });
 
-// Mock API 클라이언트
+// Mock API 클라이언트 (알림 시스템 전용)
 export const mockApiClient = {
   // 기본 HTTP 메서드 시뮬레이션
   async get<T>(url: string, config?: any): Promise<{ data: any }> {
     console.log(`[MOCK API] GET ${url}`, config?.params);
     
-    // URL에 따른 라우팅
-    if (url === '/users/profile') {
-      return { data: createMockResponse({ id: '1', name: '김철수', email: 'user@example.com' }) };
-    }
-    
-    if (url.includes('/creators/') && url.includes('/stats')) {
-      const creatorId = url.split('/')[2];
-      return { 
-        data: createMockResponse({
-          followersCount: 1500000,
-          contentCount: 250,
-          totalViews: 50000000,
-          engagementRate: 8.5,
-          growthRate: 15.2,
-          recentActivity: []
-        }) 
-      };
-    }
-    
-    if (url.includes('/content/') && !url.includes('bookmark')) {
-      return { data: createMockResponse({ id: url.split('/')[2], title: 'Sample Content' }) };
-    }
-    
     if (url === '/notifications/unread-count') {
       const result = await mockGetUnreadCount();
       return { data: createMockResponse(result) };
-    }
-    
-    if (url === '/creator-application/status') {
-      // Mock: 현재 사용자의 크리에이터 신청 상태 조회
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const storedApplication = localStorage.getItem('creatorApplication');
-      if (storedApplication) {
-        return { data: createMockResponse(JSON.parse(storedApplication)) };
-      }
-      return { data: createMockResponse(null) };
     }
     
     throw new Error(`Mock API: GET ${url} not implemented`);
@@ -116,54 +49,6 @@ export const mockApiClient = {
     if (url === '/auth/logout') {
       await new Promise(resolve => setTimeout(resolve, 500));
       return { data: createMockResponse({ success: true }) };
-    }
-    
-    if (url.includes('/follow')) {
-      const creatorId = url.split('/')[2];
-      const result = await mockFollowCreator(creatorId);
-      return { data: createMockResponse(result) };
-    }
-    
-    if (url.includes('/bookmark')) {
-      const contentId = url.split('/')[2];
-      const result = await mockBookmarkContent(contentId);
-      return { data: createMockResponse(result) };
-    }
-    
-    if (url.includes('/like')) {
-      const contentId = url.split('/')[2];
-      const result = await mockLikeContent(contentId);
-      return { data: createMockResponse(result) };
-    }
-    
-    if (url.includes('/approve')) {
-      const creatorId = url.split('/')[3];
-      const result = await mockApproveCreator(creatorId);
-      return { data: createMockResponse(result) };
-    }
-    
-    if (url.includes('/reject')) {
-      const creatorId = url.split('/')[3];
-      const result = await mockRejectCreator(creatorId);
-      return { data: createMockResponse(result) };
-    }
-    
-    if (url === '/creator-application') {
-      // Mock: 크리에이터 신청 제출
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const application = {
-        id: `app_${Date.now()}`,
-        userId: 'current-user-id',
-        status: 'pending',
-        appliedAt: new Date().toISOString(),
-        applicationData: data,
-        user: {
-          id: 'current-user-id',
-          name: '사용자',
-          email: 'user@example.com',
-        }
-      };
-      return { data: createMockResponse(application) };
     }
     
     throw new Error(`Mock API: POST ${url} not implemented`);
@@ -193,82 +78,26 @@ export const mockApiClient = {
       return { data: createMockResponse(result) };
     }
     
-    if (url.includes('/admin/users/')) {
-      const userId = url.split('/')[3];
-      const result = await mockUpdateUser(userId, data);
-      return { data: createMockResponse(result) };
-    }
-    
     throw new Error(`Mock API: PUT ${url} not implemented`);
   },
 
   async delete<T>(url: string): Promise<{ data: any }> {
     console.log(`[MOCK API] DELETE ${url}`);
-    
-    if (url.includes('/follow')) {
-      const creatorId = url.split('/')[2];
-      const result = await mockUnfollowCreator(creatorId);
-      return { data: createMockResponse(result) };
-    }
-    
-    if (url.includes('/bookmark')) {
-      const contentId = url.split('/')[2];
-      const result = await mockRemoveBookmark(contentId);
-      return { data: createMockResponse(result) };
-    }
-    
-    if (url.includes('/like')) {
-      const contentId = url.split('/')[2];
-      const result = await mockUnlikeContent(contentId);
-      return { data: createMockResponse(result) };
-    }
-    
-    if (url.includes('/admin/users/')) {
-      const userId = url.split('/')[3];
-      const result = await mockDeleteUser(userId);
-      return { data: createMockResponse(result) };
-    }
-    
     throw new Error(`Mock API: DELETE ${url} not implemented`);
   },
 
   async getPaginated<T>(url: string, params?: any): Promise<any> {
     console.log(`[MOCK API] GET PAGINATED ${url}`, params);
     
-    if (url === '/creators') {
-      return await mockGetCreators(params);
-    }
-    
-    if (url === '/content') {
-      return await mockGetContent(params);
-    }
-    
-    if (url === '/content/bookmarks') {
-      return await mockGetBookmarks(params?.page, params?.limit);
-    }
-    
     if (url === '/notifications') {
       return await mockGetNotifications(params?.page, params?.limit);
-    }
-    
-    if (url === '/admin/dashboard') {
-      const result = await mockGetDashboardStats();
-      return { data: createMockResponse(result) };
-    }
-    
-    if (url === '/admin/users') {
-      return await mockGetAdminUsers(params);
-    }
-    
-    if (url === '/admin/creators') {
-      return await mockGetAdminCreators(params);
     }
     
     throw new Error(`Mock API: GET PAGINATED ${url} not implemented`);
   },
 };
 
-// Mock API 함수들
+// Mock 인증 API (인증 관련 기능은 추후 작업)
 export const mockAuthApi = {
   login: (credentials: { email: string; password: string }) =>
     mockApiClient.post('/auth/login', credentials),
@@ -299,32 +128,7 @@ export const mockAuthApi = {
   updateProfile: (data: any) => mockApiClient.put('/auth/profile', data),
 };
 
-export const mockUserApi = {
-  getProfile: () => mockApiClient.get('/users/profile'),
-  updateProfile: (data: any) => mockApiClient.put('/users/profile', data),
-  getSettings: () => mockApiClient.get('/users/settings'),
-  updateSettings: (settings: any) => mockApiClient.put('/users/settings', settings),
-};
-
-export const mockCreatorApi = {
-  getCreators: (params?: any) => mockApiClient.getPaginated('/creators', params),
-  getCreator: (id: string) => mockApiClient.get(`/creators/${id}`),
-  followCreator: (id: string) => mockApiClient.post(`/creators/${id}/follow`),
-  unfollowCreator: (id: string) => mockApiClient.delete(`/creators/${id}/follow`),
-  getCreatorStats: (id: string) => mockApiClient.get(`/creators/${id}/stats`),
-};
-
-export const mockContentApi = {
-  getContent: (params?: any) => mockApiClient.getPaginated('/content', params),
-  getContentById: (id: string) => mockApiClient.get(`/content/${id}`),
-  bookmarkContent: (id: string) => mockApiClient.post(`/content/${id}/bookmark`),
-  removeBookmark: (id: string) => mockApiClient.delete(`/content/${id}/bookmark`),
-  likeContent: (id: string) => mockApiClient.post(`/content/${id}/like`),
-  unlikeContent: (id: string) => mockApiClient.delete(`/content/${id}/like`),
-  getBookmarks: (page = 1, limit = 20) =>
-    mockApiClient.getPaginated('/content/bookmarks', { page, limit }),
-};
-
+// Mock 알림 API (서버에 알림 모듈이 없으므로 유지)
 export const mockNotificationApi = {
   getNotifications: (page = 1, limit = 20) =>
     mockApiClient.getPaginated('/notifications', { page, limit }),
@@ -332,84 +136,4 @@ export const mockNotificationApi = {
   markAllAsRead: () => mockApiClient.put('/notifications/read-all'),
   getUnreadCount: () => mockApiClient.get('/notifications/unread-count'),
   updateSettings: (settings: any) => mockApiClient.put('/notifications/settings', settings),
-};
-
-export const mockAdminApi = {
-  getDashboardStats: () => mockApiClient.getPaginated('/admin/dashboard'),
-  getUsers: (params?: any) => mockApiClient.getPaginated('/admin/users', params),
-  getUser: (id: string) => mockApiClient.get(`/admin/users/${id}`),
-  updateUser: (id: string, data: any) => mockApiClient.put(`/admin/users/${id}`, data),
-  deleteUser: (id: string) => mockApiClient.delete(`/admin/users/${id}`),
-  getCreators: (params?: any) => mockApiClient.getPaginated('/admin/creators', params),
-  approveCreator: (id: string) => mockApiClient.post(`/admin/creators/${id}/approve`),
-  rejectCreator: (id: string) => mockApiClient.post(`/admin/creators/${id}/reject`),
-};
-
-// MyPick 사용자 관리 전용 API
-export const mockUserManagementApi = {
-  // 사용자 목록 조회
-  getUsers: async (params?: any) => {
-    console.log('[MOCK USER MANAGEMENT API] getUsers', params);
-    return await mockGetUsers(params);
-  },
-
-  // 사용자 상세 정보 조회
-  getUserDetail: async (userId: string) => {
-    console.log('[MOCK USER MANAGEMENT API] getUserDetail', userId);
-    return await mockGetUserDetail(userId);
-  },
-
-  // 사용자 정보 업데이트
-  updateUser: async (params: any) => {
-    console.log('[MOCK USER MANAGEMENT API] updateUser', params);
-    return await mockUpdateMyPickUser(params);
-  },
-
-  // 크리에이터 신청 목록 조회
-  getCreatorApplications: async () => {
-    console.log('[MOCK USER MANAGEMENT API] getCreatorApplications');
-    return await mockGetCreatorApplications();
-  },
-
-  // 크리에이터 신청 처리 (승인/거부)
-  processCreatorApplication: async (params: any) => {
-    console.log('[MOCK USER MANAGEMENT API] processCreatorApplication', params);
-    return await mockProcessCreatorApplication(params);
-  },
-
-  // 일괄 작업 실행
-  executeBulkAction: async (action: any) => {
-    console.log('[MOCK USER MANAGEMENT API] executeBulkAction', action);
-    return await mockExecuteBulkAction(action);
-  },
-
-  // 사용자 통계 조회
-  getUserStats: async () => {
-    console.log('[MOCK USER MANAGEMENT API] getUserStats');
-    return await mockGetUserStats();
-  },
-
-  // 대시보드 데이터 조회
-  getDashboard: async () => {
-    console.log('[MOCK USER MANAGEMENT API] getDashboard');
-    return await mockGetDashboard();
-  },
-
-  // 크리에이터 승인 내역 조회
-  getApprovalHistory: async (params?: any) => {
-    console.log('[MOCK USER MANAGEMENT API] getApprovalHistory', params);
-    return await mockGetApprovalHistory(params);
-  },
-};
-
-// 크리에이터 신청 API
-export const mockCreatorApplicationApi = {
-  // 크리에이터 신청 제출
-  submitApplication: (data: any) => mockApiClient.post('/creator-application', data),
-  
-  // 재신청
-  resubmitApplication: (data: any) => mockApiClient.post('/creator-application', data),
-  
-  // 신청 상태 조회
-  getApplicationStatus: () => mockApiClient.get('/creator-application/status'),
 };

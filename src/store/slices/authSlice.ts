@@ -1,15 +1,20 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '@/types';
-// 실제 API 대신 Mock API 사용
-// import { authApi } from '@/lib/api';
-import { mockAuthApi } from '@/lib/mockApi';
+// HttpClient 기반 API 사용
+import { authApi, errorUtils, tokenManager } from '@/lib/api';
+
+interface AuthError {
+  message: string;
+  code?: string;
+  isAuthError?: boolean;
+}
 
 interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  error: string | null;
+  error: AuthError | null;
   rememberMe: boolean;
 }
 
@@ -27,23 +32,31 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string; rememberMe: boolean }, { rejectWithValue }) => {
     try {
-      console.log('=== loginUser thunk start ===');
-      console.log('Credentials:', credentials);
+      // HttpClient를 통한 API 호출
+      const response = await authApi.login(credentials);
       
-      // 실제 API 호출 대신 Mock API 사용
-      // const response = await authApi.login(credentials);
-      const response = await mockAuthApi.login(credentials);
+      // 토큰 매니저에 토큰 설정
+      if (response.data?.token) {
+        tokenManager.setAuthToken(response.data.token);
+      }
       
-      console.log('Mock API response:', response);
-      console.log('Response data:', response.data);
-      
-      const result = { ...response.data, rememberMe: credentials.rememberMe };
-      console.log('Final thunk result:', result);
+      // 서버 응답 처리 (krgeobuk 서버 표준 형식)
+      const result = { 
+        ...response.data, 
+        rememberMe: credentials.rememberMe 
+      };
       
       return result;
     } catch (error: any) {
-      console.error('Login error in thunk:', error);
-      return rejectWithValue(error.message);
+      // krgeobuk 서버 에러 처리
+      const errorMessage = errorUtils.getUserMessage(error);
+      const errorCode = errorUtils.getErrorCode(error);
+      
+      return rejectWithValue({
+        message: errorMessage,
+        code: errorCode,
+        isAuthError: errorUtils.isAuthError(error)
+      });
     }
   }
 );
@@ -52,11 +65,23 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData: { name: string; email: string; password: string }, { rejectWithValue }) => {
     try {
-      // const response = await authApi.register(userData);
-      const response = await mockAuthApi.register(userData);
+      const response = await authApi.register(userData);
+      
+      // 토큰 매니저에 토큰 설정
+      if (response.data?.token) {
+        tokenManager.setAuthToken(response.data.token);
+      }
+      
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      const errorCode = errorUtils.getErrorCode(error);
+      
+      return rejectWithValue({
+        message: errorMessage,
+        code: errorCode,
+        isAuthError: errorUtils.isAuthError(error)
+      });
     }
   }
 );
@@ -65,11 +90,18 @@ export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
-      // await authApi.logout();
-      await mockAuthApi.logout();
+      await authApi.logout();
+      
+      // 토큰 매니저에서 토큰 제거
+      tokenManager.clearTokens();
+      
       return;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      // 로그아웃 실패해도 로컬 토큰은 제거
+      tokenManager.clearTokens();
+      
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -78,11 +110,20 @@ export const refreshToken = createAsyncThunk(
   'auth/refreshToken',
   async (_, { rejectWithValue }) => {
     try {
-      // const response = await authApi.refreshToken();
-      const response = await mockAuthApi.refreshToken();
+      const response = await authApi.refreshToken();
+      
+      // 토큰 매니저에 새 토큰 설정
+      if (response.data?.token) {
+        tokenManager.setAuthToken(response.data.token);
+      }
+      
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      // 리프레시 실패 시 모든 토큰 제거
+      tokenManager.clearTokens();
+      
+      const errorMessage = errorUtils.getUserMessage(error);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -91,11 +132,17 @@ export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (profileData: Partial<User>, { rejectWithValue }) => {
     try {
-      // const response = await authApi.updateProfile(profileData);
-      const response = await mockAuthApi.updateProfile(profileData);
+      const response = await authApi.updateProfile(profileData);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      const errorMessage = errorUtils.getUserMessage(error);
+      const errorCode = errorUtils.getErrorCode(error);
+      
+      return rejectWithValue({
+        message: errorMessage,
+        code: errorCode,
+        isAuthError: errorUtils.isAuthError(error)
+      });
     }
   }
 );
@@ -115,12 +162,12 @@ const authSlice = createSlice({
       state.error = null;
     },
     clearCredentials: (state) => {
-      console.log('Clearing credentials...');
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
-      console.log('Credentials cleared, user:', state.user);
+      // 토큰 매니저에서도 토큰 제거
+      tokenManager.clearTokens();
     },
     setRememberMe: (state, action: PayloadAction<boolean>) => {
       state.rememberMe = action.payload;
@@ -134,28 +181,20 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        console.log('=== loginUser.fulfilled ===');
-        console.log('Action payload:', action.payload);
-        console.log('Action payload data:', action.payload.data);
-        
         state.isLoading = false;
         
-        // response.data.data 구조 확인
-        const userData = action.payload.data || action.payload;
-        console.log('User data to store:', userData);
+        // 서버 응답 데이터 처리
+        const responseData = action.payload.data || action.payload;
         
-        state.user = userData.user;
-        state.token = userData.token;
+        state.user = responseData.user;
+        state.token = responseData.token;
         state.isAuthenticated = true;
         state.rememberMe = action.payload.rememberMe;
         state.error = null;
-        
-        console.log('Updated state user:', state.user);
-        console.log('Updated state token:', state.token);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.payload as AuthError;
       });
 
     // Register
@@ -173,7 +212,7 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.payload as AuthError;
       });
 
     // Logout
@@ -190,7 +229,11 @@ const authSlice = createSlice({
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        // 로그아웃 실패해도 상태는 초기화
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        state.error = { message: action.payload as string };
       });
 
     // Refresh token
@@ -222,7 +265,7 @@ const authSlice = createSlice({
       })
       .addCase(updateProfile.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = action.payload as AuthError;
       });
   },
 });

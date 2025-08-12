@@ -11,8 +11,7 @@ import {
   CreatorApprovalHistoryFilter,
   GetApprovalHistoryRequest
 } from '@/types/userManagement';
-// import { userManagementApi } from '@/lib/api';
-import { mockUserManagementApi } from '@/lib/mockApi';
+import { adminApi, errorUtils } from '@/lib/api';
 
 const initialState: UserManagementState = {
   // 사용자 목록
@@ -94,11 +93,15 @@ export const fetchUsers = createAsyncThunk(
   'userManagement/fetchUsers',
   async (params: GetUsersRequest = {}, { rejectWithValue }) => {
     try {
-      // const response = await userManagementApi.getUsers(params);
-      const response = await mockUserManagementApi.getUsers(params);
-      return response;
+      const response = await adminApi.getUsers(params);
+      return {
+        users: response.data || [],
+        pagination: response.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 },
+        stats: null
+      };
     } catch (error: any) {
-      return rejectWithValue(error.message || '사용자 목록을 불러오는데 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '사용자 목록을 불러오는데 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -108,11 +111,15 @@ export const fetchUserDetail = createAsyncThunk(
   'userManagement/fetchUserDetail',
   async (userId: string, { rejectWithValue }) => {
     try {
-      // const response = await userManagementApi.getUserDetail(userId);
-      const response = await mockUserManagementApi.getUserDetail(userId);
-      return response;
+      const response = await adminApi.getUser(userId);
+      return {
+        user: response.data,
+        permissions: [],
+        activities: []
+      };
     } catch (error: any) {
-      return rejectWithValue(error.message || '사용자 상세 정보를 불러오는데 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '사용자 상세 정보를 불러오는데 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -122,11 +129,11 @@ export const updateUser = createAsyncThunk(
   'userManagement/updateUser',
   async (params: UpdateUserRequest, { rejectWithValue }) => {
     try {
-      // const response = await userManagementApi.updateUser(params);
-      const response = await mockUserManagementApi.updateUser(params);
-      return response;
+      const response = await adminApi.updateUser(params.userId, params);
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || '사용자 정보 업데이트에 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '사용자 정보 업데이트에 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -136,11 +143,11 @@ export const fetchCreatorApplications = createAsyncThunk(
   'userManagement/fetchCreatorApplications',
   async (_, { rejectWithValue }) => {
     try {
-      // const response = await userManagementApi.getCreatorApplications();
-      const response = await mockUserManagementApi.getCreatorApplications();
-      return response;
+      const response = await adminApi.getCreators({ status: 'pending' });
+      return response.data || [];
     } catch (error: any) {
-      return rejectWithValue(error.message || '크리에이터 신청 목록을 불러오는데 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '크리에이터 신청 목록을 불러오는데 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -150,11 +157,16 @@ export const processCreatorApplication = createAsyncThunk(
   'userManagement/processCreatorApplication',
   async (params: CreatorApplicationAction, { rejectWithValue }) => {
     try {
-      // const response = await userManagementApi.processCreatorApplication(params);
-      const response = await mockUserManagementApi.processCreatorApplication(params);
-      return response;
+      if (params.action === 'approve') {
+        await adminApi.approveCreator(params.applicationId);
+        return { id: params.applicationId, status: 'approved' };
+      } else {
+        await adminApi.rejectCreator(params.applicationId);
+        return { id: params.applicationId, status: 'rejected' };
+      }
     } catch (error: any) {
-      return rejectWithValue(error.message || '크리에이터 신청 처리에 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '크리에이터 신청 처리에 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -164,11 +176,14 @@ export const fetchApprovalHistory = createAsyncThunk(
   'userManagement/fetchApprovalHistory',
   async (params: GetApprovalHistoryRequest = {}, { rejectWithValue }) => {
     try {
-      // const response = await userManagementApi.getApprovalHistory(params);
-      const response = await mockUserManagementApi.getApprovalHistory(params);
-      return response;
+      const response = await adminApi.getCreators({ ...params, status: 'all' });
+      return {
+        applications: response.data || [],
+        pagination: response.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 }
+      };
     } catch (error: any) {
-      return rejectWithValue(error.message || '승인 내역을 불러오는데 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '승인 내역을 불러오는데 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -178,11 +193,25 @@ export const executeBulkAction = createAsyncThunk(
   'userManagement/executeBulkAction',
   async (action: BulkAction, { rejectWithValue }) => {
     try {
-      // const response = await userManagementApi.executeBulkAction(action);
-      const response = await mockUserManagementApi.executeBulkAction(action);
+      // Bulk actions need individual API calls for now
+      const results = { type: action.type, successCount: 0, failureCount: 0 };
+      for (const userId of action.userIds) {
+        try {
+          if (action.type === 'delete') {
+            await adminApi.deleteUser(userId);
+          } else {
+            await adminApi.updateUser(userId, { serviceStatus: action.type });
+          }
+          results.successCount++;
+        } catch {
+          results.failureCount++;
+        }
+      }
+      return results;
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message || '일괄 작업 실행에 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '일괄 작업 실행에 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -192,11 +221,11 @@ export const fetchUserStats = createAsyncThunk(
   'userManagement/fetchUserStats',
   async (_, { rejectWithValue }) => {
     try {
-      // const response = await userManagementApi.getUserStats();
-      const response = await mockUserManagementApi.getUserStats();
+      const response = await adminApi.getDashboardStats();
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message || '사용자 통계를 불러오는데 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '사용자 통계를 불러오는데 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -206,11 +235,11 @@ export const fetchDashboard = createAsyncThunk(
   'userManagement/fetchDashboard',
   async (_, { rejectWithValue }) => {
     try {
-      // const response = await userManagementApi.getDashboard();
-      const response = await mockUserManagementApi.getDashboard();
+      const response = await adminApi.getDashboardStats();
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.message || '대시보드 데이터를 불러오는데 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '대시보드 데이터를 불러오는데 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );

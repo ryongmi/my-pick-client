@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { CreatorApplication } from '@/types/userManagement';
-import { mockCreatorApplicationApi } from '@/lib/mockApi';
+import { creatorApi, errorUtils } from '@/lib/api';
 
 // 신청 데이터 타입
 export interface CreatorApplicationFormData {
@@ -50,10 +50,13 @@ export const submitCreatorApplication = createAsyncThunk(
   'creatorApplication/submit',
   async (formData: CreatorApplicationFormData, { rejectWithValue }) => {
     try {
-      const response = await mockCreatorApplicationApi.submitApplication(formData);
-      return response.data.data;
+      // Creator application API not implemented yet in server
+      // Using creator API as placeholder until server implements creator applications
+      const response = await creatorApi.addCreator(formData);
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || '신청 제출에 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '신청 제출에 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -63,10 +66,12 @@ export const fetchApplicationStatus = createAsyncThunk(
   'creatorApplication/fetchStatus',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await mockCreatorApplicationApi.getApplicationStatus();
-      return response.data.data;
+      // Creator application status API not implemented yet
+      // Return null to indicate no application found
+      return null;
     } catch (error: any) {
-      return rejectWithValue(error.message || '신청 상태 조회에 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '신청 상태 조회에 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -76,10 +81,12 @@ export const resubmitCreatorApplication = createAsyncThunk(
   'creatorApplication/resubmit',
   async (formData: CreatorApplicationFormData, { rejectWithValue }) => {
     try {
-      const response = await mockCreatorApplicationApi.resubmitApplication(formData);
-      return response.data.data;
+      // Creator resubmit API not implemented yet in server
+      const response = await creatorApi.addCreator(formData);
+      return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || '재신청에 실패했습니다.');
+      const errorMessage = errorUtils.getUserMessage(error) || '재신청에 실패했습니다.';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -129,7 +136,7 @@ const creatorApplicationSlice = createSlice({
       })
       .addCase(submitCreatorApplication.fulfilled, (state, action) => {
         state.isSubmitting = false;
-        state.currentApplication = action.payload;
+        state.currentApplication = (action.payload as any) || null;
         state.applicationStatus = 'pending';
         state.isApplicationModalOpen = false;
       })
@@ -146,9 +153,10 @@ const creatorApplicationSlice = createSlice({
       })
       .addCase(fetchApplicationStatus.fulfilled, (state, action) => {
         state.isLoading = false;
-        if (action.payload) {
-          state.currentApplication = action.payload;
-          state.applicationStatus = action.payload.status as any;
+        const payload = action.payload as any;
+        if (payload) {
+          state.currentApplication = payload;
+          state.applicationStatus = payload.status || 'none';
         } else {
           state.currentApplication = null;
           state.applicationStatus = 'none';
@@ -167,7 +175,7 @@ const creatorApplicationSlice = createSlice({
       })
       .addCase(resubmitCreatorApplication.fulfilled, (state, action) => {
         state.isSubmitting = false;
-        state.currentApplication = action.payload;
+        state.currentApplication = (action.payload as any) || null;
         state.applicationStatus = 'pending';
         state.isApplicationModalOpen = false;
       })
