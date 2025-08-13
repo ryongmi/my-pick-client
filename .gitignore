@@ -17,6 +17,10 @@ dist/
 .env.development.local
 .env.test.local
 .env.production.local
+# Exception: Allow sample environment files
+!.env.example
+!.env.sample
+!.env.template
 
 # IDE and Editor files
 .vscode/
