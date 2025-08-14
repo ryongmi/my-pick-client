@@ -18,8 +18,8 @@ const getEnvConfig = (): MultiServerConfig => ({
     timeout: 30000,
     withCredentials: true,
   },
-  portal: {
-    baseURL: process.env.NEXT_PUBLIC_MAIN_API_URL || 'http://localhost:8300',
+  mypick: {
+    baseURL: process.env.NEXT_PUBLIC_MYPICK_API_URL || 'http://localhost:8300',
     timeout: 30000,
     withCredentials: true,
   }
@@ -97,7 +97,7 @@ export const userApi = {
   
   // 사용자 구독 관리
   getSubscriptions: () => 
-    httpClient.get('portal', '/me/subscriptions'),
+    httpClient.get('mypick', '/me/subscriptions'),
 };
 
 // =============================================================================
@@ -109,35 +109,35 @@ export const creatorApi = {
     httpClient.get<PaginatedResponse<any>>('authz', '/creators', { params }),
   
   getCreator: (id: string) => 
-    httpClient.get('portal', `/creators/${id}`),
+    httpClient.get('mypick', `/creators/${id}`),
   
   // 구독 API (JWT 기반 - userId 자동 추출)
   followCreator: (creatorId: string) => 
-    httpClient.post('portal', `/me/subscriptions/${creatorId}`),
+    httpClient.post('mypick', `/me/subscriptions/${creatorId}`),
   
   unfollowCreator: (creatorId: string) => 
-    httpClient.delete('portal', `/me/subscriptions/${creatorId}`),
+    httpClient.delete('mypick', `/me/subscriptions/${creatorId}`),
   
   checkSubscription: (creatorId: string) => 
-    httpClient.get('portal', `/me/subscriptions/${creatorId}/exists`),
+    httpClient.get('mypick', `/me/subscriptions/${creatorId}/exists`),
   
   getCreatorSubscribers: (creatorId: string) => 
-    httpClient.get('portal', `/creators/${creatorId}/subscribers`),
+    httpClient.get('mypick', `/creators/${creatorId}/subscribers`),
   
   addCreator: (data: any) => 
-    httpClient.post('portal', '/creators', data),
+    httpClient.post('mypick', '/creators', data),
   
   updateCreator: (id: string, data: any) => 
-    httpClient.put('portal', `/creators/${id}`, data),
+    httpClient.put('mypick', `/creators/${id}`, data),
   
   deleteCreator: (id: string) => 
-    httpClient.delete('portal', `/creators/${id}`),
+    httpClient.delete('mypick', `/creators/${id}`),
   
   getCreatorStats: (id: string) => 
-    httpClient.get('portal', `/creators/${id}/stats`),
+    httpClient.get('mypick', `/creators/${id}/stats`),
   
   syncCreator: (id: string) => 
-    httpClient.post('portal', `/creators/${id}/sync`),
+    httpClient.post('mypick', `/creators/${id}/sync`),
   
   // Toggle function for easier usage
   toggleFollow: async (creatorId: string, isCurrentlyFollowing: boolean) => {
@@ -156,25 +156,25 @@ export const contentApi = {
     httpClient.get<PaginatedResponse<any>>('authz', '/content', { params }),
   
   getContentById: (id: string) => 
-    httpClient.get('portal', `/content/${id}`),
+    httpClient.get('mypick', `/content/${id}`),
   
   bookmarkContent: (id: string) => 
-    httpClient.post('portal', `/content/${id}/bookmark`),
+    httpClient.post('mypick', `/content/${id}/bookmark`),
   
   removeBookmark: (id: string) => 
-    httpClient.delete('portal', `/content/${id}/bookmark`),
+    httpClient.delete('mypick', `/content/${id}/bookmark`),
   
   likeContent: (id: string) => 
-    httpClient.post('portal', `/content/${id}/like`),
+    httpClient.post('mypick', `/content/${id}/like`),
   
   unlikeContent: (id: string) => 
-    httpClient.delete('portal', `/content/${id}/like`),
+    httpClient.delete('mypick', `/content/${id}/like`),
   
   getBookmarks: (page = 1, limit = 20) =>
     httpClient.get<PaginatedResponse<any>>('authz', '/content/bookmarks', { params: { page, limit } }),
   
   searchContent: (query: string, filters?: any) =>
-    httpClient.get('portal', '/content/search', { params: { q: query, ...filters } }),
+    httpClient.get('mypick', '/content/search', { params: { q: query, ...filters } }),
   
   // Toggle functions for easier usage
   toggleBookmark: async (id: string, isCurrentlyBookmarked: boolean) => {
@@ -205,28 +205,28 @@ export const notificationApi = mockNotificationApi;
 
 export const adminApi = {
   getDashboardStats: () => 
-    httpClient.get('portal', '/admin/dashboard'),
+    httpClient.get('mypick', '/admin/dashboard'),
   
   getUsers: (params?: any) => 
     httpClient.get<PaginatedResponse<any>>('authz', '/admin/users', { params }),
   
   getUser: (id: string) => 
-    httpClient.get('portal', `/admin/users/${id}`),
+    httpClient.get('mypick', `/admin/users/${id}`),
   
   updateUser: (id: string, data: any) => 
-    httpClient.put('portal', `/admin/users/${id}`, data),
+    httpClient.put('mypick', `/admin/users/${id}`, data),
   
   deleteUser: (id: string) => 
-    httpClient.delete('portal', `/admin/users/${id}`),
+    httpClient.delete('mypick', `/admin/users/${id}`),
   
   getCreators: (params?: any) => 
     httpClient.get<PaginatedResponse<any>>('authz', '/admin/creators', { params }),
   
   approveCreator: (id: string) => 
-    httpClient.post('portal', `/admin/creators/${id}/approve`),
+    httpClient.post('mypick', `/admin/creators/${id}/approve`),
   
   rejectCreator: (id: string) => 
-    httpClient.post('portal', `/admin/creators/${id}/reject`),
+    httpClient.post('mypick', `/admin/creators/${id}/reject`),
 };
 
 // =============================================================================
