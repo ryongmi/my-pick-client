@@ -66,7 +66,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
     sampleVideos: ['', '', '']
   });
 
-  if (!isOpen) return null;
+  if (!isOpen) {return null;}
 
   const validateStep = (step: number) => {
     const newErrors: Record<string, string> = {};
@@ -114,7 +114,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(currentStep)) return;
+    if (!validateStep(currentStep)) {return;}
 
     try {
       const applicationData = {
@@ -225,9 +225,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
               placeholder="예: 히카킨TV"
               className={cn(errors.channelName && 'border-red-500')}
             />
-            {errors.channelName && (
-              <p className="text-red-500 text-xs mt-1">{errors.channelName}</p>
-            )}
+            {errors.channelName ? <p className="text-red-500 text-xs mt-1">{errors.channelName}</p> : null}
           </div>
 
           <div>
@@ -240,9 +238,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
               placeholder="https://www.youtube.com/channel/UC..."
               className={cn(errors.channelUrl && 'border-red-500')}
             />
-            {errors.channelUrl && (
-              <p className="text-red-500 text-xs mt-1">{errors.channelUrl}</p>
-            )}
+            {errors.channelUrl ? <p className="text-red-500 text-xs mt-1">{errors.channelUrl}</p> : null}
           </div>
 
           <div>
@@ -257,9 +253,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
               min="1000"
               className={cn(errors.subscriberCount && 'border-red-500')}
             />
-            {errors.subscriberCount && (
-              <p className="text-red-500 text-xs mt-1">{errors.subscriberCount}</p>
-            )}
+            {errors.subscriberCount ? <p className="text-red-500 text-xs mt-1">{errors.subscriberCount}</p> : null}
             <p className="text-xs text-muted-foreground mt-1">
               최소 1,000명 이상의 구독자가 필요합니다.
             </p>
@@ -340,9 +334,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
               })}
             </div>
             
-            {errors.contentCategories && (
-              <p className="text-red-500 text-xs mt-1">{errors.contentCategories}</p>
-            )}
+            {errors.contentCategories ? <p className="text-red-500 text-xs mt-1">{errors.contentCategories}</p> : null}
             
             <p className="text-xs text-muted-foreground mt-2">
               선택됨: {formData.contentCategories.length}/3
@@ -512,12 +504,10 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
 
         {/* 콘텐츠 */}
         <div className="p-6 overflow-y-auto max-h-[60vh]">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center">
+          {error ? <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center">
               <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
               <span className="text-red-700 text-sm">{error}</span>
-            </div>
-          )}
+            </div> : null}
           {renderStepContent()}
         </div>
 

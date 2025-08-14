@@ -41,8 +41,8 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
       await dispatch(fetchCreators({ sortBy: 'followers', limit: 20 })).unwrap();
       
       // 팔로우된 크리에이터 데이터 로드
-      const followed = mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed));
+      const followed = await mockGetFollowedCreators();
+      dispatch(updateFollowedCreators(followed.data || []));
     } catch (error) {
       console.error('데이터 로드 실패:', error);
     }
@@ -59,7 +59,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
         search: searchTerm,
         limit: 10
       })).unwrap();
-      setSearchResults(response.data);
+      setSearchResults(response.data?.items || []);
     } catch (error) {
       console.error('검색 실패:', error);
     }
@@ -67,7 +67,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
 
   const handleQuickAdd = async (creator: Creator) => {
     try {
-      await dispatch(followCreator(creator)).unwrap();
+      await dispatch(followCreator({ creator, userId: 'current-user-id' })).unwrap();
       onAddCreator(creator);
       handleClose();
     } catch (error) {
@@ -198,14 +198,14 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
                               {creator.isVerified ? <Star className="h-3 w-3 text-blue-500 fill-current" /> : null}
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              {formatNumber(creator.followerCount)} 팔로워
+                              {formatNumber(creator.followerCount || 0)} 팔로워
                             </p>
                             <div className="flex items-center gap-2 mt-1">
-                              {creator.platforms.map((platform, index) => (
+                              {creator.platforms?.map((platform, index) => (
                                 <div key={index} className="flex items-center gap-1">
                                   {getPlatformIcon(platform.type)}
                                   <span className="text-xs text-muted-foreground">
-                                    {formatNumber(platform.followerCount)}
+                                    {formatNumber(platform.followerCount || 0)}
                                   </span>
                                 </div>
                               ))}
@@ -265,7 +265,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
                               {creator.isVerified ? <Star className="h-3 w-3 text-blue-500 fill-current" /> : null}
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              {formatNumber(creator.followerCount)} 팔로워
+                              {formatNumber(creator.followerCount || 0)} 팔로워
                             </p>
                           </div>
                         </div>

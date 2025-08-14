@@ -5,7 +5,6 @@ import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
 import { useAppDispatch, useUI } from '@/hooks/redux';
 import { setIsMobile } from '@/store/slices/uiSlice';
-import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
   children: React.ReactNode;

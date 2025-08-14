@@ -1,6 +1,5 @@
 // Core 패키지 타입 import
-import type { ResponseFormat } from '@krgeobuk/core/interfaces/format';
-import type { PaginatedResult, PaginatedResultBase } from '@krgeobuk/core/interfaces/typeorm';
+import type { ResponseFormat, PaginatedResult } from '@krgeobuk/core/interfaces';
 
 // 기본 타입 정의
 export interface User {
@@ -108,7 +107,7 @@ export interface YouTubeVideo extends Omit<Content, 'platform'> {
   platform: 'youtube';
   channelId: string;
   categoryId?: string;
-  duration: string;
+  duration?: number; // Content 타입과 일치시킴
   definition: 'hd' | 'sd';
   caption: boolean;
   licensedContent: boolean;
@@ -177,23 +176,14 @@ export interface Notification {
 // 타입 별칭 - 기존 코드 호환성 유지
 export type ApiResponse<T> = ResponseFormat<T>;
 
-// PaginatedResponse - Core 패키지와 호환되는 구조로 변환
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
+// PaginatedResponse - Core 패키지의 PaginatedResult 기반으로 통합
+export interface PaginatedResponse<T> extends PaginatedResult<T> {
   success?: boolean;
   message?: string;
 }
 
 // Core 패키지 타입 재export (직접 사용을 위해)
-export type { ResponseFormat, PaginatedResult, PaginatedResultBase };
+export type { ResponseFormat, PaginatedResult };
 
 
 // 폼 타입

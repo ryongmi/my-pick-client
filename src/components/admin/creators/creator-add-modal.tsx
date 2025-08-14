@@ -53,7 +53,7 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
   const enabledPlatforms = useAppSelector(selectEnabledPlatforms);
   
   // 첫 번째 활성화된 플랫폼을 기본값으로 설정 (없으면 빈 문자열)
-  const defaultPlatformType = enabledPlatforms.length > 0 ? enabledPlatforms[0].name.toLowerCase() : '';
+  const defaultPlatformType = enabledPlatforms.length > 0 ? enabledPlatforms[0]?.name?.toLowerCase() || '' : '';
   
   const [formData, setFormData] = useState<CreatorFormData>({
     name: '',

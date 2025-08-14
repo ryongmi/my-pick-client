@@ -96,11 +96,12 @@ export const mockUpdateProfile = async (userId: string, updates: Partial<User>) 
     throw new Error('사용자를 찾을 수 없습니다.');
   }
   
-  mockUsers[userIndex] = {
+  const updatedUser: User = {
     ...mockUsers[userIndex],
     ...updates,
     updatedAt: new Date().toISOString(),
-  };
+  } as User;
+  mockUsers[userIndex] = updatedUser;
   
   return mockUsers[userIndex];
 };

@@ -36,8 +36,9 @@ export const loginUser = createAsyncThunk(
       const response = await authApi.login(credentials);
       
       // 토큰 매니저에 토큰 설정
-      if (response.data?.token) {
-        tokenManager.setAuthToken(response.data.token);
+      const responseData = response.data as any;
+      if (responseData?.token) {
+        tokenManager.setAuthToken(responseData.token);
       }
       
       // 서버 응답 처리 (krgeobuk 서버 표준 형식)
@@ -68,8 +69,9 @@ export const registerUser = createAsyncThunk(
       const response = await authApi.register(userData);
       
       // 토큰 매니저에 토큰 설정
-      if (response.data?.token) {
-        tokenManager.setAuthToken(response.data.token);
+      const responseData = response.data as any;
+      if (responseData?.token) {
+        tokenManager.setAuthToken(responseData.token);
       }
       
       return response.data;
@@ -93,12 +95,12 @@ export const logoutUser = createAsyncThunk(
       await authApi.logout();
       
       // 토큰 매니저에서 토큰 제거
-      tokenManager.clearTokens();
+      tokenManager.clearAuthToken();
       
       return;
     } catch (error: any) {
       // 로그아웃 실패해도 로컬 토큰은 제거
-      tokenManager.clearTokens();
+      tokenManager.clearAuthToken();
       
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
@@ -113,14 +115,14 @@ export const refreshToken = createAsyncThunk(
       const response = await authApi.refreshToken();
       
       // 토큰 매니저에 새 토큰 설정
-      if (response.data?.token) {
-        tokenManager.setAuthToken(response.data.token);
+      if (response.data?.accessToken) {
+        tokenManager.setAuthToken(response.data.accessToken);
       }
       
       return response.data;
     } catch (error: any) {
       // 리프레시 실패 시 모든 토큰 제거
-      tokenManager.clearTokens();
+      tokenManager.clearAuthToken();
       
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
@@ -167,7 +169,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
       // 토큰 매니저에서도 토큰 제거
-      tokenManager.clearTokens();
+      tokenManager.clearAuthToken();
     },
     setRememberMe: (state, action: PayloadAction<boolean>) => {
       state.rememberMe = action.payload;
@@ -184,7 +186,7 @@ const authSlice = createSlice({
         state.isLoading = false;
         
         // 서버 응답 데이터 처리
-        const responseData = action.payload.data || action.payload;
+        const responseData = action.payload as any;
         
         state.user = responseData.user;
         state.token = responseData.token;
@@ -205,8 +207,9 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+        const registerData = action.payload as any;
+        state.user = registerData.user;
+        state.token = registerData.token;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -240,8 +243,11 @@ const authSlice = createSlice({
     builder
       .addCase(refreshToken.fulfilled, (state, action) => {
         if (action.payload) {
-          state.token = action.payload.token;
-          state.user = action.payload.user;
+          const refreshData = action.payload as any;
+          state.token = refreshData.token || refreshData.accessToken;
+          if (refreshData.user) {
+            state.user = refreshData.user;
+          }
           state.isAuthenticated = true;
         }
       })

@@ -70,7 +70,7 @@ export function CreatorApprovalModal({ isOpen, onClose }: CreatorApprovalModalPr
       await dispatch(processCreatorApplication({
         applicationId: selectedApplication.id,
         action: confirmAction,
-        reason: reviewMessage || undefined,
+        reason: reviewMessage || '',
         reviewedBy: 'admin', // TODO: 실제 사용자 ID로 변경
       })).unwrap();
 

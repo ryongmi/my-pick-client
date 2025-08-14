@@ -13,7 +13,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const dispatch = useAppDispatch();
-  const { adminSidebarOpen, isMobile } = useAppSelector(state => state.ui);
+  const { adminSidebarOpen } = useAppSelector(state => state.ui);
 
   useEffect(() => {
     const checkMobile = () => {

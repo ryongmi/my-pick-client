@@ -76,18 +76,15 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps) {
     <Card className="overflow-hidden">
       <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
         {/* 로딩 상태 */}
-        {isLoading && !hasError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+        {isLoading && !hasError ? <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">동영상을 불러오는 중...</p>
             </div>
-          </div>
-        )}
+          </div> : null}
 
         {/* 에러 상태 */}
-        {hasError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+        {hasError ? <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <div className="text-center p-6">
               <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-3" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -100,8 +97,7 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps) {
                 다시 시도
               </Button>
             </div>
-          </div>
-        )}
+          </div> : null}
 
         {/* 재생 전 썸네일 (자동재생이 아닌 경우) */}
         {!autoplay && !isPlaying && !isLoading && !hasError && (
@@ -122,8 +118,7 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps) {
         )}
 
         {/* YouTube iframe */}
-        {(isPlaying || autoplay) && (
-          <iframe
+        {(isPlaying || autoplay) ? <iframe
             className={cn(
               "absolute inset-0 w-full h-full",
               isLoading && "opacity-0"
@@ -135,8 +130,7 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps) {
             allowFullScreen
             onLoad={handleIframeLoad}
             onError={handleIframeError}
-          />
-        )}
+          /> : null}
       </div>
     </Card>
   );

@@ -79,8 +79,7 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
               <BarChart3 className="h-5 w-5" />
             </Button>
 
-            {dropdowns.dashboard && (
-              <div
+            {dropdowns.dashboard ? <div
                 data-dropdown
                 className="absolute right-0 z-50 mt-2 w-80 rounded-lg border bg-background shadow-lg"
               >
@@ -108,8 +107,7 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              </div> : null}
           </div>
 
           {/* 알림 */}
@@ -127,8 +125,7 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
               <span className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-red-500" />
             </Button>
 
-            {dropdowns.notification && (
-              <div
+            {dropdowns.notification ? <div
                 data-dropdown
                 className="absolute right-0 z-50 mt-2 w-80 rounded-lg border bg-background shadow-lg"
               >
@@ -157,8 +154,7 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              </div> : null}
           </div>
 
           {/* 프로필 */}
@@ -180,8 +176,7 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
               </span>
             </Button>
 
-            {dropdowns.profile && (
-              <div
+            {dropdowns.profile ? <div
                 data-dropdown
                 className="absolute right-0 z-50 mt-2 w-48 rounded-lg border bg-background shadow-lg"
               >
@@ -226,8 +221,7 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
                     로그아웃
                   </Button>
                 </div>
-              </div>
-            )}
+              </div> : null}
           </div>
         </div>
       </div>

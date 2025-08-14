@@ -1,12 +1,10 @@
-import type { Metadata } from 'next';
-import { ProfileView } from '@/components/main/dashboard/profile-view';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'MyPick 프로필',
-  description: '프로필 및 계정 설정',
-};
+import { ProfileView } from '@/components/main/dashboard/profile-view';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function ProfilePage() {
+  useDocumentTitle('프로필');
   return (
     <div className="p-6">
       <ProfileView />

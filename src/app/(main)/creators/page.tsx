@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Metadata } from 'next';
 import { Search, Plus, Users, Youtube, Twitter, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,20 +9,17 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { fetchCreators, followCreator, unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { mockGetFollowedCreators } from '@/data/creators';
 import { Creator } from '@/types';
-
-// export const metadata: Metadata = {
-//   title: 'MyPick 크리에이터',
-//   description: '구독한 크리에이터 관리',
-// };
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function CreatorsPage() {
+  useDocumentTitle('크리에이터');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Creator[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('followers');
   
   const dispatch = useAppDispatch();
-  const { creators, followedCreators, isLoading, isFollowing, error } = useAppSelector(state => state.creator);
+  const { creators, followedCreators, isLoading, isFollowing } = useAppSelector(state => state.creator);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -36,20 +32,20 @@ export default function CreatorsPage() {
         })).unwrap();
         
         // 팔로우된 크리에이터 데이터 로드 (mock에서 가져와서 Redux에 저장)
-        const followed = mockGetFollowedCreators();
-        dispatch(updateFollowedCreators(followed));
-      } catch (error) {
-        console.error('초기 데이터 로드 실패:', error);
+        const followed = await mockGetFollowedCreators();
+        dispatch(updateFollowedCreators(followed.data));
+      } catch (_error) {
+        // 초기 데이터 로드 실패
       }
     };
-    loadInitialData();
+    void loadInitialData();
   }, [dispatch, sortBy, selectedPlatform]);
 
   // 구독 상태 변경 이벤트 리스너
   useEffect(() => {
-    const handleFollowChange = () => {
-      const followed = mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed));
+    const handleFollowChange = async () => {
+      const followed = await mockGetFollowedCreators();
+      dispatch(updateFollowedCreators(followed.data));
     };
 
     window.addEventListener('followersChanged', handleFollowChange);
@@ -71,9 +67,9 @@ export default function CreatorsPage() {
         sortBy: sortBy,
         limit: 10
       })).unwrap();
-      setSearchResults(response.data);
-    } catch (error) {
-      console.error('검색 오류:', error);
+      setSearchResults(response.data?.items || []);
+    } catch (_error) {
+      // 검색 오류
     }
   };
 
@@ -99,13 +95,13 @@ export default function CreatorsPage() {
       if (isFollowed) {
         await dispatch(unfollowCreator(creator.id)).unwrap();
       } else {
-        await dispatch(followCreator(creator.id)).unwrap();
+        await dispatch(followCreator(creator)).unwrap();
       }
       
       // 다른 컴포넌트들에게 알림
       window.dispatchEvent(new CustomEvent('followersChanged'));
-    } catch (error) {
-      console.error('팔로우 처리 오류:', error);
+    } catch (_error) {
+      // 팔로우 처리 오류
     }
   };
 
@@ -246,10 +242,10 @@ export default function CreatorsPage() {
                                     {creator.isVerified ? <Star className="h-4 w-4 text-blue-500 fill-current" /> : null}
                                   </div>
                                   <p className="text-sm text-muted-foreground">
-                                    팔로워 {formatNumber(creator.followerCount)} • {creator.contentCount}개 콘텐츠
+                                    팔로워 {formatNumber(creator.followerCount || 0)} • {creator.contentCount}개 콘텐츠
                                   </p>
                                   <div className="flex items-center gap-2 mt-1">
-                                    {creator.platforms.map((platform, index) => (
+                                    {creator.platforms?.map((platform, index) => (
                                       <div key={index} className="flex items-center gap-1">
                                         {getPlatformIcon(platform.type)}
                                         <span className="text-xs text-muted-foreground">
@@ -319,7 +315,7 @@ export default function CreatorsPage() {
                           {creator.isVerified ? <Star className="h-3 w-3 text-blue-500 fill-current" /> : null}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {formatNumber(creator.followerCount)} 팔로워
+                          {formatNumber(creator.followerCount || 0)} 팔로워
                         </p>
                       </div>
                     </div>

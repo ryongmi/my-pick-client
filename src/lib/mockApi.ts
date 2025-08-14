@@ -64,6 +64,9 @@ export const mockApiClient = {
     
     if (url.includes('/notifications/') && url.includes('/read')) {
       const notificationId = url.split('/')[2];
+      if (!notificationId) {
+        throw new Error('Missing notification ID');
+      }
       const result = await mockMarkAsRead(notificationId);
       return { data: createMockResponse(result) };
     }

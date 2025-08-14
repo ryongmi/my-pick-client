@@ -56,9 +56,9 @@ export function ProfileView() {
 
   // 구독 중인 크리에이터 로드
   useEffect(() => {
-    const loadFollowedCreators = () => {
-      const followed = mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed));
+    const loadFollowedCreators = async () => {
+      const followed = await mockGetFollowedCreators();
+      dispatch(updateFollowedCreators(followed.data || []));
     };
     loadFollowedCreators();
 
@@ -73,13 +73,13 @@ export function ProfileView() {
 
   // 컴포넌트 마운트 시 북마크 데이터 로드
   useEffect(() => {
-    dispatch(fetchBookmarks());
+    dispatch(fetchBookmarks({ page: 1, limit: 10 }));
   }, [dispatch]);
 
   // 북마크 탭 클릭 시 데이터 새로고침
   useEffect(() => {
     if (activeTab === 'bookmarks') {
-      dispatch(fetchBookmarks());
+      dispatch(fetchBookmarks({ page: 1, limit: 10 }));
     }
   }, [dispatch, activeTab]);
 
@@ -103,7 +103,7 @@ export function ProfileView() {
     try {
       await dispatch(removeBookmark(contentId)).unwrap();
       // 북마크 목록 새로고침
-      dispatch(fetchBookmarks());
+      dispatch(fetchBookmarks({ page: 1, limit: 10 }));
     } catch (error) {
       // 에러 시 롤백
       dispatch(toggleBookmarkOptimistic(contentId));
@@ -185,10 +185,10 @@ export function ProfileView() {
                             {creator.isVerified ? <Star className="h-4 w-4 text-blue-500 fill-current" /> : null}
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {creator.platforms.map(p => p.type === 'youtube' ? 'YouTube' : 'Twitter').join(' • ')}
+                            {creator.platforms?.map(p => p.type === 'youtube' ? 'YouTube' : 'Twitter').join(' • ')}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            팔로워 {formatNumber(creator.followerCount)} • {creator.contentCount}개 콘텐츠
+                            팔로워 {formatNumber(creator.followerCount || 0)} • {creator.contentCount || 0}개 콘텐츠
                           </p>
                         </div>
                         <Button 
@@ -288,15 +288,19 @@ export function ProfileView() {
                             <h4 className="font-medium text-sm mb-2 line-clamp-2">{content.title}</h4>
                             <div className="flex items-center text-xs text-muted-foreground mb-2 space-x-3">
                               <div className="flex items-center">
-                                <div className={cn(
-                                  'w-4 h-4 rounded-full mr-1 flex items-center justify-center text-white text-xs font-bold',
-                                  content.creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
-                                  content.creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
-                                  'bg-gradient-to-r from-gray-400 to-gray-600'
-                                )}>
-                                  {content.creator.displayName.charAt(0)}
-                                </div>
-                                <span className="font-medium">{content.creator.displayName}</span>
+                                {content.creator && (
+                                  <>
+                                    <div className={cn(
+                                      'w-4 h-4 rounded-full mr-1 flex items-center justify-center text-white text-xs font-bold',
+                                      content.creator.id === 'ado' ? 'bg-gradient-to-r from-pink-400 to-purple-500' :
+                                      content.creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
+                                      'bg-gradient-to-r from-gray-400 to-gray-600'
+                                    )}>
+                                      {content.creator.displayName.charAt(0)}
+                                    </div>
+                                    <span className="font-medium">{content.creator.displayName}</span>
+                                  </>
+                                )}
                               </div>
                               {content.viewCount ? <div className="flex items-center">
                                   <Eye className="h-3 w-3 mr-1" />

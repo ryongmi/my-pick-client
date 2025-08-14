@@ -94,7 +94,7 @@ export function extractYouTubeVideoId(url: string): string | null {
 
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) {return match[1];}
+    if (match && match[1]) {return match[1];}
   }
   return null;
 }
@@ -103,7 +103,7 @@ export function extractYouTubeVideoId(url: string): string | null {
 export function extractTwitterUsername(url: string): string | null {
   const pattern = /(?:twitter\.com\/|x\.com\/)([a-zA-Z0-9_]+)/;
   const match = url.match(pattern);
-  return match ? match[1] : null;
+  return match && match[1] ? match[1] : null;
 }
 
 // 플랫폼별 아이콘 매핑
@@ -171,7 +171,7 @@ export function getPasswordStrength(password: string): {
   if (/[^a-zA-Z\d]/.test(password)) {score += 1;}
   else {feedback.push('특수문자 포함');}
 
-  const strengthText = ['매우 약함', '약함', '보통', '강함', '매우 강함'][score];
+  const strengthText = ['매우 약함', '약함', '보통', '강함', '매우 강함'][score] || '알 수 없음';
   return {
     score,
     feedback: feedback.length > 0 ? feedback.join(', ') : strengthText,
@@ -190,7 +190,7 @@ export function generateRandomColor(): string {
     'bg-indigo-500',
     'bg-orange-500',
   ];
-  return colors[Math.floor(Math.random() * colors.length)];
+  return colors[Math.floor(Math.random() * colors.length)] || 'bg-gray-500';
 }
 
 // 이름 이니셜 생성

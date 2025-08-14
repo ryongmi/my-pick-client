@@ -1,11 +1,9 @@
-import type { Metadata } from 'next';
-import { AdminApi } from '@/components/admin/admin-api';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'MyPick API 키 관리',
-  description: 'API 키 및 할당량을 관리하세요',
-};
+import { AdminApi } from '@/components/admin/admin-api';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function AdminApiPage() {
+  useDocumentTitle('API 관리');
   return <AdminApi />;
 }

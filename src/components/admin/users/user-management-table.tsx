@@ -100,10 +100,10 @@ const YouTubeConnectionIcon = ({ isConnected, hasError }: { isConnected: boolean
 // 테이블 헤더 컴포넌트
 interface TableHeaderProps {
   label: string;
-  sortKey?: keyof UserManagementFilter['sortBy'];
-  currentSort: UserManagementFilter['sortBy'];
-  currentOrder: UserManagementFilter['sortOrder'];
-  onSort: (sortBy: UserManagementFilter['sortBy'], sortOrder: UserManagementFilter['sortOrder']) => void;
+  sortKey?: 'name' | 'email' | 'createdAt' | 'lastLoginAt' | 'videoCount';
+  currentSort: 'name' | 'email' | 'createdAt' | 'lastLoginAt' | 'videoCount';
+  currentOrder: 'asc' | 'desc';
+  onSort: (sortBy: 'name' | 'email' | 'createdAt' | 'lastLoginAt' | 'videoCount', sortOrder: 'asc' | 'desc') => void;
   className?: string;
 }
 
@@ -424,7 +424,7 @@ export default function UserManagementTable() {
                       <div className="flex items-center space-x-2">
                         <YouTubeConnectionIcon 
                           isConnected={user.youtubeConnection.isConnected}
-                          hasError={user.youtubeConnection.hasError}
+                          hasError={user.youtubeConnection.hasError || false}
                         />
                         {user.youtubeConnection.isConnected && user.youtubeConnection.channelName ? <div className="text-sm">
                             <div className="text-gray-900">{user.youtubeConnection.channelName}</div>

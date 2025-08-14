@@ -13,7 +13,12 @@ const getEnvConfig = (): MultiServerConfig => ({
     timeout: 10000,
     withCredentials: true,
   },
-  mypick: {
+  authz: {
+    baseURL: process.env.NEXT_PUBLIC_AUTHZ_API_URL || 'http://localhost:8100',
+    timeout: 30000,
+    withCredentials: true,
+  },
+  portal: {
     baseURL: process.env.NEXT_PUBLIC_MAIN_API_URL || 'http://localhost:8300',
     timeout: 30000,
     withCredentials: true,
@@ -91,8 +96,8 @@ export const userApi = {
     httpClient.put('auth', '/users/settings', settings),
   
   // 사용자 구독 관리
-  getSubscriptions: (userId: string) => 
-    httpClient.get('mypick', `/users/${userId}/subscriptions`),
+  getSubscriptions: () => 
+    httpClient.get('portal', '/me/subscriptions'),
 };
 
 // =============================================================================
@@ -101,44 +106,44 @@ export const userApi = {
 
 export const creatorApi = {
   getCreators: (params?: any) => 
-    httpClient.get<PaginatedResponse<any>>('mypick', '/creators', { params }),
+    httpClient.get<PaginatedResponse<any>>('authz', '/creators', { params }),
   
   getCreator: (id: string) => 
-    httpClient.get('mypick', `/creators/${id}`),
+    httpClient.get('portal', `/creators/${id}`),
   
-  // 구독 API는 서버 구조에 맞게 수정 (userId가 필요)
-  followCreator: (creatorId: string, userId: string) => 
-    httpClient.post('mypick', `/users/${userId}/subscriptions/${creatorId}`),
+  // 구독 API (JWT 기반 - userId 자동 추출)
+  followCreator: (creatorId: string) => 
+    httpClient.post('portal', `/me/subscriptions/${creatorId}`),
   
-  unfollowCreator: (creatorId: string, userId: string) => 
-    httpClient.delete('mypick', `/users/${userId}/subscriptions/${creatorId}`),
+  unfollowCreator: (creatorId: string) => 
+    httpClient.delete('portal', `/me/subscriptions/${creatorId}`),
   
-  checkSubscription: (creatorId: string, userId: string) => 
-    httpClient.get('mypick', `/users/${userId}/subscriptions/${creatorId}/exists`),
+  checkSubscription: (creatorId: string) => 
+    httpClient.get('portal', `/me/subscriptions/${creatorId}/exists`),
   
   getCreatorSubscribers: (creatorId: string) => 
-    httpClient.get('mypick', `/creators/${creatorId}/subscribers`),
+    httpClient.get('portal', `/creators/${creatorId}/subscribers`),
   
   addCreator: (data: any) => 
-    httpClient.post('mypick', '/creators', data),
+    httpClient.post('portal', '/creators', data),
   
   updateCreator: (id: string, data: any) => 
-    httpClient.put('mypick', `/creators/${id}`, data),
+    httpClient.put('portal', `/creators/${id}`, data),
   
   deleteCreator: (id: string) => 
-    httpClient.delete('mypick', `/creators/${id}`),
+    httpClient.delete('portal', `/creators/${id}`),
   
   getCreatorStats: (id: string) => 
-    httpClient.get('mypick', `/creators/${id}/stats`),
+    httpClient.get('portal', `/creators/${id}/stats`),
   
   syncCreator: (id: string) => 
-    httpClient.post('mypick', `/creators/${id}/sync`),
+    httpClient.post('portal', `/creators/${id}/sync`),
   
   // Toggle function for easier usage
-  toggleFollow: async (creatorId: string, userId: string, isCurrentlyFollowing: boolean) => {
+  toggleFollow: async (creatorId: string, isCurrentlyFollowing: boolean) => {
     return isCurrentlyFollowing 
-      ? creatorApi.unfollowCreator(creatorId, userId)
-      : creatorApi.followCreator(creatorId, userId);
+      ? creatorApi.unfollowCreator(creatorId)
+      : creatorApi.followCreator(creatorId);
   },
 };
 
@@ -148,28 +153,28 @@ export const creatorApi = {
 
 export const contentApi = {
   getContent: (params?: any) => 
-    httpClient.get<PaginatedResponse<any>>('mypick', '/content', { params }),
+    httpClient.get<PaginatedResponse<any>>('authz', '/content', { params }),
   
   getContentById: (id: string) => 
-    httpClient.get('mypick', `/content/${id}`),
+    httpClient.get('portal', `/content/${id}`),
   
   bookmarkContent: (id: string) => 
-    httpClient.post('mypick', `/content/${id}/bookmark`),
+    httpClient.post('portal', `/content/${id}/bookmark`),
   
   removeBookmark: (id: string) => 
-    httpClient.delete('mypick', `/content/${id}/bookmark`),
+    httpClient.delete('portal', `/content/${id}/bookmark`),
   
   likeContent: (id: string) => 
-    httpClient.post('mypick', `/content/${id}/like`),
+    httpClient.post('portal', `/content/${id}/like`),
   
   unlikeContent: (id: string) => 
-    httpClient.delete('mypick', `/content/${id}/like`),
+    httpClient.delete('portal', `/content/${id}/like`),
   
   getBookmarks: (page = 1, limit = 20) =>
-    httpClient.get<PaginatedResponse<any>>('mypick', '/content/bookmarks', { params: { page, limit } }),
+    httpClient.get<PaginatedResponse<any>>('authz', '/content/bookmarks', { params: { page, limit } }),
   
   searchContent: (query: string, filters?: any) =>
-    httpClient.get('mypick', '/content/search', { params: { q: query, ...filters } }),
+    httpClient.get('portal', '/content/search', { params: { q: query, ...filters } }),
   
   // Toggle functions for easier usage
   toggleBookmark: async (id: string, isCurrentlyBookmarked: boolean) => {
@@ -200,28 +205,28 @@ export const notificationApi = mockNotificationApi;
 
 export const adminApi = {
   getDashboardStats: () => 
-    httpClient.get('mypick', '/admin/dashboard'),
+    httpClient.get('portal', '/admin/dashboard'),
   
   getUsers: (params?: any) => 
-    httpClient.get<PaginatedResponse<any>>('mypick', '/admin/users', { params }),
+    httpClient.get<PaginatedResponse<any>>('authz', '/admin/users', { params }),
   
   getUser: (id: string) => 
-    httpClient.get('mypick', `/admin/users/${id}`),
+    httpClient.get('portal', `/admin/users/${id}`),
   
   updateUser: (id: string, data: any) => 
-    httpClient.put('mypick', `/admin/users/${id}`, data),
+    httpClient.put('portal', `/admin/users/${id}`, data),
   
   deleteUser: (id: string) => 
-    httpClient.delete('mypick', `/admin/users/${id}`),
+    httpClient.delete('portal', `/admin/users/${id}`),
   
   getCreators: (params?: any) => 
-    httpClient.get<PaginatedResponse<any>>('mypick', '/admin/creators', { params }),
+    httpClient.get<PaginatedResponse<any>>('authz', '/admin/creators', { params }),
   
   approveCreator: (id: string) => 
-    httpClient.post('mypick', `/admin/creators/${id}/approve`),
+    httpClient.post('portal', `/admin/creators/${id}/approve`),
   
   rejectCreator: (id: string) => 
-    httpClient.post('mypick', `/admin/creators/${id}/reject`),
+    httpClient.post('portal', `/admin/creators/${id}/reject`),
 };
 
 // =============================================================================
@@ -279,7 +284,7 @@ export const errorUtils = {
     return status === 401 || 
            code === 'AUTH_TOKEN_EXPIRED' || 
            code === 'JWT_EXPIRED' ||
-           code?.startsWith('AUTH_');
+           (code?.startsWith('AUTH_') || false);
   }
 };
 
@@ -290,11 +295,11 @@ export const tokenManager = {
   },
   
   clearAuthToken: (): void => {
-    httpClient.getTokenManager().clearTokens();
+    httpClient.getTokenManager().clearAccessToken();
   },
   
   isAuthenticated: (): boolean => {
-    return httpClient.getTokenManager().hasValidAccessToken();
+    return !!httpClient.getTokenManager().getAccessToken();
   },
   
   getAccessToken: (): string | null => {

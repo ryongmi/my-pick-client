@@ -94,7 +94,7 @@ export default function LoginPage() {
             </div>
             
             {error ? <div className="text-red-600 text-sm bg-red-50 p-3 rounded">
-                {error}
+                {typeof error === 'string' ? error : '로그인에 실패했습니다.'}
               </div> : null}
             
             <Button

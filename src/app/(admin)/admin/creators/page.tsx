@@ -1,11 +1,9 @@
-import type { Metadata } from 'next';
-import { AdminCreators } from '@/components/admin/admin-creators';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'MyPick 크리에이터 관리',
-  description: '등록된 크리에이터와 채널 정보를 관리하세요',
-};
+import { AdminCreators } from '@/components/admin/admin-creators';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function AdminCreatorsPage() {
+  useDocumentTitle('크리에이터 관리');
   return <AdminCreators />;
 }

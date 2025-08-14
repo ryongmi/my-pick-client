@@ -42,9 +42,9 @@ export function Sidebar() {
 
   // 구독 중인 크리에이터 로드
   useEffect(() => {
-    const loadFollowedCreators = () => {
-      const followed = mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed));
+    const loadFollowedCreators = async () => {
+      const followed = await mockGetFollowedCreators();
+      dispatch(updateFollowedCreators(followed.data || []));
     };
     loadFollowedCreators();
 
@@ -59,7 +59,7 @@ export function Sidebar() {
 
   // 외부 클릭 감지 및 사이드바 닫기
   useEffect(() => {
-    if (!sidebarOpen) return;
+    if (!sidebarOpen) {return;}
 
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
@@ -148,12 +148,10 @@ export function Sidebar() {
   return (
     <>
       {/* 배경 오버레이 (모바일에서만 표시) */}
-      {sidebarOpen && isMobile && (
-        <div 
+      {sidebarOpen && isMobile ? <div 
           className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
           onClick={() => dispatch(setSidebarOpen(false))}
-        />
-      )}
+        /> : null}
       
       {/* 사이드바 */}
       <aside 
@@ -235,7 +233,7 @@ export function Sidebar() {
                 <div className="ml-3 flex-1">
                   <p className="font-medium text-sm">{creator.displayName}</p>
                   <p className="text-xs text-muted-foreground">
-                    {creator.platforms.map(platform => 
+                    {creator.platforms?.map(platform => 
                       platform.type === 'youtube' ? 'YouTube' : 'Twitter'
                     ).join(' • ')}
                   </p>

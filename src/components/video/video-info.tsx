@@ -1,7 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, Heart, Bookmark, Share2, Clock, ThumbsUp, Youtube } from 'lucide-react';
+import { 
+  Eye, 
+  Heart, 
+  Bookmark, 
+  Share2, 
+  Clock, 
+  ThumbsUp, 
+  Youtube, 
+  MoreHorizontal,
+  Flag,
+  Download,
+  Calendar,
+  Tag,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -73,6 +88,7 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [showMoreActions, setShowMoreActions] = useState(false);
 
   // Mock 데이터에서 비디오 정보 가져오기
   const videoData = MOCK_VIDEO_DATA[videoId as keyof typeof MOCK_VIDEO_DATA];
@@ -91,9 +107,9 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
 
   // 구독한 크리에이터 목록 초기 로드
   useEffect(() => {
-    const loadFollowedCreators = () => {
-      const followed = mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed));
+    const loadFollowedCreators = async () => {
+      const followed = await mockGetFollowedCreators();
+      dispatch(updateFollowedCreators(followed.data || []));
     };
     
     if (followedCreators.length === 0) {
@@ -139,7 +155,7 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
   };
 
   const handleSubscribe = async () => {
-    if (!videoData) return;
+    if (!videoData) {return;}
 
     try {
       if (isFollowingCreator) {
@@ -152,6 +168,7 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
           name: videoData.creator.name,
           displayName: videoData.creator.displayName,
           avatar: videoData.creator.avatar,
+          category: 'entertainment', // 기본 카테고리 추가
           platforms: [
             {
               type: 'youtube' as const,
@@ -203,8 +220,12 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
               {formatNumber(videoData.viewCount)}회 시청
             </div>
             <div className="flex items-center">
-              <Clock className="h-4 w-4 mr-1" />
+              <Calendar className="h-4 w-4 mr-1" />
               {formatDate(videoData.publishedAt, 'relative')}
+            </div>
+            <div className="flex items-center">
+              <Clock className="h-4 w-4 mr-1" />
+              {videoData.duration}
             </div>
             <div className="flex items-center">
               <ThumbsUp className="h-4 w-4 mr-1" />
@@ -214,6 +235,7 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
               <Youtube className="h-3 w-3 mr-1" />
               YouTube
             </Badge>
+            <Badge variant="outline">{videoData.category}</Badge>
           </div>
 
           {/* 액션 버튼들 */}
@@ -269,6 +291,46 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
               <Youtube className="h-4 w-4" />
               YouTube에서 보기
             </Button>
+
+            {/* More Actions Dropdown */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMoreActions(!showMoreActions)}
+                className="flex items-center gap-2"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+                더보기
+              </Button>
+
+              {showMoreActions ? <div className="absolute right-0 top-full mt-2 w-48 bg-background border rounded-lg shadow-lg z-10">
+                  <div className="p-1">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-sm"
+                      onClick={() => {
+                        setShowMoreActions(false);
+                        // TODO: Implement download functionality
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      오프라인 저장
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-sm text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => {
+                        setShowMoreActions(false);
+                        // TODO: Implement report functionality
+                      }}
+                    >
+                      <Flag className="h-4 w-4 mr-2" />
+                      신고하기
+                    </Button>
+                  </div>
+                </div> : null}
+            </div>
           </div>
         </div>
       </Card>
@@ -286,11 +348,9 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-lg">{videoData.creator.displayName}</h3>
-                {videoData.creator.verified && (
-                  <Badge variant="secondary" className="text-xs">
+                {videoData.creator.verified ? <Badge variant="secondary" className="text-xs">
                     인증됨
-                  </Badge>
-                )}
+                  </Badge> : null}
               </div>
               <p className="text-sm text-muted-foreground">
                 구독자 {formatNumber(videoData.creator.subscriberCount)}명
@@ -325,12 +385,18 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
           <h3 className="font-semibold">설명</h3>
           
           {/* 태그 */}
-          <div className="flex flex-wrap gap-2">
-            {videoData.tags.map((tag, index) => (
-              <Badge key={index} variant="outline">
-                #{tag}
-              </Badge>
-            ))}
+          <div>
+            <h4 className="text-sm font-medium mb-2 flex items-center">
+              <Tag className="h-4 w-4 mr-1" />
+              태그
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {videoData.tags.map((tag, index) => (
+                <Badge key={index} variant="outline" className="cursor-pointer hover:bg-accent">
+                  #{tag}
+                </Badge>
+              ))}
+            </div>
           </div>
 
           <Separator />
@@ -346,9 +412,17 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowFullDescription(!showFullDescription)}
-                className="p-0 h-auto text-primary hover:underline"
+                className="p-0 h-auto text-primary hover:underline flex items-center"
               >
-                {showFullDescription ? '접기' : '더보기'}
+                {showFullDescription ? (
+                  <>
+                    접기 <ChevronUp className="h-3 w-3 ml-1" />
+                  </>
+                ) : (
+                  <>
+                    더보기 <ChevronDown className="h-3 w-3 ml-1" />
+                  </>
+                )}
               </Button>
             )}
           </div>

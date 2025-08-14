@@ -245,10 +245,10 @@ export function AdminCreators() {
       // Create new creator with mock data structure
       const newCreator = {
         id: `creator_${Date.now()}`,
-        name: formData.name,
-        displayName: formData.displayName,
-        platform: formData.platforms[0]?.type || 'youtube',
-        channelUrl: formData.platforms[0]?.url || '',
+        name: String(formData.name || ''),
+        displayName: String(formData.displayName || ''),
+        platform: String(formData.platforms[0]?.type || 'youtube'),
+        channelUrl: String(formData.platforms[0]?.url || ''),
         subscriberCount: Math.floor(Math.random() * 1000000) + 10000,
         totalVideos: Math.floor(Math.random() * 100) + 5,
         avgViews: Math.floor(Math.random() * 500000) + 50000,
@@ -266,7 +266,7 @@ export function AdminCreators() {
         },
       };
 
-      setCreatorsData(prev => [...prev, newCreator]);
+      setCreatorsData(prev => [...prev, newCreator as any]);
       console.log('Creator added successfully:', newCreator);
     } catch (error) {
       console.error('Error adding creator:', error);

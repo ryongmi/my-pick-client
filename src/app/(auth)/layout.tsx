@@ -1,10 +1,3 @@
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'MyPick 로그인',
-  description: '크리에이터 통합 대시보드에 로그인하세요',
-};
-
 interface AuthLayoutProps {
   children: React.ReactNode;
 }

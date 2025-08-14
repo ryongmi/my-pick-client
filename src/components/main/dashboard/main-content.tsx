@@ -93,8 +93,11 @@ export function MainContent() {
   // 팔로우한 크리에이터 초기 로드
   useEffect(() => {
     if (followedCreators.length === 0) {
-      const followed = mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed));
+      const loadFollowed = async () => {
+        const followed = await mockGetFollowedCreators();
+        dispatch(updateFollowedCreators(followed.data || []));
+      };
+      loadFollowed();
     }
   }, [dispatch, followedCreators.length]);
 
@@ -152,7 +155,7 @@ export function MainContent() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0]?.isIntersecting) {
           loadMoreContent();
         }
       },
@@ -233,14 +236,14 @@ export function MainContent() {
       if (followedCreators.length > 0) {
         // 팔로우한 크리에이터가 있으면 해당 크리에이터만 표시
         const followedCreatorIds = followedCreators.map(c => c.id);
-        creatorMatch = followedCreatorIds.includes(content.creator.id);
+        creatorMatch = content.creator ? followedCreatorIds.includes(content.creator.id) : false;
       } else {
         // 팔로우한 크리에이터가 없으면 모든 컨텐츠 표시 (초기 사용자)
         creatorMatch = true;
       }
     } else {
       // 특정 크리에이터 선택 시
-      creatorMatch = filters.selectedCreators.includes(content.creator.id);
+      creatorMatch = content.creator ? filters.selectedCreators.includes(content.creator.id) : false;
     }
     
     // 플랫폼 필터

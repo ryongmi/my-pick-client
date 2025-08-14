@@ -1,11 +1,9 @@
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'MyPick 설정',
-  description: '애플리케이션 설정 관리',
-};
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function SettingsPage() {
+  useDocumentTitle('설정');
   return (
     <div className="p-6">
       <div className="w-full max-w-2xl mx-auto">

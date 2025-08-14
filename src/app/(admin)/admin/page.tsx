@@ -1,11 +1,9 @@
-import type { Metadata } from 'next';
-import { AdminDashboard } from '@/components/admin/admin-dashboard';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'MyPick 관리자 대시보드',
-  description: '시스템 현황 및 통계를 확인하세요',
-};
+import { AdminDashboard } from '@/components/admin/admin-dashboard';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function AdminDashboardPage() {
+  useDocumentTitle('관리자 대시보드');
   return <AdminDashboard />;
 }

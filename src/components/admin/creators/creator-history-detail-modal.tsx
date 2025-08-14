@@ -351,20 +351,20 @@ export function CreatorHistoryDetailModal({
                 {application.applicationData.socialLinks ? <div>
                     <label className="text-sm font-medium text-gray-600 mb-2 block">소셜 미디어</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {application.applicationData.socialLinks.instagram ? <div className="flex items-center justify-between p-3 border rounded-lg">
+                      {application.applicationData.socialLinks?.instagram ? <div className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center gap-2">
                             <Instagram className="h-4 w-4 text-pink-500" />
-                            <span className="text-sm">@{application.applicationData.socialLinks.instagram}</span>
+                            <span className="text-sm">@{application.applicationData.socialLinks?.instagram}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <CopyButton 
-                              text={`https://instagram.com/${application.applicationData.socialLinks.instagram}`} 
+                              text={`https://instagram.com/${application.applicationData.socialLinks?.instagram}`} 
                               fieldName="instagram" 
                             />
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => window.open(`https://instagram.com/${application.applicationData.socialLinks.instagram}`, '_blank')}
+                              onClick={() => window.open(`https://instagram.com/${application.applicationData.socialLinks?.instagram}`, '_blank')}
                               className="h-6 w-6 p-0"
                             >
                               <ExternalLink className="h-3 w-3" />
@@ -372,20 +372,20 @@ export function CreatorHistoryDetailModal({
                           </div>
                         </div> : null}
 
-                      {application.applicationData.socialLinks.twitter ? <div className="flex items-center justify-between p-3 border rounded-lg">
+                      {application.applicationData.socialLinks?.twitter ? <div className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center gap-2">
                             <Twitter className="h-4 w-4 text-blue-500" />
-                            <span className="text-sm">@{application.applicationData.socialLinks.twitter}</span>
+                            <span className="text-sm">@{application.applicationData.socialLinks?.twitter}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <CopyButton 
-                              text={`https://twitter.com/${application.applicationData.socialLinks.twitter}`} 
+                              text={`https://twitter.com/${application.applicationData.socialLinks?.twitter}`} 
                               fieldName="twitter" 
                             />
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => window.open(`https://twitter.com/${application.applicationData.socialLinks.twitter}`, '_blank')}
+                              onClick={() => window.open(`https://twitter.com/${application.applicationData.socialLinks?.twitter}`, '_blank')}
                               className="h-6 w-6 p-0"
                             >
                               <ExternalLink className="h-3 w-3" />
@@ -393,20 +393,20 @@ export function CreatorHistoryDetailModal({
                           </div>
                         </div> : null}
 
-                      {application.applicationData.socialLinks.website ? <div className="flex items-center justify-between p-3 border rounded-lg">
+                      {application.applicationData.socialLinks?.website ? <div className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center gap-2">
                             <Globe className="h-4 w-4 text-green-500" />
                             <span className="text-sm truncate">웹사이트</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <CopyButton 
-                              text={application.applicationData.socialLinks.website} 
+                              text={application.applicationData.socialLinks?.website} 
                               fieldName="website" 
                             />
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => window.open(application.applicationData.socialLinks.website, '_blank')}
+                              onClick={() => window.open(application.applicationData.socialLinks?.website, '_blank')}
                               className="h-6 w-6 p-0"
                             >
                               <ExternalLink className="h-3 w-3" />

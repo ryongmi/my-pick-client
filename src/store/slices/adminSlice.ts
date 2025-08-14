@@ -96,12 +96,12 @@ const initialState: AdminState = {
 };
 
 // Async thunks
-export const fetchDashboardStats = createAsyncThunk(
+export const fetchDashboardStats = createAsyncThunk<DashboardStats>(
   'admin/fetchDashboardStats',
   async (_, { rejectWithValue }) => {
     try {
       const response = await adminApi.getDashboardStats();
-      return response.data;
+      return response.data as DashboardStats;
     } catch (error: any) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
@@ -120,7 +120,7 @@ export const fetchUsers = createAsyncThunk(
   } = {}, { rejectWithValue }) => {
     try {
       const response = await adminApi.getUsers(params);
-      return response;
+      return response.data;
     } catch (error: any) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
@@ -196,8 +196,16 @@ const adminSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.isLoadingUsers = false;
-        state.users = action.payload.data;
-        state.usersPagination = action.payload.pagination;
+        const payload = action.payload as any; // Type assertion due to unknown structure
+        state.users = payload.items || payload.data || [];
+        state.usersPagination = {
+          page: payload.page || 1,
+          limit: payload.limit || 20,
+          total: payload.total || 0,
+          totalPages: payload.totalPages || 0,
+          hasNext: payload.hasNext || false,
+          hasPrev: payload.hasPrev || false,
+        };
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.isLoadingUsers = false;

@@ -16,7 +16,7 @@ export function CreatorStatusModal({ isOpen, onClose }: CreatorStatusModalProps)
   const dispatch = useAppDispatch();
   const { currentApplication, applicationStatus } = useAppSelector(state => state.creatorApplication);
 
-  if (!isOpen || !currentApplication) return null;
+  if (!isOpen || !currentApplication) {return null;}
 
   const getStatusInfo = () => {
     switch (applicationStatus) {
@@ -180,14 +180,12 @@ export function CreatorStatusModal({ isOpen, onClose }: CreatorStatusModalProps)
                   </div>
                 </div>
 
-                {currentApplication.rejectionReason && (
-                  <div className="mt-4">
+                {currentApplication.rejectionReason ? <div className="mt-4">
                     <label className="block text-sm font-medium text-gray-500">거부 사유</label>
                     <p className="mt-1 text-sm p-3 bg-red-50 rounded border border-red-200">
                       {currentApplication.rejectionReason}
                     </p>
-                  </div>
-                )}
+                  </div> : null}
               </CardContent>
             </Card>
           )}

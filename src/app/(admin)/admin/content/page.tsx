@@ -1,11 +1,9 @@
-import type { Metadata } from 'next';
-import { AdminContent } from '@/components/admin/admin-content';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'MyPick 콘텐츠 모니터링',
-  description: '콘텐츠 현황을 모니터링하고 관리하세요',
-};
+import { AdminContent } from '@/components/admin/admin-content';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function AdminContentPage() {
+  useDocumentTitle('콘텐츠 모니터링');
   return <AdminContent />;
 }

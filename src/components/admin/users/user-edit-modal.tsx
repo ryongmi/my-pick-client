@@ -73,10 +73,8 @@ export function UserEditModal({ isOpen, onClose, user }: UserEditModalProps) {
       await dispatch(updateUser({
         userId: user.id,
         updates: {
-          name: formData.name,
-          email: formData.email,
-          userType: formData.userType,
-          serviceStatus: formData.serviceStatus,
+          userType: formData.userType || 'user',
+          serviceStatus: formData.serviceStatus || 'active',
         },
       })).unwrap();
 

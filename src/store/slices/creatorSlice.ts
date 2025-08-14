@@ -134,9 +134,9 @@ export const fetchCreatorStats = createAsyncThunk(
 
 export const followCreator = createAsyncThunk(
   'creator/followCreator',
-  async ({ creator, userId }: { creator: Creator; userId: string }, { rejectWithValue }) => {
+  async (creator: Creator, { rejectWithValue }) => {
     try {
-      await creatorApi.followCreator(creator.id, userId);
+      await creatorApi.followCreator(creator.id);
       return creator;
     } catch (error: any) {
       const errorMessage = errorUtils.getUserMessage(error);
@@ -147,9 +147,9 @@ export const followCreator = createAsyncThunk(
 
 export const unfollowCreator = createAsyncThunk(
   'creator/unfollowCreator',
-  async ({ creatorId, userId }: { creatorId: string; userId: string }, { rejectWithValue }) => {
+  async (creatorId: string, { rejectWithValue }) => {
     try {
-      await creatorApi.unfollowCreator(creatorId, userId);
+      await creatorApi.unfollowCreator(creatorId);
       return creatorId;
     } catch (error: any) {
       const errorMessage = errorUtils.getUserMessage(error);

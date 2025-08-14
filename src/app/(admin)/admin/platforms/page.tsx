@@ -1,11 +1,9 @@
-import type { Metadata } from 'next';
-import { AdminPlatforms } from '@/components/admin/admin-platforms';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'MyPick 플랫폼 관리',
-  description: '애플리케이션에서 사용할 플랫폼을 관리하세요',
-};
+import { AdminPlatforms } from '@/components/admin/admin-platforms';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export default function AdminPlatformsPage() {
+  useDocumentTitle('플랫폼 관리');
   return <AdminPlatforms />;
 }
