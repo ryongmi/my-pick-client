@@ -1,48 +1,26 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/redux';
+import { useAuth } from '@/context/AuthContext';
 
 interface AuthGuardProps {
   children: React.ReactNode;
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  useEffect(() => {
-    // 로딩 중이 아니고, 인증되지 않았으며, 로그인 페이지가 아닌 경우
-    if (!isLoading && !isAuthenticated && pathname !== '/login') {
-      router.push('/login');
-    }
-  }, [isAuthenticated, isLoading, pathname, router]);
+  const { loading } = useAuth();
 
   // 로딩 중일 때 스피너 표시
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">로딩 중...</p>
+        </div>
       </div>
     );
   }
 
-  // 로그인 페이지는 항상 렌더링
-  if (pathname === '/login') {
-    return <>{children}</>;
-  }
-
-  // 인증된 사용자만 접근 가능
-  if (isAuthenticated) {
-    return <>{children}</>;
-  }
-
-  // 인증되지 않은 경우 빈 화면 (리다이렉트 진행 중)
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
-  );
+  // 모든 페이지에서 렌더링 (인증 상태는 각 페이지에서 처리)
+  return <>{children}</>;
 }

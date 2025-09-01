@@ -290,11 +290,11 @@ export const errorUtils = {
 
 // 토큰 관리 함수
 export const tokenManager = {
-  setAuthToken: (token: string): void => {
+  setAccessToken: (token: string): void => {
     httpClient.getTokenManager().setAccessToken(token);
   },
   
-  clearAuthToken: (): void => {
+  clearAccessToken: (): void => {
     httpClient.getTokenManager().clearAccessToken();
   },
   
@@ -304,6 +304,17 @@ export const tokenManager = {
   
   getAccessToken: (): string | null => {
     return httpClient.getTokenManager().getAccessToken();
+  },
+
+  isValidToken: (token: string): boolean => {
+    try {
+      // JWT 토큰 유효성 검사 (만료 시간 확인)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const now = Date.now() / 1000;
+      return payload.exp > now;
+    } catch {
+      return false;
+    }
   }
 };
 

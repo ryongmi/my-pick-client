@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from '@/store';
+import { AuthProvider } from '@/context/AuthContext';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -36,7 +37,9 @@ export function Providers({ children }: ProvidersProps) {
         } 
         persistor={persistor}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </PersistGate>
     </Provider>
   );

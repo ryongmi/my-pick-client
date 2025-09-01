@@ -1,231 +1,117 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '@/types';
-// HttpClient 기반 API 사용
 import { authApi, errorUtils, tokenManager } from '@/lib/api';
-
-interface AuthError {
-  message: string;
-  code?: string;
-  isAuthError?: boolean;
-}
+import type { ApiResponse } from '@/lib/api';
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  error: AuthError | null;
-  rememberMe: boolean;
+  error: string | null;
+  isInitialized: boolean;
 }
 
 const initialState: AuthState = {
   user: null,
-  token: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
-  rememberMe: false,
+  isInitialized: false,
 };
 
-// Async thunks
-export const loginUser = createAsyncThunk(
-  'auth/login',
-  async (credentials: { email: string; password: string; rememberMe: boolean }, { rejectWithValue }) => {
-    try {
-      // HttpClient를 통한 API 호출
-      const response = await authApi.login(credentials);
-      
-      // 토큰 매니저에 토큰 설정
-      const responseData = response.data as any;
-      if (responseData?.token) {
-        tokenManager.setAuthToken(responseData.token);
-      }
-      
-      // 서버 응답 처리 (krgeobuk 서버 표준 형식)
-      const result = { 
-        ...response.data, 
-        rememberMe: credentials.rememberMe 
-      };
-      
-      return result;
-    } catch (error: any) {
-      // krgeobuk 서버 에러 처리
-      const errorMessage = errorUtils.getUserMessage(error);
-      const errorCode = errorUtils.getErrorCode(error);
-      
-      return rejectWithValue({
-        message: errorMessage,
-        code: errorCode,
-        isAuthError: errorUtils.isAuthError(error)
-      });
-    }
-  }
-);
-
-export const registerUser = createAsyncThunk(
-  'auth/register',
-  async (userData: { name: string; email: string; password: string }, { rejectWithValue }) => {
-    try {
-      const response = await authApi.register(userData);
-      
-      // 토큰 매니저에 토큰 설정
-      const responseData = response.data as any;
-      if (responseData?.token) {
-        tokenManager.setAuthToken(responseData.token);
-      }
-      
-      return response.data;
-    } catch (error: any) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      const errorCode = errorUtils.getErrorCode(error);
-      
-      return rejectWithValue({
-        message: errorMessage,
-        code: errorCode,
-        isAuthError: errorUtils.isAuthError(error)
-      });
-    }
-  }
-);
-
+// 로그아웃 비동기 액션
 export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
-      await authApi.logout();
-      
-      // 토큰 매니저에서 토큰 제거
-      tokenManager.clearAuthToken();
-      
-      return;
-    } catch (error: any) {
-      // 로그아웃 실패해도 로컬 토큰은 제거
-      tokenManager.clearAuthToken();
-      
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      await authApi.post('/auth/logout');
+      tokenManager.clearAccessToken();
+      return null;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      tokenManager.clearAccessToken();
+      return rejectWithValue(axiosError.response?.data?.message || '로그아웃에 실패했습니다.');
     }
   }
 );
 
-export const refreshToken = createAsyncThunk(
-  'auth/refreshToken',
+// 사용자 정보 조회 비동기 액션
+export const fetchUserProfile = createAsyncThunk(
+  'auth/fetchUserProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await authApi.refreshToken();
-      
-      // 토큰 매니저에 새 토큰 설정
-      if (response.data?.accessToken) {
-        tokenManager.setAuthToken(response.data.accessToken);
-      }
-      
-      return response.data;
-    } catch (error: any) {
-      // 리프레시 실패 시 모든 토큰 제거
-      tokenManager.clearAuthToken();
-      
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      const response = await authApi.get<ApiResponse<User>>('/users/me');
+      return response.data.data;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(axiosError.response?.data?.message || '사용자 정보를 불러올 수 없습니다.');
     }
   }
 );
 
-export const updateProfile = createAsyncThunk(
-  'auth/updateProfile',
-  async (profileData: Partial<User>, { rejectWithValue }) => {
+// 앱 초기화 비동기 액션 (토큰 확인 및 사용자 정보 조회)
+export const initializeAuth = createAsyncThunk(
+  'auth/initialize',
+  async (_, { dispatch, rejectWithValue }) => {
     try {
-      const response = await authApi.updateProfile(profileData);
-      return response.data;
-    } catch (error: any) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      const errorCode = errorUtils.getErrorCode(error);
+      const token = tokenManager.getAccessToken();
       
-      return rejectWithValue({
-        message: errorMessage,
-        code: errorCode,
-        isAuthError: errorUtils.isAuthError(error)
-      });
+      if (token && tokenManager.isValidToken(token)) {
+        // 유효한 토큰이 있으면 사용자 정보 조회
+        const userResponse = await dispatch(fetchUserProfile()).unwrap();
+        return { user: userResponse };
+      } else {
+        // 토큰이 없거나 유효하지 않으면 미인증 상태
+        return { user: null };
+      }
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(axiosError.response?.data?.message || '초기화에 실패했습니다.');
     }
   }
 );
 
-// Auth slice
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    clearError: (state) => {
-      state.error = null;
-    },
-    setCredentials: (state, action: PayloadAction<{ user: User; token: string }>) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+    // 사용자 정보 설정
+    setUser: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
       state.isAuthenticated = true;
       state.error = null;
     },
-    clearCredentials: (state) => {
+
+    // 사용자 정보 초기화 (로그아웃)
+    clearUser: (state) => {
       state.user = null;
-      state.token = null;
       state.isAuthenticated = false;
       state.error = null;
-      // 토큰 매니저에서도 토큰 제거
-      tokenManager.clearAuthToken();
     },
-    setRememberMe: (state, action: PayloadAction<boolean>) => {
-      state.rememberMe = action.payload;
+
+    // 로딩 상태 설정
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
+
+    // 에러 상태 설정
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+
+    // 초기화 완료 상태 설정
+    setInitialized: (state, action: PayloadAction<boolean>) => {
+      state.isInitialized = action.payload;
     },
   },
   extraReducers: (builder) => {
-    // Login
-    builder
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        
-        // 서버 응답 데이터 처리
-        const responseData = action.payload as any;
-        
-        state.user = responseData.user;
-        state.token = responseData.token;
-        state.isAuthenticated = true;
-        state.rememberMe = action.payload.rememberMe;
-        state.error = null;
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as AuthError;
-      });
-
-    // Register
-    builder
-      .addCase(registerUser.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        const registerData = action.payload as any;
-        state.user = registerData.user;
-        state.token = registerData.token;
-        state.isAuthenticated = true;
-        state.error = null;
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as AuthError;
-      });
-
-    // Logout
+    // 로그아웃
     builder
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
-        state.token = null;
         state.isAuthenticated = false;
         state.isLoading = false;
         state.error = null;
@@ -234,47 +120,56 @@ const authSlice = createSlice({
         state.isLoading = false;
         // 로그아웃 실패해도 상태는 초기화
         state.user = null;
-        state.token = null;
         state.isAuthenticated = false;
-        state.error = { message: action.payload as string };
+        state.error = action.payload as string;
       });
 
-    // Refresh token
+    // 사용자 프로필 조회
     builder
-      .addCase(refreshToken.fulfilled, (state, action) => {
-        if (action.payload) {
-          const refreshData = action.payload as any;
-          state.token = refreshData.token || refreshData.accessToken;
-          if (refreshData.user) {
-            state.user = refreshData.user;
-          }
-          state.isAuthenticated = true;
-        }
-      })
-      .addCase(refreshToken.rejected, (state) => {
-        state.user = null;
-        state.token = null;
-        state.isAuthenticated = false;
-      });
-
-    // Update profile
-    builder
-      .addCase(updateProfile.pending, (state) => {
+      .addCase(fetchUserProfile.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(updateProfile.fulfilled, (state, action) => {
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.isLoading = false;
-        if (state.user) {
-          state.user = { ...state.user, ...action.payload };
-        }
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.error = null;
       })
-      .addCase(updateProfile.rejected, (state, action) => {
+      .addCase(fetchUserProfile.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as AuthError;
+        state.user = null;
+        state.isAuthenticated = false;
+        state.error = action.payload as string;
+      });
+
+    // 초기화
+    builder
+      .addCase(initializeAuth.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(initializeAuth.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isInitialized = true;
+        if (action.payload.user) {
+          state.user = action.payload.user;
+          state.isAuthenticated = true;
+        } else {
+          state.user = null;
+          state.isAuthenticated = false;
+        }
+        state.error = null;
+      })
+      .addCase(initializeAuth.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isInitialized = true;
+        state.user = null;
+        state.isAuthenticated = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { clearError, setCredentials, clearCredentials, setRememberMe } = authSlice.actions;
+export const { setUser, clearUser, setLoading, setError, setInitialized } = authSlice.actions;
 export default authSlice.reducer;

@@ -6,7 +6,7 @@ export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 // 특정 slice 상태를 가져오는 커스텀 hooks
-export const useAuth = () => useAppSelector((state) => state.auth);
+// AuthContext를 사용하도록 변경됨
 export const useUI = () => useAppSelector((state) => state.ui);
 export const useCreator = () => useAppSelector((state) => state.creator);
 export const useContent = () => useAppSelector((state) => state.content);

@@ -7,7 +7,8 @@ import { Search, Bell, BarChart3, Menu, X, Star, Clock, CheckCircle, XCircle, Al
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { useAuth, useUI } from '@/hooks/redux';
+import { useUI } from '@/hooks/redux';
+import { useAuth } from '@/context/AuthContext';
 import {
   toggleSidebar,
   toggleDropdown,

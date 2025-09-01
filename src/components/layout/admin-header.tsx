@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, Bell, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth, useUI, useAppDispatch } from '@/hooks/redux';
+import { useUI, useAppDispatch } from '@/hooks/redux';
+import { useAuth } from '@/context/AuthContext';
 import { 
   toggleDropdown,
   closeAllDropdowns,
