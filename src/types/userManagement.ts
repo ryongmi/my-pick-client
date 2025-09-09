@@ -101,7 +101,7 @@ export interface UserActivityLog {
   userId: string;
   type: 'login' | 'logout' | 'upload' | 'api_call' | 'settings_change' | 'error';
   description: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
   timestamp: string;
@@ -316,6 +316,8 @@ export interface GetUsersRequest {
   page?: number;
   limit?: number;
   filters?: Partial<UserManagementFilter>;
+  // API 호환성을 위한 index signature 추가
+  [key: string]: unknown;
 }
 
 export interface GetUsersResponse {
@@ -327,6 +329,8 @@ export interface GetUsersResponse {
 export interface UpdateUserRequest {
   userId: string;
   updates: Partial<Pick<MyPickUser, 'serviceStatus' | 'userType' | 'preferences'>>;
+  // API 호환성을 위한 index signature 추가
+  [key: string]: unknown;
 }
 
 export interface CreatorApplicationAction {

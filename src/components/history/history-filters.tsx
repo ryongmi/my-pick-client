@@ -9,19 +9,14 @@ import {
   Clock, 
   Play,
   X,
-  ChevronDown
+  ChevronDown,
+  LucideIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface FilterState {
@@ -59,7 +54,7 @@ const MOCK_PLATFORMS = [
   { id: 'niconico', name: 'Niconico', count: 0 },
 ];
 
-export function HistoryFilters() {
+export function HistoryFilters(): JSX.Element {
   const [filters, setFilters] = useState<FilterState>({
     creators: [],
     categories: [],
@@ -73,7 +68,7 @@ export function HistoryFilters() {
     new Set(['creators', 'categories'])
   );
 
-  const toggleSection = (section: string) => {
+  const toggleSection = (section: string): void => {
     const newExpanded = new Set(expandedSections);
     if (newExpanded.has(section)) {
       newExpanded.delete(section);
@@ -86,35 +81,35 @@ export function HistoryFilters() {
   const updateFilter = <K extends keyof FilterState>(
     key: K,
     value: FilterState[K]
-  ) => {
+  ): void => {
     setFilters(prev => ({
       ...prev,
       [key]: value,
     }));
   };
 
-  const toggleCreator = (creatorId: string) => {
+  const toggleCreator = (creatorId: string): void => {
     const newCreators = filters.creators.includes(creatorId)
       ? filters.creators.filter(id => id !== creatorId)
       : [...filters.creators, creatorId];
     updateFilter('creators', newCreators);
   };
 
-  const toggleCategory = (categoryId: string) => {
+  const toggleCategory = (categoryId: string): void => {
     const newCategories = filters.categories.includes(categoryId)
       ? filters.categories.filter(id => id !== categoryId)
       : [...filters.categories, categoryId];
     updateFilter('categories', newCategories);
   };
 
-  const togglePlatform = (platformId: string) => {
+  const togglePlatform = (platformId: string): void => {
     const newPlatforms = filters.platforms.includes(platformId)
       ? filters.platforms.filter(id => id !== platformId)
       : [...filters.platforms, platformId];
     updateFilter('platforms', newPlatforms);
   };
 
-  const clearAllFilters = () => {
+  const clearAllFilters = (): void => {
     setFilters({
       creators: [],
       categories: [],
@@ -133,7 +128,7 @@ export function HistoryFilters() {
     filters.dateRange.start ||
     filters.dateRange.end;
 
-  const getActiveFilterCount = () => {
+  const getActiveFilterCount = (): number => {
     let count = 0;
     if (filters.creators.length > 0) {count += filters.creators.length;}
     if (filters.categories.length > 0) {count += filters.categories.length;}
@@ -150,10 +145,10 @@ export function HistoryFilters() {
     children 
   }: {
     title: string;
-    icon: any;
+    icon: LucideIcon;
     sectionKey: string;
     children: React.ReactNode;
-  }) => {
+  }): JSX.Element => {
     const isExpanded = expandedSections.has(sectionKey);
     
     return (

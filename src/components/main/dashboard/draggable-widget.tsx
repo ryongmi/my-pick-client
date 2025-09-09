@@ -26,7 +26,7 @@ export function DraggableWidget({
   onToggle, 
   onResize, 
   isDragOverlay = false 
-}: DraggableWidgetProps) {
+}: DraggableWidgetProps): JSX.Element {
   const {
     attributes,
     listeners,
@@ -41,11 +41,11 @@ export function DraggableWidget({
     transition,
   };
 
-  const handleToggle = () => {
+  const handleToggle = (): void => {
     onToggle(widget.id, !widget.enabled);
   };
 
-  const handleResize = () => {
+  const handleResize = (): void => {
     if (onResize) {
       const newSpan = {
         cols: widget.span.cols === 1 ? 2 : 1,
@@ -55,7 +55,7 @@ export function DraggableWidget({
     }
   };
 
-  const renderWidgetContent = () => {
+  const renderWidgetContent = (): JSX.Element => {
     switch (widget.type) {
       case 'personalized-feed':
         return <PersonalizedFeed {...widget.props} />;

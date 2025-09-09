@@ -59,8 +59,8 @@ export const fetchNotifications = createAsyncThunk(
       // const response = await notificationApi.getNotifications(params.page, params.limit);
       const response = await mockNotificationApi.getNotifications(params.page, params.limit);
       return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      return rejectWithValue((error as Error).message || 'Failed to fetch notifications');
     }
   }
 );
@@ -71,9 +71,9 @@ export const fetchUnreadCount = createAsyncThunk(
     try {
       // const response = await notificationApi.getUnreadCount();
       const response = await mockNotificationApi.getUnreadCount();
-      return response.data.count;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      return (response.data as { count: number }).count;
+    } catch (error: unknown) {
+      return rejectWithValue((error as Error).message || 'Failed to fetch unread count');
     }
   }
 );
@@ -85,8 +85,8 @@ export const markAsRead = createAsyncThunk(
       // await notificationApi.markAsRead(id);
       await mockNotificationApi.markAsRead(id);
       return id;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      return rejectWithValue((error as Error).message || 'Failed to mark as read');
     }
   }
 );
@@ -98,21 +98,21 @@ export const markAllAsRead = createAsyncThunk(
       // await notificationApi.markAllAsRead();
       await mockNotificationApi.markAllAsRead();
       return;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      return rejectWithValue((error as Error).message || 'Failed to mark all as read');
     }
   }
 );
 
 export const updateNotificationSettings = createAsyncThunk(
   'notification/updateSettings',
-  async (settings: any, { rejectWithValue }) => {
+  async (settings: Partial<NotificationState['settings']>, { rejectWithValue }) => {
     try {
       // await notificationApi.updateSettings(settings);
       await mockNotificationApi.updateSettings(settings);
       return settings;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+    } catch (error: unknown) {
+      return rejectWithValue((error as Error).message || 'Failed to update settings');
     }
   }
 );
@@ -156,7 +156,7 @@ const notificationSlice = createSlice({
       const notificationIndex = state.notifications.findIndex(n => n.id === action.payload);
       if (notificationIndex !== -1) {
         const notification = state.notifications[notificationIndex];
-        if (!notification.isRead) {
+        if (notification && !notification.isRead) {
           state.unreadCount = Math.max(0, state.unreadCount - 1);
         }
         state.notifications.splice(notificationIndex, 1);
@@ -182,10 +182,11 @@ const notificationSlice = createSlice({
       })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.notifications = action.payload.data;
-        state.pagination = action.payload.pagination;
+        const payload = action.payload as { data: Notification[]; pagination: typeof state.pagination };
+        state.notifications = payload.data;
+        state.pagination = payload.pagination;
         // 읽지 않은 알림 개수 계산
-        state.unreadCount = action.payload.data.filter((n: Notification) => !n.isRead).length;
+        state.unreadCount = payload.data.filter((n: Notification) => !n.isRead).length;
       })
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.isLoading = false;

@@ -10,7 +10,7 @@ const VIDEO_CREATOR_MAP: Record<string, string> = {
   '2': 'hikakin',
 };
 
-export default function VideoPage() {
+export default function VideoPage(): JSX.Element | null {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;

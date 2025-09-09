@@ -32,7 +32,10 @@ const platformSlice = createSlice({
       // availablePlatforms에서 플랫폼 찾아서 업데이트
       const platformIndex = state.availablePlatforms.findIndex(p => p.id === platformId);
       if (platformIndex !== -1) {
-        state.availablePlatforms[platformIndex].isEnabled = enabled;
+        const platform = state.availablePlatforms[platformIndex];
+        if (platform) {
+          platform.isEnabled = enabled;
+        }
         
         // enabledPlatforms 재계산
         state.enabledPlatforms = state.availablePlatforms.filter(p => p.isEnabled);
@@ -52,7 +55,10 @@ const platformSlice = createSlice({
       platformIds.forEach(platformId => {
         const platformIndex = state.availablePlatforms.findIndex(p => p.id === platformId);
         if (platformIndex !== -1) {
-          state.availablePlatforms[platformIndex].isEnabled = enabled;
+          const platform = state.availablePlatforms[platformIndex];
+          if (platform) {
+            platform.isEnabled = enabled;
+          }
         }
       });
       
@@ -73,7 +79,10 @@ const platformSlice = createSlice({
       
       const platformIndex = state.availablePlatforms.findIndex(p => p.id === platformId);
       if (platformIndex !== -1) {
-        state.availablePlatforms[platformIndex].order = newOrder;
+        const platform = state.availablePlatforms[platformIndex];
+        if (platform) {
+          platform.order = newOrder;
+        }
         
         // 순서대로 재정렬
         state.availablePlatforms = sortPlatformsByOrder(state.availablePlatforms);
@@ -131,16 +140,19 @@ const platformSlice = createSlice({
       const platformIndex = state.availablePlatforms.findIndex(p => p.id === platformId);
       
       if (platformIndex !== -1) {
-        const currentEnabled = state.availablePlatforms[platformIndex].isEnabled;
-        state.availablePlatforms[platformIndex].isEnabled = !currentEnabled;
+        const platform = state.availablePlatforms[platformIndex];
+        if (platform) {
+          const currentEnabled = platform.isEnabled;
+          platform.isEnabled = !currentEnabled;
+          
+          // 비활성화된 플랫폼이 현재 선택된 플랫폼이면 'all'로 변경
+          if (currentEnabled && state.selectedPlatform === platformId) {
+            state.selectedPlatform = 'all';
+          }
+        }
         
         // enabledPlatforms 재계산
         state.enabledPlatforms = state.availablePlatforms.filter(p => p.isEnabled);
-        
-        // 비활성화된 플랫폼이 현재 선택된 플랫폼이면 'all'로 변경
-        if (currentEnabled && state.selectedPlatform === platformId) {
-          state.selectedPlatform = 'all';
-        }
       }
       state.error = null;
     },
@@ -209,7 +221,10 @@ const platformSlice = createSlice({
       const platformIndex = state.availablePlatforms.findIndex(p => p.id === platformId);
       
       if (platformIndex !== -1) {
-        state.availablePlatforms[platformIndex].isEnabled = true;
+        const platform = state.availablePlatforms[platformIndex];
+        if (platform) {
+          platform.isEnabled = true;
+        }
         
         // enabledPlatforms 재계산
         state.enabledPlatforms = state.availablePlatforms.filter(p => p.isEnabled);
@@ -223,7 +238,10 @@ const platformSlice = createSlice({
       const platformIndex = state.availablePlatforms.findIndex(p => p.id === platformId);
       
       if (platformIndex !== -1) {
-        state.availablePlatforms[platformIndex].isEnabled = false;
+        const platform = state.availablePlatforms[platformIndex];
+        if (platform) {
+          platform.isEnabled = false;
+        }
         
         // enabledPlatforms 재계산
         state.enabledPlatforms = state.availablePlatforms.filter(p => p.isEnabled);
@@ -259,30 +277,30 @@ export const {
 export default platformSlice.reducer;
 
 // 선택자 (Selectors)
-export const selectAvailablePlatforms = (state: { platform: PlatformState }) => 
+export const selectAvailablePlatforms = (state: { platform: PlatformState }): PlatformConfig[] => 
   state.platform.availablePlatforms;
 
-export const selectEnabledPlatforms = (state: { platform: PlatformState }) => 
+export const selectEnabledPlatforms = (state: { platform: PlatformState }): PlatformConfig[] => 
   state.platform.enabledPlatforms;
 
-export const selectSelectedPlatform = (state: { platform: PlatformState }) => 
+export const selectSelectedPlatform = (state: { platform: PlatformState }): string => 
   state.platform.selectedPlatform;
 
-export const selectPlatformById = (state: { platform: PlatformState }, platformId: string) => 
+export const selectPlatformById = (state: { platform: PlatformState }, platformId: string): PlatformConfig | undefined => 
   state.platform.availablePlatforms.find(p => p.id === platformId);
 
-export const selectIsPlatformEnabled = (state: { platform: PlatformState }, platformId: string) => 
+export const selectIsPlatformEnabled = (state: { platform: PlatformState }, platformId: string): boolean => 
   state.platform.availablePlatforms.find(p => p.id === platformId)?.isEnabled || false;
 
-export const selectPlatformLoading = (state: { platform: PlatformState }) => 
+export const selectPlatformLoading = (state: { platform: PlatformState }): boolean => 
   state.platform.isLoading;
 
-export const selectPlatformError = (state: { platform: PlatformState }) => 
+export const selectPlatformError = (state: { platform: PlatformState }): string | null => 
   state.platform.error;
 
 // 관리자용 셀렉터들
-export const selectAllPlatforms = (state: { platform: PlatformState }) => 
+export const selectAllPlatforms = (state: { platform: PlatformState }): PlatformConfig[] => 
   state.platform.availablePlatforms;
 
-export const selectDisabledPlatforms = (state: { platform: PlatformState }) => 
+export const selectDisabledPlatforms = (state: { platform: PlatformState }): PlatformConfig[] => 
   state.platform.availablePlatforms.filter(p => !p.isEnabled);

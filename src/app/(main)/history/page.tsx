@@ -10,7 +10,7 @@ import { HistoryFilters } from '@/components/history/history-filters';
 import { ViewingStats } from '@/components/history/viewing-stats';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export default function HistoryPage() {
+export default function HistoryPage(): JSX.Element {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -61,7 +61,7 @@ export default function HistoryPage() {
             </div>
 
             {/* 시간 필터 탭 */}
-            <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+            <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as 'all' | 'today' | 'week' | 'month')}>
               <TabsList className="grid w-full max-w-md grid-cols-4">
                 <TabsTrigger value="all">전체</TabsTrigger>
                 <TabsTrigger value="today">오늘</TabsTrigger>

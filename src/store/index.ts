@@ -23,22 +23,21 @@ import creatorApplicationSlice from './slices/creatorApplicationSlice';
 import videoDetailSlice from './slices/videoDetailSlice';
 
 // Storage
-let storage;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let storage: any;
 if (typeof window !== 'undefined') {
-  const createWebStorage = () => {
-    return require('redux-persist/lib/storage').default;
-  };
-  storage = createWebStorage();
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  storage = require('redux-persist/lib/storage').default;
 } else {
-  const createNoopStorage = () => {
+  const createNoopStorage = (): { getItem: () => Promise<null>; setItem: () => Promise<void>; removeItem: () => Promise<void> } => {
     return {
-      getItem() {
+      getItem(): Promise<null> {
         return Promise.resolve(null);
       },
-      setItem() {
+      setItem(): Promise<void> {
         return Promise.resolve();
       },
-      removeItem() {
+      removeItem(): Promise<void> {
         return Promise.resolve();
       },
     };

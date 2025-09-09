@@ -44,11 +44,11 @@ export const DEFAULT_USER_PLATFORM_SETTINGS = {
   selectedPlatform: 'all',
 };
 
-export const getEnabledPlatforms = () => {
+export const getEnabledPlatforms = (): PlatformConfig[] => {
   return DEFAULT_PLATFORMS.filter(platform => platform.isEnabled);
 };
 
-export const sortPlatformsByOrder = (platforms: PlatformConfig[]) => {
+export const sortPlatformsByOrder = (platforms: PlatformConfig[]): PlatformConfig[] => {
   return [...platforms].sort((a, b) => a.order - b.order);
 };
 

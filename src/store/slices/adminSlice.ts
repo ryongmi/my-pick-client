@@ -102,7 +102,7 @@ export const fetchDashboardStats = createAsyncThunk<DashboardStats>(
     try {
       const response = await adminApi.getDashboardStats();
       return response.data as DashboardStats;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -121,7 +121,7 @@ export const fetchUsers = createAsyncThunk(
     try {
       const response = await adminApi.getUsers(params);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -134,7 +134,7 @@ export const approveCreator = createAsyncThunk(
     try {
       await adminApi.approveCreator(id);
       return id;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -147,7 +147,7 @@ export const rejectCreator = createAsyncThunk(
     try {
       await adminApi.rejectCreator(id);
       return id;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -196,8 +196,17 @@ const adminSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.isLoadingUsers = false;
-        const payload = action.payload as any; // Type assertion due to unknown structure
-        state.users = payload.items || payload.data || [];
+        const payload = action.payload as { 
+          items?: unknown[];
+          data?: unknown[];
+          page?: number;
+          limit?: number;
+          total?: number;
+          totalPages?: number;
+          hasNext?: boolean;
+          hasPrev?: boolean;
+        };
+        state.users = (payload.items as User[] || payload.data as User[] || []);
         state.usersPagination = {
           page: payload.page || 1,
           limit: payload.limit || 20,

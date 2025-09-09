@@ -181,12 +181,12 @@ const mockVideoDetailApi = {
     return mockRelatedVideos.filter(video => video.id !== videoId);
   },
 
-  async toggleBookmark(videoId: string): Promise<boolean> {
+  async toggleBookmark(_videoId: string): Promise<boolean> {
     await new Promise(resolve => setTimeout(resolve, 200));
     return Math.random() > 0.5; // Mock 결과
   },
 
-  async toggleLike(videoId: string): Promise<boolean> {
+  async toggleLike(_videoId: string): Promise<boolean> {
     await new Promise(resolve => setTimeout(resolve, 200));
     return Math.random() > 0.5; // Mock 결과
   },
@@ -199,8 +199,8 @@ export const fetchVideoDetail = createAsyncThunk(
     try {
       const video = await mockVideoDetailApi.getVideoDetail(videoId);
       return video;
-    } catch (error: any) {
-      return rejectWithValue(error.message || '비디오 정보를 가져오는데 실패했습니다.');
+    } catch (error: unknown) {
+      return rejectWithValue((error as Error).message || '비디오 정보를 가져오는데 실패했습니다.');
     }
   }
 );
@@ -212,8 +212,8 @@ export const fetchRelatedVideos = createAsyncThunk(
     try {
       const videos = await mockVideoDetailApi.getRelatedVideos(videoId);
       return videos;
-    } catch (error: any) {
-      return rejectWithValue(error.message || '관련 비디오를 가져오는데 실패했습니다.');
+    } catch (error: unknown) {
+      return rejectWithValue((error as Error).message || '관련 비디오를 가져오는데 실패했습니다.');
     }
   }
 );
@@ -225,8 +225,8 @@ export const toggleVideoBookmark = createAsyncThunk(
     try {
       const isBookmarked = await mockVideoDetailApi.toggleBookmark(videoId);
       return { videoId, isBookmarked };
-    } catch (error: any) {
-      return rejectWithValue(error.message || '북마크 처리에 실패했습니다.');
+    } catch (error: unknown) {
+      return rejectWithValue((error as Error).message || '북마크 처리에 실패했습니다.');
     }
   }
 );
@@ -238,8 +238,8 @@ export const toggleVideoLike = createAsyncThunk(
     try {
       const isLiked = await mockVideoDetailApi.toggleLike(videoId);
       return { videoId, isLiked };
-    } catch (error: any) {
-      return rejectWithValue(error.message || '좋아요 처리에 실패했습니다.');
+    } catch (error: unknown) {
+      return rejectWithValue((error as Error).message || '좋아요 처리에 실패했습니다.');
     }
   }
 );
@@ -301,7 +301,7 @@ const videoDetailSlice = createSlice({
         state.isLoadingRelated = false;
         state.relatedVideos = action.payload;
       })
-      .addCase(fetchRelatedVideos.rejected, (state, action) => {
+      .addCase(fetchRelatedVideos.rejected, (state, _action) => {
         state.isLoadingRelated = false;
       });
 

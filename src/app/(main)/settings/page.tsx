@@ -2,7 +2,7 @@
 
 import { useDocumentTitle } from '@/hooks/use-document-title';
 
-export default function SettingsPage() {
+export default function SettingsPage(): JSX.Element {
   useDocumentTitle('설정');
   return (
     <div className="p-6">

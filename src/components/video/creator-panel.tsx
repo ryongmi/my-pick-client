@@ -2,20 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { 
-  Users, 
   Play, 
   Eye, 
-  Calendar,
   ExternalLink,
-  Youtube,
-  MoreHorizontal,
   Bell,
   BellOff,
-  Heart,
-  MessageCircle,
-  Share2,
   ChevronRight,
-  Star,
   Trophy,
   Clock
 } from 'lucide-react';
@@ -23,11 +15,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { followCreator, unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { mockGetFollowedCreators } from '@/data/creators';
 import { cn, formatNumber, formatDate } from '@/lib/utils';
+import type { Creator } from '@/types';
 
 interface CreatorPanelProps {
   creatorId: string;
@@ -144,7 +136,7 @@ const MOCK_CREATOR_DATA = {
   },
 };
 
-export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps) {
+export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps): JSX.Element {
   const dispatch = useAppDispatch();
   const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
   const [notificationEnabled, setNotificationEnabled] = useState(false);
@@ -160,9 +152,9 @@ export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps) {
 
   // 구독한 크리에이터 목록 초기 로드
   useEffect(() => {
-    const loadFollowedCreators = async () => {
+    const loadFollowedCreators = async (): Promise<void> => {
       const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed.data || []));
+      dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
     };
     
     if (followedCreators.length === 0) {
@@ -188,7 +180,7 @@ export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps) {
     );
   }
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (): Promise<void> => {
     try {
       if (isFollowingCreator) {
         // 구독 해제
@@ -229,24 +221,26 @@ export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps) {
       window.dispatchEvent(new CustomEvent('followersChanged'));
       
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('구독 처리 실패:', error);
     }
   };
 
-  const handleNotificationToggle = () => {
+  const handleNotificationToggle = (): void => {
     if (!isFollowingCreator) {return;}
     
     setNotificationEnabled(!notificationEnabled);
     // TODO: API 호출로 알림 설정 변경
   };
 
-  const handleChannelVisit = () => {
+  const handleChannelVisit = (): void => {
     window.open(creatorData.socialLinks.youtube, '_blank');
   };
 
-  const handleVideoClick = (videoId: string) => {
+  const handleVideoClick = (videoId: string): void => {
     if (videoId !== currentVideoId) {
       // TODO: 비디오 페이지로 네비게이션
+      // eslint-disable-next-line no-console
       console.log('Navigate to video:', videoId);
     }
   };

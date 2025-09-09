@@ -72,7 +72,7 @@ interface AdminSidebarProps {
   onToggle: () => void;
 }
 
-export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps) {
+export function AdminSidebar({ isOpen, onToggle }: AdminSidebarProps): JSX.Element | null {
   const pathname = usePathname();
 
   if (!isOpen) {return null;}

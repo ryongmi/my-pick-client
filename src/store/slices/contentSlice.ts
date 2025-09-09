@@ -64,8 +64,8 @@ const initialState: ContentState = {
   isLiking: false,
   error: null,
   filters: {
-    creators: ['all'],
-    platforms: ['all'],
+    creators: [],
+    platforms: [],
     sortBy: 'newest',
     searchQuery: '',
   },
@@ -94,7 +94,7 @@ export const fetchContent = createAsyncThunk(
     try {
       const response = await contentApi.getContent(params);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -114,7 +114,7 @@ export const fetchMoreContent = createAsyncThunk(
     try {
       const response = await contentApi.getContent(params);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -130,7 +130,7 @@ export const fetchBookmarks = createAsyncThunk(
     try {
       const response = await contentApi.getBookmarks(params.page, params.limit);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -143,7 +143,7 @@ export const bookmarkContent = createAsyncThunk(
     try {
       await contentApi.bookmarkContent(id);
       return id;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -156,7 +156,7 @@ export const removeBookmark = createAsyncThunk(
     try {
       await contentApi.removeBookmark(id);
       return id;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -169,7 +169,7 @@ export const likeContent = createAsyncThunk(
     try {
       await contentApi.likeContent(id);
       return id;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -182,7 +182,7 @@ export const unlikeContent = createAsyncThunk(
     try {
       await contentApi.unlikeContent(id);
       return id;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -204,8 +204,8 @@ const contentSlice = createSlice({
     },
     clearFilters: (state) => {
       state.filters = {
-        creators: ['all'],
-        platforms: ['all'],
+        creators: [],
+        platforms: [],
         sortBy: 'newest',
         searchQuery: '',
       };
@@ -241,9 +241,27 @@ const contentSlice = createSlice({
       })
       .addCase(fetchContent.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.contents = (action.payload as any).data || [];
-        state.pagination = (action.payload as any).pagination || state.pagination;
-        state.hasMore = (action.payload as any).pagination?.hasNext || false;
+        const payload = (action.payload as unknown) as {
+          data?: unknown[];
+          pagination?: {
+            hasNext?: boolean;
+            page?: number;
+            limit?: number;
+            total?: number;
+            totalPages?: number;
+            hasPrev?: boolean;
+          };
+        };
+        state.contents = (payload.data as Content[]) || [];
+        state.pagination = {
+          page: payload.pagination?.page || state.pagination.page,
+          limit: payload.pagination?.limit || state.pagination.limit,
+          total: payload.pagination?.total || state.pagination.total,
+          totalPages: payload.pagination?.totalPages || state.pagination.totalPages,
+          hasNext: payload.pagination?.hasNext || state.pagination.hasNext,
+          hasPrev: payload.pagination?.hasPrev || state.pagination.hasPrev
+        };
+        state.hasMore = payload.pagination?.hasNext || false;
       })
       .addCase(fetchContent.rejected, (state, action) => {
         state.isLoading = false;
@@ -285,10 +303,28 @@ const contentSlice = createSlice({
       })
       .addCase(fetchMoreContent.fulfilled, (state, action) => {
         state.isLoadingMore = false;
+        const payload = (action.payload as unknown) as {
+          data?: unknown[];
+          pagination?: {
+            hasNext?: boolean;
+            page?: number;
+            limit?: number;
+            total?: number;
+            totalPages?: number;
+            hasPrev?: boolean;
+          };
+        };
         // 기존 콘텐츠에 새 콘텐츠 추가
-        state.contents = [...state.contents, ...((action.payload as any).data || [])];
-        state.pagination = (action.payload as any).pagination || state.pagination;
-        state.hasMore = (action.payload as any).pagination?.hasNext || false;
+        state.contents = [...state.contents, ...((payload.data as Content[]) || [])];
+        state.pagination = {
+          page: payload.pagination?.page || state.pagination.page,
+          limit: payload.pagination?.limit || state.pagination.limit,
+          total: payload.pagination?.total || state.pagination.total,
+          totalPages: payload.pagination?.totalPages || state.pagination.totalPages,
+          hasNext: payload.pagination?.hasNext || state.pagination.hasNext,
+          hasPrev: payload.pagination?.hasPrev || state.pagination.hasPrev
+        };
+        state.hasMore = payload.pagination?.hasNext || false;
       })
       .addCase(fetchMoreContent.rejected, (state, action) => {
         state.isLoadingMore = false;
@@ -303,8 +339,22 @@ const contentSlice = createSlice({
       })
       .addCase(fetchBookmarks.fulfilled, (state, action) => {
         state.isLoadingBookmarks = false;
-        state.bookmarkedContents = (action.payload as any).data || [];
-        state.bookmarkPagination = (action.payload as any).pagination || state.bookmarkPagination;
+        const payload = (action.payload as unknown) as {
+          data?: unknown[];
+          pagination?: {
+            page?: number;
+            limit?: number;
+            total?: number;
+            hasNext?: boolean;
+          };
+        };
+        state.bookmarkedContents = (payload.data as Content[]) || [];
+        state.bookmarkPagination = {
+          page: payload.pagination?.page || state.bookmarkPagination.page,
+          limit: payload.pagination?.limit || state.bookmarkPagination.limit,
+          total: payload.pagination?.total || state.bookmarkPagination.total,
+          hasNext: payload.pagination?.hasNext || state.bookmarkPagination.hasNext
+        };
       })
       .addCase(fetchBookmarks.rejected, (state, action) => {
         state.isLoadingBookmarks = false;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { Eye, Clock, Heart, Bookmark, Play, Youtube, Twitter, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { setPlatformFilter, clearFilters } from '@/store/slices/uiSlice';
 import { setSelectedPlatform, selectSelectedPlatform } from '@/store/slices/platformSlice';
 import { updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { mockGetFollowedCreators } from '@/data/creators';
+import { Creator } from '@/types';
 import { 
   fetchContent, 
   fetchMoreContent,
@@ -26,7 +27,7 @@ import { cn } from '@/lib/utils';
 import { formatNumber, formatDate } from '@/lib/utils';
 import { PlatformFilter } from '@/components/admin/platforms/platform-filter';
 
-const MOCK_CONTENT = [
+const _MOCK_CONTENT = [
   {
     id: '1',
     title: '【歌ってみた】새로운 커버곡 / Ado',
@@ -83,11 +84,11 @@ const MOCK_CONTENT = [
   },
 ];
 
-export function MainContent() {
+export function MainContent(): JSX.Element {
   const dispatch = useAppDispatch();
   const { filters } = useUI();
   const { contents, isLoading, hasMore, isLoadingMore, pagination } = useContent();
-  const { user, isLoggedIn, loading: authLoading } = useAuth();
+  const { isLoggedIn } = useAuth();
   const { followedCreators } = useAppSelector(state => state.creator);
   const selectedPlatform = useAppSelector(selectSelectedPlatform);
   const loadingRef = useRef<HTMLDivElement>(null);
@@ -103,9 +104,9 @@ export function MainContent() {
   // 팔로우한 크리에이터 초기 로드
   useEffect(() => {
     if (followedCreators.length === 0) {
-      const loadFollowed = async () => {
+      const loadFollowed = async (): Promise<void> => {
         const followed = await mockGetFollowedCreators();
-        dispatch(updateFollowedCreators(followed.data || []));
+        dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
       };
       loadFollowed();
     }
@@ -113,6 +114,7 @@ export function MainContent() {
 
   // 컴포넌트 마운트 시 콘텐츠 로드
   useEffect(() => {
+    // eslint-disable-next-line no-console
     console.log('[DEBUG] Fetching content with filters:', {
       creators: filters.selectedCreators,
       platforms: [selectedPlatform],
@@ -127,6 +129,7 @@ export function MainContent() {
 
   // contents 배열 변경 감지 (디버깅용)
   useEffect(() => {
+    // eslint-disable-next-line no-console
     console.log('[DEBUG] Contents updated:', {
       count: contents.length,
       hasMore,
@@ -136,8 +139,9 @@ export function MainContent() {
   }, [contents, hasMore, isLoadingMore, pagination.page]);
 
   // 무한 스크롤 로직
-  const loadMoreContent = useCallback(() => {
+  const loadMoreContent = useCallback((): void => {
     if (hasMore && !isLoadingMore && !isLoading) {
+      // eslint-disable-next-line no-console
       console.log('[DEBUG] Loading more content:', {
         nextPage: pagination.page + 1,
         creators: filters.selectedCreators,
@@ -150,6 +154,7 @@ export function MainContent() {
         sortBy: 'newest'
       }));
     } else {
+      // eslint-disable-next-line no-console
       console.log('[DEBUG] Cannot load more:', {
         hasMore,
         isLoadingMore,
@@ -164,7 +169,7 @@ export function MainContent() {
     if (!loadingElement || !hasMore) {return;}
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      (entries): void => {
         if (entries[0]?.isIntersecting) {
           loadMoreContent();
         }
@@ -174,29 +179,29 @@ export function MainContent() {
 
     observer.observe(loadingElement);
 
-    return () => {
+    return (): void => {
       observer.disconnect();
     };
   }, [loadMoreContent, hasMore]);
 
-  const handlePlatformFilter = (platform: string) => {
+  const handlePlatformFilter = (platform: string): void => {
     dispatch(setSelectedPlatform(platform));
     dispatch(setPlatformFilter([platform]));
   };
 
   // 크리에이터 이름을 정확히 가져오는 함수
-  const getCreatorDisplayName = (creatorId: string) => {
+  const getCreatorDisplayName = (creatorId: string): string => {
     const creator = followedCreators.find(c => c.id === creatorId);
     return creator?.displayName || creatorId;
   };
 
   // 필터 초기화 함수
-  const handleClearFilters = () => {
+  const handleClearFilters = (): void => {
     dispatch(clearFilters());
     dispatch(setSelectedPlatform('all'));
   };
 
-  const handleBookmark = async (contentId: string) => {
+  const handleBookmark = async (contentId: string): Promise<void> => {
     // 낙관적 업데이트
     dispatch(toggleBookmarkOptimistic(contentId));
     
@@ -211,11 +216,12 @@ export function MainContent() {
     } catch (error) {
       // 에러 시 롤백
       dispatch(toggleBookmarkOptimistic(contentId));
+      // eslint-disable-next-line no-console
       console.error('북마크 처리 실패:', error);
     }
   };
 
-  const handleLike = async (contentId: string) => {
+  const handleLike = async (contentId: string): Promise<void> => {
     // 낙관적 업데이트
     dispatch(toggleLikeOptimistic(contentId));
     
@@ -230,6 +236,7 @@ export function MainContent() {
     } catch (error) {
       // 에러 시 롤백
       dispatch(toggleLikeOptimistic(contentId));
+      // eslint-disable-next-line no-console
       console.error('좋아요 처리 실패:', error);
     }
   };
@@ -262,7 +269,25 @@ export function MainContent() {
     return creatorMatch && platformMatch;
   });
 
-  const renderContentCard = (content: any) => {
+  const renderContentCard = (content: {
+    id: string;
+    title: string;
+    description?: string;
+    thumbnail?: string;
+    platform: string;
+    creator?: {
+      id: string;
+      name: string;
+      displayName: string;
+      avatar?: string;
+    };
+    publishedAt: string;
+    viewCount?: number;
+    likeCount?: number;
+    duration?: string | number;
+    isBookmarked?: boolean;
+    isLiked?: boolean;
+  }): JSX.Element => {
     if (content.platform === 'youtube') {
       return (
         <Link href={`/video/${content.id}`} key={content.id}>
@@ -291,15 +316,15 @@ export function MainContent() {
                     <div className="flex items-center">
                       <div className={cn(
                         'w-6 h-6 rounded-full mr-2 flex items-center justify-center text-white text-xs font-bold',
-                        content.creator.id === 'ado' ? 'gradient-ado' : 'gradient-hikakin'
+                        content.creator?.id === 'ado' ? 'gradient-ado' : 'gradient-hikakin'
                       )}>
-                        {content.creator.displayName.charAt(0)}
+                        {content.creator?.displayName?.charAt(0) || '?'}
                       </div>
-                      <span className="font-medium">{content.creator.displayName}</span>
+                      <span className="font-medium">{content.creator?.displayName || 'Unknown'}</span>
                     </div>
                     <div className="flex items-center">
                       <Eye className="h-3 w-3 mr-1" />
-                      <span>{formatNumber(content.viewCount)}회</span>
+                      <span>{formatNumber(content.viewCount || 0)}회</span>
                     </div>
                     <div className="flex items-center">
                       <Clock className="h-3 w-3 mr-1" />
@@ -359,15 +384,15 @@ export function MainContent() {
           <div className="flex items-start">
             <div className={cn(
               'w-12 h-12 rounded-full mr-3 flex-shrink-0 flex items-center justify-center text-white font-bold',
-              content.creator.id === 'ado' ? 'gradient-ado' : 'gradient-hikakin'
+              content.creator?.id === 'ado' ? 'gradient-ado' : 'gradient-hikakin'
             )}>
-              {content.creator.displayName.charAt(0)}
+              {content.creator?.displayName?.charAt(0) || '?'}
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center flex-wrap">
-                  <h4 className="font-bold mr-2">{content.creator.displayName}</h4>
-                  <span className="text-muted-foreground text-sm">@{content.creator.name}</span>
+                  <h4 className="font-bold mr-2">{content.creator?.displayName || 'Unknown'}</h4>
+                  <span className="text-muted-foreground text-sm">@{content.creator?.name || 'unknown'}</span>
                   <div className="flex items-center ml-3 text-sm text-muted-foreground">
                     <Clock className="h-3 w-3 mr-1" />
                     <span>{formatDate(content.publishedAt, 'relative')}</span>
@@ -402,7 +427,7 @@ export function MainContent() {
                     'h-3 w-3 mr-1',
                     content.isLiked && 'fill-current'
                   )} />
-                  {formatNumber(content.likeCount)}
+                  {formatNumber(content.likeCount || 0)}
                 </Button>
                 <Button variant="ghost" size="sm" className="h-auto p-1">
                   <span className="mr-1">📤</span>

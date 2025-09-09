@@ -16,13 +16,13 @@ interface AdminHeaderProps {
   onToggleSidebar: () => void;
 }
 
-export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
+export function AdminHeader({ onToggleSidebar }: AdminHeaderProps): JSX.Element {
   const { user } = useAuth();
   const { dropdowns } = useUI();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       const target = event.target as Element;
 
       // 드롭다운이나 드롭다운 트리거 버튼을 클릭한 경우 닫지 않음
@@ -36,7 +36,7 @@ export function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
     };
 
     document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    return (): void => document.removeEventListener('click', handleClickOutside);
   }, [dispatch]);
 
   return (

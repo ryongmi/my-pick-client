@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isLoggedIn: boolean;
+  isAuthenticated: boolean; // header.tsx에서 사용하는 속성 추가
   error: string | null;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -92,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     user,
     loading: isLoading,
     isLoggedIn: isAuthenticated,
+    isAuthenticated, // 동일한 값으로 설정
     error,
     logout,
     refreshUser,

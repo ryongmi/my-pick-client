@@ -1,10 +1,10 @@
 'use client';
 
-import { X, Clock, CheckCircle, XCircle, AlertCircle, Calendar, User, Youtube } from 'lucide-react';
+import { X, Clock, CheckCircle, XCircle, AlertCircle, Youtube } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { closeStatusModal, openApplicationModal } from '@/store/slices/creatorApplicationSlice';
+import { openApplicationModal } from '@/store/slices/creatorApplicationSlice';
 import { cn } from '@/lib/utils';
 
 interface CreatorStatusModalProps {
@@ -12,13 +12,13 @@ interface CreatorStatusModalProps {
   onClose: () => void;
 }
 
-export function CreatorStatusModal({ isOpen, onClose }: CreatorStatusModalProps) {
+export function CreatorStatusModal({ isOpen, onClose }: CreatorStatusModalProps): JSX.Element | null {
   const dispatch = useAppDispatch();
   const { currentApplication, applicationStatus } = useAppSelector(state => state.creatorApplication);
 
   if (!isOpen || !currentApplication) {return null;}
 
-  const getStatusInfo = () => {
+  const getStatusInfo = (): { icon: typeof Clock; title: string; description: string; color: string; bgColor: string; borderColor: string } => {
     switch (applicationStatus) {
       case 'pending':
         return {
@@ -62,7 +62,7 @@ export function CreatorStatusModal({ isOpen, onClose }: CreatorStatusModalProps)
   const statusInfo = getStatusInfo();
   const StatusIcon = statusInfo.icon;
 
-  const handleResubmit = () => {
+  const handleResubmit = (): void => {
     onClose();
     dispatch(openApplicationModal());
   };

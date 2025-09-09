@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import {
   X,
   CheckCircle,
@@ -33,22 +34,23 @@ export function CreatorHistoryDetailModal({
   isOpen, 
   onClose, 
   application 
-}: CreatorHistoryDetailModalProps) {
+}: CreatorHistoryDetailModalProps): JSX.Element | null {
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   if (!isOpen || !application) {return null;}
 
-  const handleCopy = async (text: string, fieldName: string) => {
+  const handleCopy = async (text: string, fieldName: string): Promise<void> => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedField(fieldName);
       setTimeout(() => setCopiedField(null), 2000);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('복사 실패:', error);
     }
   };
 
-  const formatSubscriberCount = (count: number) => {
+  const formatSubscriberCount = (count: number): string => {
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(1)}M`;
     } else if (count >= 1000) {
@@ -57,7 +59,13 @@ export function CreatorHistoryDetailModal({
     return count.toLocaleString();
   };
 
-  const getStatusInfo = (status: string) => {
+  const getStatusInfo = (status: string): {
+    icon: JSX.Element;
+    text: string;
+    bgColor: string;
+    textColor: string;
+    borderColor: string;
+  } => {
     switch (status) {
       case 'approved':
         return {
@@ -88,7 +96,7 @@ export function CreatorHistoryDetailModal({
 
   const statusInfo = getStatusInfo(application.status);
 
-  const CopyButton = ({ text, fieldName }: { text: string; fieldName: string }) => (
+  const CopyButton = ({ text, fieldName }: { text: string; fieldName: string }): JSX.Element => (
     <Button
       variant="ghost"
       size="sm"
@@ -240,9 +248,11 @@ export function CreatorHistoryDetailModal({
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
                       {application.user?.avatar ? (
-                        <img 
+                        <Image 
                           src={application.user.avatar} 
                           alt={application.user.name}
+                          width={48}
+                          height={48}
                           className="h-12 w-12 rounded-full object-cover"
                         />
                       ) : (

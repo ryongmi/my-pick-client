@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-export function AdminApi() {
+export function AdminApi(): JSX.Element {
   return (
     <div className="space-y-6">
       {/* 페이지 헤더 */}

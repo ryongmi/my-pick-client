@@ -80,7 +80,7 @@ export const fetchCreators = createAsyncThunk(
     try {
       const response = await creatorApi.getCreators(params);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -99,7 +99,7 @@ export const fetchMoreCreators = createAsyncThunk(
     try {
       const response = await creatorApi.getCreators(params);
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -112,7 +112,7 @@ export const fetchCreatorById = createAsyncThunk(
     try {
       const response = await creatorApi.getCreator(id);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -125,7 +125,7 @@ export const fetchCreatorStats = createAsyncThunk(
     try {
       const response = await creatorApi.getCreatorStats(id);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -138,7 +138,7 @@ export const followCreator = createAsyncThunk(
     try {
       await creatorApi.followCreator(creator.id);
       return creator;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -151,7 +151,7 @@ export const unfollowCreator = createAsyncThunk(
     try {
       await creatorApi.unfollowCreator(creatorId);
       return creatorId;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -160,11 +160,11 @@ export const unfollowCreator = createAsyncThunk(
 
 export const addCreator = createAsyncThunk(
   'creator/addCreator',
-  async (creatorData: any, { rejectWithValue }) => {
+  async (creatorData: unknown, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.addCreator(creatorData);
+      const response = await creatorApi.addCreator(creatorData as Record<string, unknown>);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -177,7 +177,7 @@ export const syncCreator = createAsyncThunk(
     try {
       await creatorApi.syncCreator(id);
       return id;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error);
       return rejectWithValue(errorMessage);
     }
@@ -227,18 +227,35 @@ const creatorSlice = createSlice({
       // creators 배열에서 업데이트
       const creatorIndex = state.creators.findIndex(c => c.id === id);
       if (creatorIndex !== -1) {
-        state.creators[creatorIndex] = { ...state.creators[creatorIndex], ...updates };
+        const existingCreator = state.creators[creatorIndex];
+        Object.keys(updates).forEach(key => {
+          if (updates[key as keyof Creator] !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (existingCreator as any)[key] = updates[key as keyof Creator];
+          }
+        });
       }
       
       // followedCreators 배열에서 업데이트
       const followedIndex = state.followedCreators.findIndex(c => c.id === id);
       if (followedIndex !== -1) {
-        state.followedCreators[followedIndex] = { ...state.followedCreators[followedIndex], ...updates };
+        const existingFollowed = state.followedCreators[followedIndex];
+        Object.keys(updates).forEach(key => {
+          if (updates[key as keyof Creator] !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (existingFollowed as any)[key] = updates[key as keyof Creator];
+          }
+        });
       }
       
       // selectedCreator 업데이트
       if (state.selectedCreator && state.selectedCreator.id === id) {
-        state.selectedCreator = { ...state.selectedCreator, ...updates };
+        Object.keys(updates).forEach(key => {
+          if (updates[key as keyof Creator] !== undefined && state.selectedCreator) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (state.selectedCreator as any)[key] = updates[key as keyof Creator];
+          }
+        });
       }
     },
   },
@@ -251,9 +268,10 @@ const creatorSlice = createSlice({
       })
       .addCase(fetchCreators.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.creators = (action.payload as any).data || [];
-        state.pagination = (action.payload as any).pagination || state.pagination;
-        state.hasMore = (action.payload as any).pagination?.hasNext || false;
+        const payload = (action.payload as unknown) as { data?: Creator[]; pagination?: typeof state.pagination };
+        state.creators = payload.data || [];
+        state.pagination = payload.pagination || state.pagination;
+        state.hasMore = payload.pagination?.hasNext || false;
       })
       .addCase(fetchCreators.rejected, (state, action) => {
         state.isLoading = false;
@@ -267,9 +285,10 @@ const creatorSlice = createSlice({
       })
       .addCase(fetchMoreCreators.fulfilled, (state, action) => {
         state.isLoadingMore = false;
-        state.creators = [...state.creators, ...((action.payload as any).data || [])];
-        state.pagination = (action.payload as any).pagination || state.pagination;
-        state.hasMore = (action.payload as any).pagination?.hasNext || false;
+        const payload = (action.payload as unknown) as { data?: Creator[]; pagination?: typeof state.pagination };
+        state.creators = [...state.creators, ...(payload.data || [])];
+        state.pagination = payload.pagination || state.pagination;
+        state.hasMore = payload.pagination?.hasNext || false;
       })
       .addCase(fetchMoreCreators.rejected, (state, action) => {
         state.isLoadingMore = false;
@@ -284,7 +303,7 @@ const creatorSlice = createSlice({
       })
       .addCase(fetchCreatorById.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.selectedCreator = (action.payload as any) || null;
+        state.selectedCreator = (action.payload as Creator) || null;
       })
       .addCase(fetchCreatorById.rejected, (state, action) => {
         state.isLoading = false;
@@ -298,7 +317,7 @@ const creatorSlice = createSlice({
       })
       .addCase(fetchCreatorStats.fulfilled, (state, action) => {
         state.isLoadingStats = false;
-        state.creatorStats = (action.payload as any) || null;
+        state.creatorStats = (action.payload as CreatorStats) || null;
       })
       .addCase(fetchCreatorStats.rejected, (state, action) => {
         state.isLoadingStats = false;
@@ -354,7 +373,7 @@ const creatorSlice = createSlice({
       })
       .addCase(addCreator.fulfilled, (state, action) => {
         state.isLoading = false;
-        const newCreator = action.payload as any;
+        const newCreator = action.payload as Creator;
         if (newCreator) {
           state.creators.unshift(newCreator);
         }

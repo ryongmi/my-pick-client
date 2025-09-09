@@ -28,7 +28,7 @@ export type BulkAction =
 interface BulkActionOption {
   action: BulkAction;
   label: string;
-  icon: any;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   color: string;
   bgColor: string;
   hoverColor: string;
@@ -93,7 +93,7 @@ export function BulkOperations({
   onSelectNone, 
   onBulkAction,
   className 
-}: BulkOperationsProps) {
+}: BulkOperationsProps): JSX.Element {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<BulkActionOption | null>(null);
 
@@ -101,7 +101,7 @@ export function BulkOperations({
   const isPartialSelected = selectedCreators.length > 0 && selectedCreators.length < totalCreators;
   const hasSelection = selectedCreators.length > 0;
 
-  const handleSelectToggle = () => {
+  const handleSelectToggle = (): void => {
     if (isAllSelected) {
       onSelectNone();
     } else {
@@ -109,7 +109,7 @@ export function BulkOperations({
     }
   };
 
-  const handleBulkAction = (actionOption: BulkActionOption) => {
+  const handleBulkAction = (actionOption: BulkActionOption): void => {
     if (actionOption.confirmRequired) {
       setConfirmAction(actionOption);
     } else {
@@ -118,14 +118,14 @@ export function BulkOperations({
     setDropdownOpen(false);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = (): void => {
     if (confirmAction) {
       onBulkAction(confirmAction.action, selectedCreators);
       setConfirmAction(null);
     }
   };
 
-  const getSelectionIcon = () => {
+  const getSelectionIcon = (): React.ComponentType<React.SVGProps<SVGSVGElement>> => {
     if (isAllSelected) {
       return CheckSquare;
     } else if (isPartialSelected) {

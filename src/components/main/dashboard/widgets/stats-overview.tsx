@@ -22,7 +22,7 @@ export interface StatsOverviewProps {
   compact?: boolean;
 }
 
-export function StatsOverview({ period = 'week', compact = false }: StatsOverviewProps) {
+export function StatsOverview({ period = 'week', compact = false }: StatsOverviewProps): JSX.Element {
   const [stats, setStats] = useState<StatItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -113,7 +113,7 @@ export function StatsOverview({ period = 'week', compact = false }: StatsOvervie
     }, 900);
   }, [period, compact]);
 
-  const formatValue = (value: number, format?: string, unit?: string) => {
+  const formatValue = (value: number, format?: string, unit?: string): string => {
     switch (format) {
       case 'duration':
         return `${value.toFixed(1)}${unit}`;
@@ -125,7 +125,7 @@ export function StatsOverview({ period = 'week', compact = false }: StatsOvervie
     }
   };
 
-  const getChangeIcon = (changeType: string) => {
+  const getChangeIcon = (changeType: string): JSX.Element => {
     switch (changeType) {
       case 'increase':
         return <TrendingUp className="h-3 w-3" />;
@@ -137,7 +137,7 @@ export function StatsOverview({ period = 'week', compact = false }: StatsOvervie
     }
   };
 
-  const getChangeColor = (changeType: string) => {
+  const getChangeColor = (changeType: string): string => {
     switch (changeType) {
       case 'increase':
         return 'text-green-600';
@@ -149,7 +149,7 @@ export function StatsOverview({ period = 'week', compact = false }: StatsOvervie
     }
   };
 
-  const getPeriodLabel = () => {
+  const getPeriodLabel = (): string => {
     switch (period) {
       case 'today':
         return '오늘';

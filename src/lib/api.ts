@@ -4,7 +4,7 @@ import type {
   TokenRefreshConfig, 
   SecurityPolicy 
 } from '@krgeobuk/http-client/types';
-import type { ApiResponse, PaginatedResponse } from '@/types';
+import type { ApiResponse, PaginatedResponse, User } from '@/types';
 
 // 환경 변수 설정
 const getEnvConfig = (): MultiServerConfig => ({
@@ -20,6 +20,11 @@ const getEnvConfig = (): MultiServerConfig => ({
   },
   mypick: {
     baseURL: process.env.NEXT_PUBLIC_MYPICK_API_URL || 'http://localhost:8300',
+    timeout: 30000,
+    withCredentials: true,
+  },
+  portal: {
+    baseURL: process.env.NEXT_PUBLIC_PORTAL_API_URL || 'http://localhost:8400',
     timeout: 30000,
     withCredentials: true,
   }
@@ -62,20 +67,27 @@ export const httpClient = new HttpClient(
 // =============================================================================
 
 export const authApi = {
-  login: (credentials: { email: string; password: string }) =>
-    httpClient.post<{ user: any; token: string }>('auth', '/auth/login', credentials),
+  login: (credentials: { email: string; password: string }): Promise<ApiResponse<{ user: User; token: string }>> =>
+    httpClient.post<{ user: User; token: string }>('auth', '/auth/login', credentials),
   
-  register: (data: { name: string; email: string; password: string }) =>
-    httpClient.post<{ user: any }>('auth', '/auth/register', data),
+  register: (data: { name: string; email: string; password: string }): Promise<ApiResponse<{ user: User }>> =>
+    httpClient.post<{ user: User }>('auth', '/auth/register', data),
   
-  logout: () => 
+  logout: (): Promise<ApiResponse<unknown>> => 
     httpClient.post('auth', '/auth/logout'),
   
-  refreshToken: () => 
+  refreshToken: (): Promise<ApiResponse<{ accessToken: string }>> => 
     httpClient.post<{ accessToken: string }>('auth', '/auth/refresh'),
   
-  updateProfile: (data: any) => 
+  updateProfile: (data: Partial<User>): Promise<ApiResponse<User>> => 
     httpClient.put('auth', '/auth/profile', data),
+
+  // authSlice에서 사용하는 메서드들 추가
+  post: (url: string, data?: unknown): Promise<ApiResponse<unknown>> => 
+    httpClient.post('auth', url, data),
+  
+  get: <T>(url: string): Promise<ApiResponse<T>> => 
+    httpClient.get<T>('auth', url),
 };
 
 // =============================================================================
@@ -83,20 +95,20 @@ export const authApi = {
 // =============================================================================
 
 export const userApi = {
-  getProfile: () => 
+  getProfile: (): Promise<ApiResponse<User>> => 
     httpClient.get('auth', '/users/profile'),
   
-  updateProfile: (data: any) => 
+  updateProfile: (data: Partial<User>): Promise<ApiResponse<User>> => 
     httpClient.put('auth', '/users/profile', data),
   
-  getSettings: () => 
+  getSettings: (): Promise<ApiResponse<unknown>> => 
     httpClient.get('auth', '/users/settings'),
   
-  updateSettings: (settings: any) => 
+  updateSettings: (settings: Record<string, unknown>): Promise<ApiResponse<unknown>> => 
     httpClient.put('auth', '/users/settings', settings),
   
   // 사용자 구독 관리
-  getSubscriptions: () => 
+  getSubscriptions: (): Promise<ApiResponse<unknown>> => 
     httpClient.get('mypick', '/me/subscriptions'),
 };
 
@@ -105,42 +117,42 @@ export const userApi = {
 // =============================================================================
 
 export const creatorApi = {
-  getCreators: (params?: any) => 
-    httpClient.get<PaginatedResponse<any>>('authz', '/creators', { params }),
+  getCreators: (params?: Record<string, unknown>): Promise<ApiResponse<PaginatedResponse<unknown>>> => 
+    httpClient.get<PaginatedResponse<unknown>>('authz', '/creators', { params }),
   
-  getCreator: (id: string) => 
+  getCreator: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.get('mypick', `/creators/${id}`),
   
   // 구독 API (JWT 기반 - userId 자동 추출)
-  followCreator: (creatorId: string) => 
+  followCreator: (creatorId: string): Promise<ApiResponse<unknown>> => 
     httpClient.post('mypick', `/me/subscriptions/${creatorId}`),
   
-  unfollowCreator: (creatorId: string) => 
+  unfollowCreator: (creatorId: string): Promise<ApiResponse<unknown>> => 
     httpClient.delete('mypick', `/me/subscriptions/${creatorId}`),
   
-  checkSubscription: (creatorId: string) => 
+  checkSubscription: (creatorId: string): Promise<ApiResponse<{ subscribed: boolean }>> => 
     httpClient.get('mypick', `/me/subscriptions/${creatorId}/exists`),
   
-  getCreatorSubscribers: (creatorId: string) => 
+  getCreatorSubscribers: (creatorId: string): Promise<ApiResponse<unknown>> => 
     httpClient.get('mypick', `/creators/${creatorId}/subscribers`),
   
-  addCreator: (data: any) => 
+  addCreator: (data: Record<string, unknown>): Promise<ApiResponse<unknown>> => 
     httpClient.post('mypick', '/creators', data),
   
-  updateCreator: (id: string, data: any) => 
+  updateCreator: (id: string, data: Record<string, unknown>): Promise<ApiResponse<unknown>> => 
     httpClient.put('mypick', `/creators/${id}`, data),
   
-  deleteCreator: (id: string) => 
+  deleteCreator: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.delete('mypick', `/creators/${id}`),
   
-  getCreatorStats: (id: string) => 
+  getCreatorStats: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.get('mypick', `/creators/${id}/stats`),
   
-  syncCreator: (id: string) => 
+  syncCreator: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.post('mypick', `/creators/${id}/sync`),
   
   // Toggle function for easier usage
-  toggleFollow: async (creatorId: string, isCurrentlyFollowing: boolean) => {
+  toggleFollow: async (creatorId: string, isCurrentlyFollowing: boolean): Promise<ApiResponse<unknown>> => {
     return isCurrentlyFollowing 
       ? creatorApi.unfollowCreator(creatorId)
       : creatorApi.followCreator(creatorId);
@@ -152,38 +164,38 @@ export const creatorApi = {
 // =============================================================================
 
 export const contentApi = {
-  getContent: (params?: any) => 
-    httpClient.get<PaginatedResponse<any>>('authz', '/content', { params }),
+  getContent: (params?: Record<string, unknown>): Promise<ApiResponse<PaginatedResponse<unknown>>> => 
+    httpClient.get<PaginatedResponse<unknown>>('authz', '/content', { params }),
   
-  getContentById: (id: string) => 
+  getContentById: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.get('mypick', `/content/${id}`),
   
-  bookmarkContent: (id: string) => 
+  bookmarkContent: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.post('mypick', `/content/${id}/bookmark`),
   
-  removeBookmark: (id: string) => 
+  removeBookmark: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.delete('mypick', `/content/${id}/bookmark`),
   
-  likeContent: (id: string) => 
+  likeContent: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.post('mypick', `/content/${id}/like`),
   
-  unlikeContent: (id: string) => 
+  unlikeContent: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.delete('mypick', `/content/${id}/like`),
   
-  getBookmarks: (page = 1, limit = 20) =>
-    httpClient.get<PaginatedResponse<any>>('authz', '/content/bookmarks', { params: { page, limit } }),
+  getBookmarks: (page = 1, limit = 20): Promise<ApiResponse<PaginatedResponse<unknown>>> =>
+    httpClient.get<PaginatedResponse<unknown>>('authz', '/content/bookmarks', { params: { page, limit } }),
   
-  searchContent: (query: string, filters?: any) =>
+  searchContent: (query: string, filters?: Record<string, unknown>): Promise<ApiResponse<PaginatedResponse<unknown>>> =>
     httpClient.get('mypick', '/content/search', { params: { q: query, ...filters } }),
   
   // Toggle functions for easier usage
-  toggleBookmark: async (id: string, isCurrentlyBookmarked: boolean) => {
+  toggleBookmark: async (id: string, isCurrentlyBookmarked: boolean): Promise<ApiResponse<unknown>> => {
     return isCurrentlyBookmarked 
       ? contentApi.removeBookmark(id)
       : contentApi.bookmarkContent(id);
   },
   
-  toggleLike: async (id: string, isCurrentlyLiked: boolean) => {
+  toggleLike: async (id: string, isCurrentlyLiked: boolean): Promise<ApiResponse<unknown>> => {
     return isCurrentlyLiked 
       ? contentApi.unlikeContent(id)
       : contentApi.likeContent(id);
@@ -204,28 +216,28 @@ export const notificationApi = mockNotificationApi;
 // =============================================================================
 
 export const adminApi = {
-  getDashboardStats: () => 
+  getDashboardStats: (): Promise<ApiResponse<unknown>> => 
     httpClient.get('mypick', '/admin/dashboard'),
   
-  getUsers: (params?: any) => 
-    httpClient.get<PaginatedResponse<any>>('authz', '/admin/users', { params }),
+  getUsers: (params?: Record<string, unknown>): Promise<ApiResponse<PaginatedResponse<unknown>>> => 
+    httpClient.get<PaginatedResponse<unknown>>('authz', '/admin/users', { params }),
   
-  getUser: (id: string) => 
+  getUser: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.get('mypick', `/admin/users/${id}`),
   
-  updateUser: (id: string, data: any) => 
+  updateUser: (id: string, data: Record<string, unknown>): Promise<ApiResponse<unknown>> => 
     httpClient.put('mypick', `/admin/users/${id}`, data),
   
-  deleteUser: (id: string) => 
+  deleteUser: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.delete('mypick', `/admin/users/${id}`),
   
-  getCreators: (params?: any) => 
-    httpClient.get<PaginatedResponse<any>>('authz', '/admin/creators', { params }),
+  getCreators: (params?: Record<string, unknown>): Promise<ApiResponse<PaginatedResponse<unknown>>> => 
+    httpClient.get<PaginatedResponse<unknown>>('authz', '/admin/creators', { params }),
   
-  approveCreator: (id: string) => 
+  approveCreator: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.post('mypick', `/admin/creators/${id}/approve`),
   
-  rejectCreator: (id: string) => 
+  rejectCreator: (id: string): Promise<ApiResponse<unknown>> => 
     httpClient.post('mypick', `/admin/creators/${id}/reject`),
 };
 
@@ -236,32 +248,36 @@ export const adminApi = {
 // 에러 처리 유틸리티 함수들
 export const errorUtils = {
   // krgeobuk 서버 에러인지 확인
-  isKrgeobukError(error: any): boolean {
-    return error.response?.data?.code && typeof error.response.data.code === 'string';
+  isKrgeobukError(error: unknown): boolean {
+    const typedError = error as { response?: { data?: { code?: unknown } } };
+    return !!typedError.response?.data?.code && typeof typedError.response.data.code === 'string';
   },
   
   // 에러 코드 추출
-  getErrorCode(error: any): string | null {
-    return error.response?.data?.code || null;
+  getErrorCode(error: unknown): string | null {
+    const typedError = error as { response?: { data?: { code?: string } } };
+    return typedError.response?.data?.code || null;
   },
   
   // 사용자 친화적 에러 메시지 추출
-  getUserMessage(error: any): string {
-    if (error.response?.data?.message) {
-      return error.response.data.message;
+  getUserMessage(error: unknown): string {
+    const typedError = error as { response?: { data?: { message?: string } }; message?: string };
+    
+    if (typedError.response?.data?.message) {
+      return typedError.response.data.message;
     }
     
-    if (error.message) {
-      return error.message;
+    if (typedError.message) {
+      return typedError.message;
     }
     
     return '알 수 없는 오류가 발생했습니다.';
   },
   
   // 재시도 가능한 에러인지 확인
-  isRetryableError(error: any): boolean {
-    const status = error.response?.status;
-    const code = this.getErrorCode(error);
+  isRetryableError(error: unknown): boolean {
+    const typedError = error as { response?: { status?: number } };
+    const status = typedError.response?.status;
     
     // 네트워크 오류나 서버 오류는 재시도 가능
     if (!status || status >= 500) {
@@ -277,8 +293,9 @@ export const errorUtils = {
   },
   
   // 인증 관련 에러인지 확인
-  isAuthError(error: any): boolean {
-    const status = error.response?.status;
+  isAuthError(error: unknown): boolean {
+    const typedError = error as { response?: { status?: number } };
+    const status = typedError.response?.status;
     const code = this.getErrorCode(error);
     
     return status === 401 || 
@@ -309,9 +326,13 @@ export const tokenManager = {
   isValidToken: (token: string): boolean => {
     try {
       // JWT 토큰 유효성 검사 (만료 시간 확인)
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const tokenParts = token.split('.');
+      if (tokenParts.length !== 3) {
+        return false;
+      }
+      const payload = JSON.parse(atob(tokenParts[1] || '')) as { exp?: number };
       const now = Date.now() / 1000;
-      return payload.exp > now;
+      return typeof payload.exp === 'number' && payload.exp > now;
     } catch {
       return false;
     }
@@ -328,7 +349,7 @@ export const securityManager = {
     httpClient.updateSecurityPolicy(policy);
   },
   
-  getAvailableServers: () => {
+  getAvailableServers: (): string[] => {
     return httpClient.getAvailableServers();
   },
   

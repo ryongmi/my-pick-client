@@ -11,7 +11,8 @@ import {
   Youtube,
   X,
   ChevronDown,
-  SlidersHorizontal
+  SlidersHorizontal,
+  LucideIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -78,7 +79,7 @@ const FEATURE_OPTIONS = [
   { id: 'vr', label: 'VR 영상' },
 ];
 
-export function SearchFilters() {
+export function SearchFilters(): JSX.Element {
   const [filters, setFilters] = useState<SearchFiltersState>({
     duration: { min: 0, max: Infinity, preset: 'any' },
     uploadDate: 'any',
@@ -95,7 +96,7 @@ export function SearchFilters() {
 
   const [creatorInput, setCreatorInput] = useState('');
 
-  const toggleSection = (section: string) => {
+  const toggleSection = (section: string): void => {
     const newExpanded = new Set(expandedSections);
     if (newExpanded.has(section)) {
       newExpanded.delete(section);
@@ -108,46 +109,46 @@ export function SearchFilters() {
   const updateFilter = <K extends keyof SearchFiltersState>(
     key: K,
     value: SearchFiltersState[K]
-  ) => {
+  ): void => {
     setFilters(prev => ({
       ...prev,
       [key]: value,
     }));
   };
 
-  const addCreator = (creatorName: string) => {
+  const addCreator = (creatorName: string): void => {
     if (!creatorName.trim() || filters.creators.includes(creatorName)) {return;}
     
     updateFilter('creators', [...filters.creators, creatorName]);
     setCreatorInput('');
   };
 
-  const removeCreator = (creatorName: string) => {
+  const removeCreator = (creatorName: string): void => {
     updateFilter('creators', filters.creators.filter(c => c !== creatorName));
   };
 
-  const toggleCategory = (category: string) => {
+  const toggleCategory = (category: string): void => {
     const newCategories = filters.categories.includes(category)
       ? filters.categories.filter(c => c !== category)
       : [...filters.categories, category];
     updateFilter('categories', newCategories);
   };
 
-  const togglePlatform = (platform: string) => {
+  const togglePlatform = (platform: string): void => {
     const newPlatforms = filters.platforms.includes(platform)
       ? filters.platforms.filter(p => p !== platform)
       : [...filters.platforms, platform];
     updateFilter('platforms', newPlatforms);
   };
 
-  const toggleFeature = (feature: string) => {
+  const toggleFeature = (feature: string): void => {
     const newFeatures = filters.features.includes(feature)
       ? filters.features.filter(f => f !== feature)
       : [...filters.features, feature];
     updateFilter('features', newFeatures);
   };
 
-  const clearAllFilters = () => {
+  const clearAllFilters = (): void => {
     setFilters({
       duration: { min: 0, max: Infinity, preset: 'any' },
       uploadDate: 'any',
@@ -169,7 +170,7 @@ export function SearchFilters() {
     filters.categories.length > 0 ||
     filters.features.length > 0;
 
-  const getActiveFilterCount = () => {
+  const getActiveFilterCount = (): number => {
     let count = 0;
     if (filters.duration.preset !== 'any') {count += 1;}
     if (filters.uploadDate !== 'any') {count += 1;}
@@ -188,10 +189,10 @@ export function SearchFilters() {
     children 
   }: {
     title: string;
-    icon: any;
+    icon: LucideIcon;
     sectionKey: string;
     children: React.ReactNode;
-  }) => {
+  }): JSX.Element => {
     const isExpanded = expandedSections.has(sectionKey);
     
     return (
@@ -250,7 +251,7 @@ export function SearchFilters() {
             {UPLOAD_DATE_OPTIONS.map(option => (
               <button
                 key={option.id}
-                onClick={() => updateFilter('uploadDate', option.id as any)}
+                onClick={() => updateFilter('uploadDate', option.id as SearchFiltersState['uploadDate'])}
                 className={cn(
                   "p-2 text-sm rounded border transition-colors text-left",
                   filters.uploadDate === option.id
@@ -274,7 +275,7 @@ export function SearchFilters() {
                   onClick={() => updateFilter('duration', { 
                     min: preset.min, 
                     max: preset.max, 
-                    preset: preset.id as any 
+                    preset: preset.id as SearchFiltersState['duration']['preset'] 
                   })}
                   className={cn(
                     "p-2 text-sm rounded border transition-colors",
@@ -401,7 +402,7 @@ export function SearchFilters() {
             {SORT_OPTIONS.map(option => (
               <button
                 key={option.id}
-                onClick={() => updateFilter('sortBy', option.id as any)}
+                onClick={() => updateFilter('sortBy', option.id as SearchFiltersState['sortBy'])}
                 className={cn(
                   "p-2 text-sm rounded border transition-colors",
                   filters.sortBy === option.id

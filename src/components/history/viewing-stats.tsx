@@ -1,17 +1,15 @@
 'use client';
 
-import { useMemo } from 'react';
 import { 
   Clock, 
   Play, 
   TrendingUp, 
   Calendar, 
-  Eye,
   BarChart3,
   PieChart,
-  Activity
+  Activity,
+  LucideIcon
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { cn, formatDuration } from '@/lib/utils';
@@ -103,10 +101,10 @@ const MOCK_STATS_DATA = {
   },
 };
 
-export function ViewingStats({ timeFilter }: ViewingStatsProps) {
+export function ViewingStats({ timeFilter }: ViewingStatsProps): JSX.Element {
   const stats = MOCK_STATS_DATA[timeFilter];
 
-  const getTimeFilterLabel = (filter: string) => {
+  const getTimeFilterLabel = (filter: string): string => {
     switch (filter) {
       case 'today': return '오늘';
       case 'week': return '이번 주';
@@ -122,12 +120,12 @@ export function ViewingStats({ timeFilter }: ViewingStatsProps) {
     subtitle, 
     color = 'text-foreground' 
   }: {
-    icon: any;
+    icon: LucideIcon;
     label: string;
     value: string;
     subtitle?: string;
     color?: string;
-  }) => (
+  }): JSX.Element => (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <Icon className="h-4 w-4 text-muted-foreground" />
@@ -191,7 +189,7 @@ export function ViewingStats({ timeFilter }: ViewingStatsProps) {
         </h4>
         
         <div className="space-y-2">
-          {stats.categoryBreakdown.map((item, index) => (
+          {stats.categoryBreakdown.map((item) => (
             <div key={item.category} className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">

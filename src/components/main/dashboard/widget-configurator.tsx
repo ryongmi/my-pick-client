@@ -64,7 +64,7 @@ export function WidgetConfigurator({
   widgets,
   onWidgetUpdate,
   onReset,
-}: WidgetConfiguratorProps) {
+}: WidgetConfiguratorProps): JSX.Element | null {
   const [localWidgets, setLocalWidgets] = useState<WidgetConfig[]>(widgets);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -78,6 +78,7 @@ export function WidgetConfigurator({
           setLocalWidgets(parsed);
           onWidgetUpdate(parsed);
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Failed to parse saved widgets:', error);
           // Fallback to default widgets
           setLocalWidgets(DEFAULT_WIDGETS);
@@ -104,26 +105,26 @@ export function WidgetConfigurator({
     setHasChanges(hasChanged);
   }, [widgets, localWidgets]);
 
-  const saveToLocalStorage = (widgetsToSave: WidgetConfig[]) => {
+  const saveToLocalStorage = (widgetsToSave: WidgetConfig[]): void => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(widgetsToSave));
     }
   };
 
-  const handleWidgetToggle = (widgetId: string) => {
+  const handleWidgetToggle = (widgetId: string): void => {
     const updatedWidgets = localWidgets.map(widget =>
       widget.id === widgetId ? { ...widget, enabled: !widget.enabled } : widget
     );
     setLocalWidgets(updatedWidgets);
   };
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     onWidgetUpdate(localWidgets);
     saveToLocalStorage(localWidgets);
     setHasChanges(false);
   };
 
-  const handleReset = () => {
+  const handleReset = (): void => {
     const resetWidgets = DEFAULT_WIDGETS;
     setLocalWidgets(resetWidgets);
     onWidgetUpdate(resetWidgets);
@@ -132,13 +133,13 @@ export function WidgetConfigurator({
     setHasChanges(false);
   };
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     setLocalWidgets(widgets);
     setHasChanges(false);
     onClose();
   };
 
-  const getWidgetDescription = (type: string) => {
+  const getWidgetDescription = (type: string): string => {
     const descriptions = {
       'personalized-feed': '사용자 취향에 맞춘 추천 콘텐츠를 표시합니다',
       'continue-watching': '시청 중이던 콘텐츠를 계속 볼 수 있습니다',
@@ -148,7 +149,7 @@ export function WidgetConfigurator({
     return descriptions[type as keyof typeof descriptions] || '위젯 설명이 없습니다';
   };
 
-  const getWidgetIcon = (enabled: boolean) => {
+  const getWidgetIcon = (enabled: boolean): JSX.Element => {
     return enabled ? (
       <Eye className="h-4 w-4 text-green-600" />
     ) : (
@@ -264,10 +265,15 @@ export function WidgetConfigurator({
 }
 
 // Hook for managing widget configuration
-export function useWidgetConfig() {
+export function useWidgetConfig(): {
+  widgets: WidgetConfig[];
+  loadWidgets: () => WidgetConfig[];
+  saveWidgets: (newWidgets: WidgetConfig[]) => void;
+  resetWidgets: () => void;
+} {
   const [widgets, setWidgets] = useState<WidgetConfig[]>(DEFAULT_WIDGETS);
 
-  const loadWidgets = () => {
+  const loadWidgets = (): WidgetConfig[] => {
     if (typeof window !== 'undefined') {
       const savedWidgets = localStorage.getItem(STORAGE_KEY);
       if (savedWidgets) {
@@ -276,6 +282,7 @@ export function useWidgetConfig() {
           setWidgets(parsed);
           return parsed;
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Failed to load widgets:', error);
           return DEFAULT_WIDGETS;
         }
@@ -284,14 +291,14 @@ export function useWidgetConfig() {
     return DEFAULT_WIDGETS;
   };
 
-  const saveWidgets = (newWidgets: WidgetConfig[]) => {
+  const saveWidgets = (newWidgets: WidgetConfig[]): void => {
     setWidgets(newWidgets);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newWidgets));
     }
   };
 
-  const resetWidgets = () => {
+  const resetWidgets = (): void => {
     setWidgets(DEFAULT_WIDGETS);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_WIDGETS));

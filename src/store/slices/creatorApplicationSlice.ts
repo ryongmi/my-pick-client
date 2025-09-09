@@ -17,6 +17,8 @@ export interface CreatorApplicationFormData {
     website?: string;
   };
   sampleVideos: string[];
+  // API 호환성을 위한 index signature 추가
+  [key: string]: unknown;
 }
 
 // 슬라이스 상태 타입
@@ -54,7 +56,7 @@ export const submitCreatorApplication = createAsyncThunk(
       // Using creator API as placeholder until server implements creator applications
       const response = await creatorApi.addCreator(formData);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '신청 제출에 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -69,7 +71,7 @@ export const fetchApplicationStatus = createAsyncThunk(
       // Creator application status API not implemented yet
       // Return null to indicate no application found
       return null;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '신청 상태 조회에 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -84,7 +86,7 @@ export const resubmitCreatorApplication = createAsyncThunk(
       // Creator resubmit API not implemented yet in server
       const response = await creatorApi.addCreator(formData);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '재신청에 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -136,7 +138,7 @@ const creatorApplicationSlice = createSlice({
       })
       .addCase(submitCreatorApplication.fulfilled, (state, action) => {
         state.isSubmitting = false;
-        state.currentApplication = (action.payload as any) || null;
+        state.currentApplication = (action.payload as unknown) as CreatorApplication || null;
         state.applicationStatus = 'pending';
         state.isApplicationModalOpen = false;
       })
@@ -153,7 +155,7 @@ const creatorApplicationSlice = createSlice({
       })
       .addCase(fetchApplicationStatus.fulfilled, (state, action) => {
         state.isLoading = false;
-        const payload = action.payload as any;
+        const payload = action.payload as unknown as CreatorApplication | null;
         if (payload) {
           state.currentApplication = payload;
           state.applicationStatus = payload.status || 'none';
@@ -175,7 +177,7 @@ const creatorApplicationSlice = createSlice({
       })
       .addCase(resubmitCreatorApplication.fulfilled, (state, action) => {
         state.isSubmitting = false;
-        state.currentApplication = (action.payload as any) || null;
+        state.currentApplication = (action.payload as unknown) as CreatorApplication || null;
         state.applicationStatus = 'pending';
         state.isApplicationModalOpen = false;
       })

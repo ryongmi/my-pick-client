@@ -15,14 +15,8 @@ interface QuickCreatorAddModalProps {
   onAddCreator: (creator: Creator) => void;
 }
 
-// 플랫폼 타입 정의
-const PLATFORMS = [
-  { id: 'youtube', name: 'YouTube', icon: Youtube, color: 'text-red-600' },
-  { id: 'twitter', name: 'Twitter', icon: Twitter, color: 'text-blue-400' },
-  { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'text-pink-500' },
-];
 
-export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCreatorAddModalProps) {
+export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCreatorAddModalProps): JSX.Element | null {
   const dispatch = useAppDispatch();
   const { creators, followedCreators, isLoading, isFollowing } = useAppSelector(state => state.creator);
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,20 +29,21 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
     }
   }, [isOpen, dispatch]);
 
-  const loadData = async () => {
+  const loadData = async (): Promise<void> => {
     try {
       // Redux를 통해 크리에이터 데이터 로드
       await dispatch(fetchCreators({ sortBy: 'followers', limit: 20 })).unwrap();
       
       // 팔로우된 크리에이터 데이터 로드
       const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed.data || []));
+      dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('데이터 로드 실패:', error);
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (): Promise<void> => {
     if (!searchTerm.trim()) {
       setSearchResults([]);
       return;
@@ -59,29 +54,31 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
         search: searchTerm,
         limit: 10
       })).unwrap();
-      setSearchResults(response.data?.items || []);
+      setSearchResults((response.data?.items as Creator[]) || []);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('검색 실패:', error);
     }
   };
 
-  const handleQuickAdd = async (creator: Creator) => {
+  const handleQuickAdd = async (creator: Creator): Promise<void> => {
     try {
-      await dispatch(followCreator({ creator, userId: 'current-user-id' })).unwrap();
+      await dispatch(followCreator(creator)).unwrap();
       onAddCreator(creator);
       handleClose();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('크리에이터 추가 실패:', error);
     }
   };
 
-  const handleClose = () => {
+  const handleClose = (): void => {
     setSearchTerm('');
     setSearchResults([]);
     onClose();
   };
 
-  const getPlatformIcon = (platformType: string) => {
+  const getPlatformIcon = (platformType: string): JSX.Element | null => {
     switch (platformType) {
       case 'youtube':
         return <Youtube className="h-4 w-4 text-red-600" />;
@@ -94,7 +91,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
     }
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number): string => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
     }
@@ -104,7 +101,7 @@ export function QuickCreatorAddModal({ isOpen, onClose, onAddCreator }: QuickCre
     return num.toString();
   };
 
-  const isCreatorFollowed = (creatorId: string) => {
+  const isCreatorFollowed = (creatorId: string): boolean => {
     return followedCreators.some(c => c.id === creatorId);
   };
 

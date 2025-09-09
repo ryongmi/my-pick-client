@@ -6,7 +6,7 @@ interface AuthGuardProps {
   children: React.ReactNode;
 }
 
-export function AuthGuard({ children }: AuthGuardProps) {
+export function AuthGuard({ children }: AuthGuardProps): JSX.Element {
   const { loading } = useAuth();
 
   // 로딩 중일 때 스피너 표시

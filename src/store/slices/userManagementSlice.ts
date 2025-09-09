@@ -9,8 +9,11 @@ import {
   GetUsersRequest,
   UpdateUserRequest,
   CreatorApprovalHistoryFilter,
-  GetApprovalHistoryRequest
+  GetApprovalHistoryRequest,
+  UserStats,
+  UserManagementDashboard
 } from '@/types/userManagement';
+import type { ApiResponse, PaginatedResponse } from '@/types';
 import { adminApi, errorUtils } from '@/lib/api';
 
 const initialState: UserManagementState = {
@@ -94,12 +97,18 @@ export const fetchUsers = createAsyncThunk(
   async (params: GetUsersRequest = {}, { rejectWithValue }) => {
     try {
       const response = await adminApi.getUsers(params);
+      const typedResponse = response as ApiResponse<PaginatedResponse<MyPickUser>>;
       return {
-        users: response.data || [],
-        pagination: response.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 },
+        users: typedResponse.data?.items || [],
+        pagination: {
+          page: typedResponse.data?.pageInfo?.page || 1,
+          limit: typedResponse.data?.pageInfo?.limit || 20,
+          total: typedResponse.data?.pageInfo?.totalItems || 0,
+          totalPages: typedResponse.data?.pageInfo?.totalPages || 0
+        },
         stats: null
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '사용자 목록을 불러오는데 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -112,12 +121,13 @@ export const fetchUserDetail = createAsyncThunk(
   async (userId: string, { rejectWithValue }) => {
     try {
       const response = await adminApi.getUser(userId);
+      const typedResponse = response as ApiResponse<MyPickUser>;
       return {
-        user: response.data,
+        user: typedResponse.data,
         permissions: [],
         activities: []
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '사용자 상세 정보를 불러오는데 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -130,8 +140,9 @@ export const updateUser = createAsyncThunk(
   async (params: UpdateUserRequest, { rejectWithValue }) => {
     try {
       const response = await adminApi.updateUser(params.userId, params);
-      return response.data;
-    } catch (error: any) {
+      const typedResponse = response as ApiResponse<MyPickUser>;
+      return typedResponse.data;
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '사용자 정보 업데이트에 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -144,8 +155,9 @@ export const fetchCreatorApplications = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await adminApi.getCreators({ status: 'pending' });
-      return response.data || [];
-    } catch (error: any) {
+      const typedResponse = response as ApiResponse<PaginatedResponse<CreatorApplication>>;
+      return typedResponse.data?.items || [];
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '크리에이터 신청 목록을 불러오는데 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -158,13 +170,48 @@ export const processCreatorApplication = createAsyncThunk(
   async (params: CreatorApplicationAction, { rejectWithValue }) => {
     try {
       if (params.action === 'approve') {
-        await adminApi.approveCreator(params.applicationId);
-        return { id: params.applicationId, status: 'approved' };
+        const response = await adminApi.approveCreator(params.applicationId);
+        const typedResponse = response as ApiResponse<CreatorApplication>;
+        return typedResponse.data || { 
+          id: params.applicationId, 
+          status: 'approved' as const,
+          userId: '',
+          appliedAt: new Date().toISOString(),
+          reviewedAt: new Date().toISOString(),
+          reviewedBy: params.reviewedBy,
+          applicationData: {
+            channelName: '',
+            channelId: '',
+            channelUrl: '',
+            subscriberCount: 0,
+            contentCategory: '',
+            description: '',
+            sampleVideos: []
+          }
+        };
       } else {
-        await adminApi.rejectCreator(params.applicationId);
-        return { id: params.applicationId, status: 'rejected' };
+        const response = await adminApi.rejectCreator(params.applicationId);
+        const typedResponse = response as ApiResponse<CreatorApplication>;
+        return typedResponse.data || { 
+          id: params.applicationId, 
+          status: 'rejected' as const,
+          userId: '',
+          appliedAt: new Date().toISOString(),
+          reviewedAt: new Date().toISOString(),
+          reviewedBy: params.reviewedBy,
+          rejectionReason: params.reason,
+          applicationData: {
+            channelName: '',
+            channelId: '',
+            channelUrl: '',
+            subscriberCount: 0,
+            contentCategory: '',
+            description: '',
+            sampleVideos: []
+          }
+        };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '크리에이터 신청 처리에 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -177,11 +224,17 @@ export const fetchApprovalHistory = createAsyncThunk(
   async (params: GetApprovalHistoryRequest = {}, { rejectWithValue }) => {
     try {
       const response = await adminApi.getCreators({ ...params, status: 'all' });
+      const typedResponse = response as ApiResponse<PaginatedResponse<CreatorApplication>>;
       return {
-        applications: response.data || [],
-        pagination: response.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 }
+        applications: typedResponse.data?.items || [],
+        pagination: {
+          page: typedResponse.data?.pageInfo?.page || 1,
+          limit: typedResponse.data?.pageInfo?.limit || 20,
+          total: typedResponse.data?.pageInfo?.totalItems || 0,
+          totalPages: typedResponse.data?.pageInfo?.totalPages || 0
+        }
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '승인 내역을 불러오는데 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -208,8 +261,7 @@ export const executeBulkAction = createAsyncThunk(
         }
       }
       return results;
-      return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '일괄 작업 실행에 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -222,8 +274,9 @@ export const fetchUserStats = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await adminApi.getDashboardStats();
-      return response;
-    } catch (error: any) {
+      const typedResponse = response as ApiResponse<unknown>;
+      return typedResponse.data;
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '사용자 통계를 불러오는데 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -236,8 +289,9 @@ export const fetchDashboard = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await adminApi.getDashboardStats();
-      return response;
-    } catch (error: any) {
+      const typedResponse = response as ApiResponse<unknown>;
+      return typedResponse.data;
+    } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '대시보드 데이터를 불러오는데 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
@@ -308,7 +362,14 @@ const userManagementSlice = createSlice({
       const { userId, updates } = action.payload;
       const userIndex = state.users.findIndex(user => user.id === userId);
       if (userIndex !== -1) {
-        state.users[userIndex] = { ...state.users[userIndex], ...updates };
+        const currentUser = state.users[userIndex];
+        Object.keys(updates).forEach(key => {
+          const typedKey = key as keyof MyPickUser;
+          if (updates[typedKey] !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (currentUser as any)[typedKey] = updates[typedKey];
+          }
+        });
       }
     },
 
@@ -317,7 +378,14 @@ const userManagementSlice = createSlice({
       const { applicationId, updates } = action.payload;
       const appIndex = state.creatorApplications.findIndex(app => app.id === applicationId);
       if (appIndex !== -1) {
-        state.creatorApplications[appIndex] = { ...state.creatorApplications[appIndex], ...updates };
+        const currentApp = state.creatorApplications[appIndex];
+        Object.keys(updates).forEach(key => {
+          const typedKey = key as keyof CreatorApplication;
+          if (updates[typedKey] !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (currentApp as any)[typedKey] = updates[typedKey];
+          }
+        });
       }
     },
 
@@ -361,9 +429,14 @@ const userManagementSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.users = action.payload.users;
-        state.pagination = action.payload.pagination;
-        state.stats = action.payload.stats;
+        const payload = action.payload as { 
+          users: MyPickUser[]; 
+          pagination: { page: number; limit: number; total: number; totalPages: number }; 
+          stats: unknown 
+        };
+        state.users = payload.users;
+        state.pagination = payload.pagination;
+        state.stats = payload.stats as UserStats | null;
         // 선택된 사용자 목록 클리어 (새 데이터 로드시)
         state.selectedUsers = [];
       })
@@ -380,8 +453,14 @@ const userManagementSlice = createSlice({
       })
       .addCase(fetchUserDetail.fulfilled, (state, action) => {
         state.isLoadingDetail = false;
-        state.userDetail = action.payload;
-        state.selectedUser = action.payload.user;
+        const payload = action.payload as { user: MyPickUser; permissions: unknown[]; activities: unknown[] };
+        state.userDetail = {
+          user: payload.user,
+          activityLog: [],
+          apiUsageHistory: [],
+          contentHistory: []
+        };
+        state.selectedUser = payload.user;
       })
       .addCase(fetchUserDetail.rejected, (state, action) => {
         state.isLoadingDetail = false;
@@ -391,7 +470,7 @@ const userManagementSlice = createSlice({
     // 사용자 정보 업데이트
     builder
       .addCase(updateUser.fulfilled, (state, action) => {
-        const updatedUser = action.payload;
+        const updatedUser = action.payload as MyPickUser;
         // 목록에서 업데이트
         const userIndex = state.users.findIndex(user => user.id === updatedUser.id);
         if (userIndex !== -1) {
@@ -406,14 +485,15 @@ const userManagementSlice = createSlice({
     // 크리에이터 신청 목록 조회
     builder
       .addCase(fetchCreatorApplications.fulfilled, (state, action) => {
-        state.creatorApplications = action.payload;
-        state.pendingApplicationsCount = action.payload.filter(app => app.status === 'pending').length;
+        const applications = action.payload as unknown as CreatorApplication[];
+        state.creatorApplications = applications;
+        state.pendingApplicationsCount = applications.filter(app => app.status === 'pending').length;
       });
 
     // 크리에이터 신청 처리
     builder
       .addCase(processCreatorApplication.fulfilled, (state, action) => {
-        const processedApplication = action.payload;
+        const processedApplication = action.payload as CreatorApplication;
         const appIndex = state.creatorApplications.findIndex(app => app.id === processedApplication.id);
         if (appIndex !== -1) {
           state.creatorApplications[appIndex] = processedApplication;
@@ -442,8 +522,12 @@ const userManagementSlice = createSlice({
       })
       .addCase(fetchApprovalHistory.fulfilled, (state, action) => {
         state.isLoadingApprovalHistory = false;
-        state.approvalHistory = action.payload.applications;
-        state.approvalHistoryPagination = action.payload.pagination;
+        const payload = action.payload as { 
+          applications: CreatorApplication[]; 
+          pagination: { page: number; limit: number; total: number; totalPages: number } 
+        };
+        state.approvalHistory = payload.applications;
+        state.approvalHistoryPagination = payload.pagination;
       })
       .addCase(fetchApprovalHistory.rejected, (state, action) => {
         state.isLoadingApprovalHistory = false;
@@ -462,27 +546,24 @@ const userManagementSlice = createSlice({
         
         // 성공한 사용자들의 상태 업데이트
         if (result.type === 'activate' || result.type === 'deactivate' || result.type === 'suspend' || result.type === 'unsuspend') {
-          state.users = state.users.map(user => {
+          state.users.forEach(user => {
             if (result.successCount > 0 && state.selectedUsers.includes(user.id)) {
               // 실제로는 서버에서 업데이트된 데이터를 받아와야 함
-              let newStatus = user.serviceStatus;
               switch (result.type) {
                 case 'activate':
-                  newStatus = 'active';
+                  user.serviceStatus = 'active';
                   break;
                 case 'deactivate':
-                  newStatus = 'inactive';
+                  user.serviceStatus = 'inactive';
                   break;
                 case 'suspend':
-                  newStatus = 'suspended';
+                  user.serviceStatus = 'suspended';
                   break;
                 case 'unsuspend':
-                  newStatus = 'active';
+                  user.serviceStatus = 'active';
                   break;
               }
-              return { ...user, serviceStatus: newStatus };
             }
-            return user;
           });
         }
         
@@ -502,13 +583,13 @@ const userManagementSlice = createSlice({
     // 사용자 통계 조회
     builder
       .addCase(fetchUserStats.fulfilled, (state, action) => {
-        state.stats = action.payload;
+        state.stats = action.payload as UserStats | null;
       });
 
     // 대시보드 데이터 조회
     builder
       .addCase(fetchDashboard.fulfilled, (state, action) => {
-        state.dashboard = action.payload;
+        state.dashboard = action.payload as UserManagementDashboard | null;
       });
   },
 });

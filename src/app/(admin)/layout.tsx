@@ -11,22 +11,22 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+export default function AdminLayout({ children }: AdminLayoutProps): JSX.Element {
   const dispatch = useAppDispatch();
   const { adminSidebarOpen } = useAppSelector(state => state.ui);
 
   useEffect(() => {
-    const checkMobile = () => {
+    const checkMobile = (): void => {
       const isMobile = window.innerWidth < 768;
       dispatch(setIsMobile(isMobile));
     };
 
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    return (): void => window.removeEventListener('resize', checkMobile);
   }, [dispatch]);
 
-  const toggleSidebar = () => {
+  const toggleSidebar = (): void => {
     dispatch(toggleAdminSidebar());
   };
 

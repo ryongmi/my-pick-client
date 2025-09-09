@@ -1,9 +1,8 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-export function AdminContent() {
+export function AdminContent(): JSX.Element {
   return (
     <div className="space-y-6">
       {/* 페이지 헤더 */}

@@ -14,7 +14,7 @@ interface DropdownMenuProps {
   children: React.ReactNode;
 }
 
-export function DropdownMenu({ children }: DropdownMenuProps) {
+export function DropdownMenu({ children }: DropdownMenuProps): JSX.Element {
   const [open, setOpen] = useState(false);
 
   return (
@@ -31,7 +31,7 @@ interface DropdownMenuTriggerProps {
   asChild?: boolean;
 }
 
-export function DropdownMenuTrigger({ children, asChild }: DropdownMenuTriggerProps) {
+export function DropdownMenuTrigger({ children, asChild }: DropdownMenuTriggerProps): JSX.Element {
   const context = useContext(DropdownMenuContext);
   
   if (!context) {
@@ -40,7 +40,7 @@ export function DropdownMenuTrigger({ children, asChild }: DropdownMenuTriggerPr
 
   const { open, setOpen } = context;
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent): void => {
     e.preventDefault();
     e.stopPropagation();
     setOpen(!open);
@@ -66,7 +66,7 @@ interface DropdownMenuContentProps {
   className?: string;
 }
 
-export function DropdownMenuContent({ children, align = 'start', className }: DropdownMenuContentProps) {
+export function DropdownMenuContent({ children, align = 'start', className }: DropdownMenuContentProps): JSX.Element | null {
   const context = useContext(DropdownMenuContext);
   
   if (!context) {
@@ -110,7 +110,7 @@ interface DropdownMenuItemProps {
   asChild?: boolean;
 }
 
-export function DropdownMenuItem({ children, onClick, className, asChild }: DropdownMenuItemProps) {
+export function DropdownMenuItem({ children, onClick, className, asChild }: DropdownMenuItemProps): JSX.Element {
   const context = useContext(DropdownMenuContext);
   
   if (!context) {
@@ -119,7 +119,7 @@ export function DropdownMenuItem({ children, onClick, className, asChild }: Drop
 
   const { setOpen } = context;
 
-  const handleClick = () => {
+  const handleClick = (): void => {
     onClick?.();
     setOpen(false);
   };
@@ -151,7 +151,7 @@ interface DropdownMenuSeparatorProps {
   className?: string;
 }
 
-export function DropdownMenuSeparator({ className }: DropdownMenuSeparatorProps) {
+export function DropdownMenuSeparator({ className }: DropdownMenuSeparatorProps): JSX.Element {
   return (
     <div className={cn('-mx-1 my-1 h-px bg-muted', className)} />
   );

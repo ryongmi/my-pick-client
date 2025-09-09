@@ -4,13 +4,13 @@ import { useAppSelector } from '@/hooks/redux';
 import { cn } from '@/lib/utils';
 import { PlatformTab } from '@/components/ui/platform-tab';
 import { PlatformFilterProps } from '@/types/platform';
-import { selectEnabledPlatforms, selectSelectedPlatform } from '@/store/slices/platformSlice';
+import { selectEnabledPlatforms } from '@/store/slices/platformSlice';
 
 export function PlatformFilter({ 
   selectedPlatform, 
   onPlatformChange, 
   className 
-}: PlatformFilterProps) {
+}: PlatformFilterProps): JSX.Element {
   // Redux에서 활성화된 플랫폼 목록 가져오기
   const enabledPlatforms = useAppSelector(selectEnabledPlatforms);
 
@@ -73,7 +73,7 @@ export function PlatformFilterWithSettings({
 }: PlatformFilterProps & {
   showSettings?: boolean;
   onSettingsClick?: () => void;
-}) {
+}): JSX.Element {
   const enabledPlatforms = useAppSelector(selectEnabledPlatforms);
 
   return (

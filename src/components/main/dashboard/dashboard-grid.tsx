@@ -15,7 +15,7 @@ export interface WidgetConfig {
     cols: number;
     rows: number;
   };
-  props?: Record<string, any>;
+  props?: Record<string, unknown>;
 }
 
 export interface DashboardGridProps {
@@ -30,7 +30,7 @@ export function DashboardGrid({
   onWidgetReorder, 
   onWidgetToggle,
   onWidgetResize 
-}: DashboardGridProps) {
+}: DashboardGridProps): JSX.Element | null {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -51,11 +51,11 @@ export function DashboardGrid({
     return enabledWidgets.map(widget => widget.id);
   }, [enabledWidgets]);
 
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = (event: DragStartEvent): void => {
     setActiveId(event.active.id as string);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = (event: DragEndEvent): void => {
     const { active, over } = event;
     setActiveId(null);
 
@@ -102,7 +102,7 @@ export function DashboardGrid({
                 key={widget.id}
                 widget={widget}
                 onToggle={onWidgetToggle}
-                onResize={onWidgetResize || (() => {})}
+                onResize={onWidgetResize || ((): void => {})}
               />
             ))}
           </div>
@@ -114,7 +114,7 @@ export function DashboardGrid({
               <DraggableWidget
                 widget={activeWidget}
                 onToggle={onWidgetToggle}
-                onResize={onWidgetResize || (() => {})}
+                onResize={onWidgetResize || ((): void => {})}
                 isDragOverlay
               />
             </div>

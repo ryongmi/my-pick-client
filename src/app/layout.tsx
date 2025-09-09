@@ -9,7 +9,7 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}): JSX.Element {
   return (
     <html lang="ko" className={inter.variable}>
       <head>

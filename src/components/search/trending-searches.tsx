@@ -108,15 +108,15 @@ const HOURLY_TRENDING = [
   { time: '2시간 전', keywords: ['K-POP', '운동', '리뷰'] },
 ];
 
-export function TrendingSearches({ onSearch }: TrendingSearchesProps) {
-  const formatSearchCount = (count: number) => {
+export function TrendingSearches({ onSearch }: TrendingSearchesProps): JSX.Element {
+  const formatSearchCount = (count: number): string => {
     if (count >= 1000) {
       return (count / 1000).toFixed(1) + 'K';
     }
     return count.toString();
   };
 
-  const getChangeIcon = (changeType: TrendingItem['changeType'], changeValue?: number) => {
+  const getChangeIcon = (changeType: TrendingItem['changeType'], changeValue?: number): JSX.Element => {
     switch (changeType) {
       case 'up':
         return (
@@ -145,7 +145,7 @@ export function TrendingSearches({ onSearch }: TrendingSearchesProps) {
     }
   };
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (category: string): string => {
     const colors: Record<string, string> = {
       '음악': 'bg-purple-100 text-purple-700',
       '엔터테인먼트': 'bg-blue-100 text-blue-700',

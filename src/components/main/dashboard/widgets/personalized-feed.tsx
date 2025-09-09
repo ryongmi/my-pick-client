@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Play, Clock, Eye, Star, ChevronRight } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +26,7 @@ export interface PersonalizedFeedProps {
   showReason?: boolean;
 }
 
-export function PersonalizedFeed({ limit = 4, showReason = true }: PersonalizedFeedProps) {
+export function PersonalizedFeed({ limit = 4, showReason = true }: PersonalizedFeedProps): JSX.Element {
   const [contents, setContents] = useState<PersonalizedContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -96,7 +95,7 @@ export function PersonalizedFeed({ limit = 4, showReason = true }: PersonalizedF
     }, 1000);
   }, [limit]);
 
-  const formatViewCount = (count: number) => {
+  const formatViewCount = (count: number): string => {
     if (count >= 1000000) {
       return (count / 1000000).toFixed(1) + 'M';
     }
@@ -106,7 +105,7 @@ export function PersonalizedFeed({ limit = 4, showReason = true }: PersonalizedF
     return count.toString();
   };
 
-  const getCreatorColor = (creatorId: string) => {
+  const getCreatorColor = (creatorId: string): string => {
     const colors = {
       ado: 'from-pink-400 to-purple-500',
       hikakin: 'from-blue-400 to-cyan-500',

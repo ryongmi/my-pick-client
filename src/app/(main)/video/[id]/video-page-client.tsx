@@ -14,7 +14,7 @@ interface VideoPageClientProps {
   creatorId: string;
 }
 
-export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps) {
+export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps): JSX.Element {
   const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
@@ -27,15 +27,15 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps) {
     document.title = `비디오 상세 - MyPick`;
     
     // 뒤로가기 감지
-    const handlePopState = () => {
+    const handlePopState = (): void => {
       // 브라우저 뒤로가기 처리
     };
     
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return (): void => window.removeEventListener('popstate', handlePopState);
   }, [videoId]);
 
-  const handleGoBack = () => {
+  const handleGoBack = (): void => {
     if (window.history.length > 1) {
       router.back();
     } else {
@@ -43,7 +43,7 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps) {
     }
   };
 
-  const handleShare = () => {
+  const handleShare = (): void => {
     if (navigator.share) {
       navigator.share({
         title: '비디오 상세 - MyPick',
@@ -55,7 +55,7 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps) {
     }
   };
 
-  const handleTheaterModeToggle = () => {
+  const handleTheaterModeToggle = (): void => {
     setIsTheaterMode(!isTheaterMode);
   };
 

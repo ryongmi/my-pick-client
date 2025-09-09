@@ -12,7 +12,7 @@ import { SearchSuggestions } from '@/components/search/search-suggestions';
 import { TrendingSearches } from '@/components/search/trending-searches';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export default function SearchPage() {
+export default function SearchPage(): JSX.Element {
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'videos' | 'creators' | 'categories'>('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -33,7 +33,7 @@ export default function SearchPage() {
     }
   }, []);
 
-  const handleSearch = (searchQuery: string) => {
+  const handleSearch = (searchQuery: string): void => {
     if (!searchQuery.trim()) {return;}
     
     setQuery(searchQuery);
@@ -49,12 +49,12 @@ export default function SearchPage() {
     window.history.pushState({}, '', url.toString());
   };
 
-  const clearSearchHistory = () => {
+  const clearSearchHistory = (): void => {
     setSearchHistory([]);
     localStorage.removeItem('search-history');
   };
 
-  const removeFromHistory = (item: string) => {
+  const removeFromHistory = (item: string): void => {
     const newHistory = searchHistory.filter(h => h !== item);
     setSearchHistory(newHistory);
     localStorage.setItem('search-history', JSON.stringify(newHistory));
@@ -115,7 +115,7 @@ export default function SearchPage() {
             </div>
 
             {/* 검색 타입 탭 */}
-            <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+            <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as 'all' | 'videos' | 'creators' | 'categories')}>
               <TabsList className="grid w-full max-w-md grid-cols-4">
                 <TabsTrigger value="all">전체</TabsTrigger>
                 <TabsTrigger value="videos">영상</TabsTrigger>

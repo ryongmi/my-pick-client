@@ -1,5 +1,3 @@
-import { LucideIcon } from 'lucide-react';
-
 // 플랫폼 설정을 위한 새로운 타입 정의
 export interface PlatformConfig {
   id: string;
@@ -56,6 +54,6 @@ export interface PlatformAction {
   type: PlatformActionType;
   payload: {
     platformId: string;
-    value?: any;
+    value?: unknown;
   };
 }

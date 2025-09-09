@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, Trash2, ExternalLink, Youtube, Twitter, Instagram } from 'lucide-react';
+import { X, Plus, Trash2, ExternalLink, Youtube, Twitter, Instagram, LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,8 +27,8 @@ interface CreatorFormData {
 }
 
 // 플랫폼 아이콘 매핑 (하드코딩된 아이콘 대신 동적 매핑용)
-const getPlatformIcon = (platformName: string) => {
-  const iconMap: Record<string, any> = {
+const getPlatformIcon = (platformName: string): LucideIcon => {
+  const iconMap: Record<string, LucideIcon> = {
     'youtube': Youtube,
     'twitter': Twitter,
     'instagram': Instagram,
@@ -38,7 +38,7 @@ const getPlatformIcon = (platformName: string) => {
 };
 
 // 플랫폼 색상 매핑
-const getPlatformColor = (platformName: string) => {
+const getPlatformColor = (platformName: string): string => {
   const colorMap: Record<string, string> = {
     'youtube': 'text-red-500',
     'twitter': 'text-blue-500',
@@ -48,7 +48,7 @@ const getPlatformColor = (platformName: string) => {
   return colorMap[platformName.toLowerCase()] || 'text-gray-500';
 };
 
-export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalProps) {
+export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalProps): JSX.Element | null {
   // Redux에서 활성화된 플랫폼 가져오기
   const enabledPlatforms = useAppSelector(selectEnabledPlatforms);
   
@@ -66,14 +66,14 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
 
   if (!isOpen) {return null;}
 
-  const handleInputChange = (field: keyof CreatorFormData, value: string) => {
+  const handleInputChange = (field: keyof CreatorFormData, value: string): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
-  const handlePlatformChange = (index: number, field: string, value: string) => {
+  const handlePlatformChange = (index: number, field: string, value: string): void => {
     setFormData(prev => ({
       ...prev,
       platforms: prev.platforms.map((platform, i) =>
@@ -82,14 +82,14 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
     }));
   };
 
-  const addPlatform = () => {
+  const addPlatform = (): void => {
     setFormData(prev => ({
       ...prev,
       platforms: [...prev.platforms, { type: defaultPlatformType as Platform['type'], username: '', url: '' }],
     }));
   };
 
-  const removePlatform = (index: number) => {
+  const removePlatform = (index: number): void => {
     if (formData.platforms.length > 1) {
       setFormData(prev => ({
         ...prev,
@@ -98,7 +98,7 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
     }
   };
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
@@ -123,7 +123,7 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
     return Object.keys(newErrors).length === 0;
   };
 
-  const isValidUrl = (url: string) => {
+  const isValidUrl = (url: string): boolean => {
     try {
       new URL(url);
       return true;
@@ -132,7 +132,7 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     if (validateForm()) {
       onSubmit(formData);
@@ -141,7 +141,7 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
     }
   };
 
-  const handleReset = () => {
+  const handleReset = (): void => {
     setFormData({
       name: '',
       displayName: '',
@@ -151,7 +151,7 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
     setErrors({});
   };
 
-  const getDynamicPlatformIcon = (type: Platform['type']) => {
+  const getDynamicPlatformIcon = (type: Platform['type']): LucideIcon => {
     return getPlatformIcon(type);
   };
 
@@ -251,7 +251,6 @@ export function CreatorAddModal({ isOpen, onClose, onSubmit }: CreatorAddModalPr
                     {formData.platforms.map((platform, index) => {
                       const PlatformIcon = getDynamicPlatformIcon(platform.type);
                       const platformColor = getPlatformColor(platform.type);
-                      const platformData = enabledPlatforms.find(p => p.name.toLowerCase() === platform.type);
                       
                       return (
                         <div key={index} className="border rounded-lg p-4 bg-gray-50">

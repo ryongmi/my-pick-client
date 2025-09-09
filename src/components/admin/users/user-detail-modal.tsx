@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   X,
   User,
-  Mail,
   Calendar,
-  Globe,
   Youtube,
   CheckCircle,
   XCircle,
@@ -14,7 +13,6 @@ import {
   Activity,
   BarChart3,
   History,
-  Shield,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +21,6 @@ import {
   fetchUserDetail,
 } from '@/store/slices/userManagementSlice';
 import { cn } from '@/lib/utils';
-import { MyPickUser, UserDetailInfo } from '@/types/userManagement';
 
 interface UserDetailModalProps {
   isOpen: boolean;
@@ -31,7 +28,7 @@ interface UserDetailModalProps {
   userId: string | null;
 }
 
-export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProps) {
+export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProps): JSX.Element | null {
   const dispatch = useAppDispatch();
   const { userDetail, isLoadingDetail, error } = useAppSelector(
     (state) => state.userManagement
@@ -50,7 +47,7 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
   if (!isOpen) {return null;}
 
 
-  const renderProfileTab = () => {
+  const renderProfileTab = (): JSX.Element | null => {
     if (!userDetail?.user) {return null;}
 
     const user = userDetail.user;
@@ -69,9 +66,11 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
                 {user.avatar ? (
-                  <img 
+                  <Image 
                     src={user.avatar} 
                     alt={user.name}
+                    width={64}
+                    height={64}
                     className="h-16 w-16 rounded-full object-cover"
                   />
                 ) : (
@@ -211,7 +210,7 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
     );
   };
 
-  const renderActivityTab = () => {
+  const renderActivityTab = (): JSX.Element | null => {
     if (!userDetail?.activityLog) {return null;}
 
     return (
@@ -252,7 +251,7 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
     );
   };
 
-  const renderApiTab = () => {
+  const renderApiTab = (): JSX.Element | null => {
     if (!userDetail?.user || !userDetail?.apiUsageHistory) {return null;}
 
     const user = userDetail.user;
@@ -348,7 +347,7 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
     );
   };
 
-  const renderContentTab = () => {
+  const renderContentTab = (): JSX.Element | null => {
     if (!userDetail?.user || !userDetail?.contentHistory) {return null;}
 
     const user = userDetail.user;
@@ -449,7 +448,7 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as any)}
+              onClick={() => setActiveTab(id as 'profile' | 'activity' | 'api' | 'content')}
               className={cn(
                 'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
                 activeTab === id

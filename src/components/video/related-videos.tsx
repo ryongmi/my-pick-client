@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Play, Eye, Clock, Youtube, Star, TrendingUp, Heart, Bookmark, RefreshCw } from 'lucide-react';
+import { Play, Eye, Clock, Youtube, Star, TrendingUp, Heart, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppSelector } from '@/hooks/redux';
 import { cn, formatNumber, formatDate } from '@/lib/utils';
 
@@ -172,7 +172,7 @@ const MOCK_RELATED_VIDEOS: Video[] = [
   },
 ];
 
-export function RelatedVideos({ currentVideoId }: RelatedVideosProps) {
+export function RelatedVideos({ currentVideoId }: RelatedVideosProps): JSX.Element {
   const { followedCreators } = useAppSelector(state => state.creator);
   const [activeTab, setActiveTab] = useState<'personalized' | 'trending' | 'same_creator'>('personalized');
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
@@ -261,7 +261,7 @@ export function RelatedVideos({ currentVideoId }: RelatedVideosProps) {
     }, 300);
   }, [currentVideoId, activeTab, followedCreators]);
 
-  const handleRefresh = () => {
+  const handleRefresh = (): void => {
     setIsLoading(true);
     setTimeout(() => {
       const filtered = getFilteredVideos(activeTab);
@@ -270,7 +270,7 @@ export function RelatedVideos({ currentVideoId }: RelatedVideosProps) {
     }, 500);
   };
 
-  const getRecommendationBadge = (type: Video['recommendationType']) => {
+  const getRecommendationBadge = (type: Video['recommendationType']): JSX.Element | null => {
     switch (type) {
       case 'same_creator':
         return <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">같은 크리에이터</Badge>;
@@ -287,7 +287,7 @@ export function RelatedVideos({ currentVideoId }: RelatedVideosProps) {
     }
   };
 
-  const VideoCard = ({ video }: { video: Video }) => {
+  const VideoCard = ({ video }: { video: Video }): JSX.Element => {
     const creatorColors = {
       ado: 'from-purple-400 to-pink-500',
       hikakin: 'from-blue-400 to-cyan-500',
@@ -367,7 +367,7 @@ export function RelatedVideos({ currentVideoId }: RelatedVideosProps) {
     );
   };
 
-  const LoadingSkeleton = () => (
+  const LoadingSkeleton = (): JSX.Element => (
     <div className="space-y-3">
       {[...Array(4)].map((_, i) => (
         <div key={i} className="flex gap-3 p-3 animate-pulse">
@@ -402,7 +402,7 @@ export function RelatedVideos({ currentVideoId }: RelatedVideosProps) {
         </div>
         
         {/* 추천 탭 */}
-        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="w-full mt-3">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="w-full mt-3">
           <TabsList className="grid w-full grid-cols-3 text-xs">
             <TabsTrigger value="personalized" className="text-xs flex items-center gap-1">
               <Star className="h-3 w-3" />

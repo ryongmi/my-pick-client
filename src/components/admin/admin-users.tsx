@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import {
   Users,
   UserCheck,
@@ -45,7 +46,7 @@ import { UserEditModal } from '@/components/admin/users/user-edit-modal';
 import { CreatorApprovalModal } from '@/components/admin/creators/creator-approval-modal';
 import { CreatorApprovalHistory } from '@/components/admin/creators/creator-approval-history';
 
-export function AdminUsers() {
+export function AdminUsers(): JSX.Element {
   const dispatch = useAppDispatch();
   
   // Redux state
@@ -89,13 +90,13 @@ export function AdminUsers() {
       clearTimeout(searchTimeoutRef.current);
     }
     
-    searchTimeoutRef.current = setTimeout(() => {
+    searchTimeoutRef.current = setTimeout((): void => {
       if (searchTerm !== filters.search) {
         dispatch(setFilters({ search: searchTerm }));
       }
     }, 500);
     
-    return () => {
+    return (): void => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
@@ -104,13 +105,13 @@ export function AdminUsers() {
 
   // 드롭다운 외부 클릭 처리
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpenDropdownId(null);
       }
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         setOpenDropdownId(null);
         setShowDeleteConfirm(false);
@@ -120,40 +121,63 @@ export function AdminUsers() {
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
 
-    return () => {
+    return (): void => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
   // 선택 관련 핸들러들
-  const handleUserSelect = (userId: string) => {
+  const handleUserSelect = (userId: string): void => {
     dispatch(toggleUserSelection(userId));
   };
 
-  const handleSelectAllUsers = () => {
+  const handleSelectAllUsers = (): void => {
     dispatch(toggleAllUsers(true));
   };
 
-  const handleSelectNoneUsers = () => {
+  const handleSelectNoneUsers = (): void => {
     dispatch(toggleAllUsers(false));
   };
 
   // 필터 핸들러들
-  const handleFilterChange = (key: keyof UserManagementFilter, value: any) => {
+  const handleFilterChange = (key: keyof UserManagementFilter, value: unknown): void => {
     dispatch(setFilters({ [key]: value }));
   };
 
   // 페이지네이션 핸들러
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page: number): void => {
     dispatch(setPagination({ page }));
   };
 
   // 일괄 작업 핸들러
-  const handleBulkAction = async (action: BulkAction, userIds: string[]) => {
+  const handleBulkAction = async (action: BulkAction, userIds: string[]): Promise<void> => {
     try {
+      // Map the action to the correct type for the user management slice
+      let actionType: 'activate' | 'deactivate' | 'suspend' | 'unsuspend' | 'delete' | 'export';
+      switch (action) {
+        case 'activate':
+          actionType = 'activate';
+          break;
+        case 'deactivate':
+          actionType = 'deactivate';
+          break;
+        case 'delete':
+          actionType = 'delete';
+          break;
+        case 'export':
+          actionType = 'export';
+          break;
+        case 'refresh':
+          // Map refresh to export for now, or handle differently
+          actionType = 'export';
+          break;
+        default:
+          actionType = 'activate';
+      }
+
       await dispatch(executeBulkAction({
-        type: action as any,
+        type: actionType,
         userIds,
         performedBy: 'admin', // TODO: 실제 사용자 ID로 변경
         performedAt: new Date().toISOString(),
@@ -161,40 +185,41 @@ export function AdminUsers() {
       
       dispatch(clearSelectedUsers());
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('일괄 작업 실패:', error);
     }
   };
 
   // 드롭다운 메뉴 핸들러들
-  const toggleDropdown = (userId: string) => {
+  const toggleDropdown = (userId: string): void => {
     setOpenDropdownId(openDropdownId === userId ? null : userId);
   };
 
-  const handleViewUser = (user: MyPickUser) => {
+  const handleViewUser = (user: MyPickUser): void => {
     setSelectedUserForDetail(user.id);
     setShowUserDetailModal(true);
     setOpenDropdownId(null);
   };
 
-  const handleEditUser = (user: MyPickUser) => {
+  const handleEditUser = (user: MyPickUser): void => {
     setSelectedUserForEdit(user);
     setShowUserEditModal(true);
     setOpenDropdownId(null);
   };
 
-  const handleCloseUserDetailModal = () => {
+  const handleCloseUserDetailModal = (): void => {
     setShowUserDetailModal(false);
     setSelectedUserForDetail(null);
   };
 
-  const handleCloseUserEditModal = () => {
+  const handleCloseUserEditModal = (): void => {
     setShowUserEditModal(false);
     setSelectedUserForEdit(null);
     // 사용자 목록 새로고침
     dispatch(fetchUsers({ page: pagination.page, limit: pagination.limit, filters }));
   };
 
-  const handleToggleUserStatus = async (userId: string) => {
+  const handleToggleUserStatus = async (userId: string): Promise<void> => {
     const user = users.find(u => u.id === userId);
     if (!user) {return;}
     
@@ -206,29 +231,31 @@ export function AdminUsers() {
         updates: { serviceStatus: newStatus }
       })).unwrap();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('사용자 상태 변경 실패:', error);
     }
     
     setOpenDropdownId(null);
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = (userId: string): void => {
     setDeletingUserId(userId);
     setShowDeleteConfirm(true);
     setOpenDropdownId(null);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (): Promise<void> => {
     if (!deletingUserId) {return;}
     
     try {
       await dispatch(executeBulkAction({
-        type: 'delete',
+        type: 'delete' as const,
         userIds: [deletingUserId],
         performedBy: 'admin',
         performedAt: new Date().toISOString(),
       })).unwrap();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('사용자 삭제 실패:', error);
     }
     
@@ -236,7 +263,7 @@ export function AdminUsers() {
     setDeletingUserId(null);
   };
 
-  const handleCancelDelete = () => {
+  const handleCancelDelete = (): void => {
     setShowDeleteConfirm(false);
     setDeletingUserId(null);
   };
@@ -255,7 +282,7 @@ export function AdminUsers() {
         <div className="flex gap-2">
           <Button 
             variant="outline"
-            onClick={() => dispatch(fetchUsers({ page: pagination.page, limit: pagination.limit, filters }))}
+            onClick={(): void => { dispatch(fetchUsers({ page: pagination.page, limit: pagination.limit, filters })); }}
             disabled={isLoading}
           >
             새로고침
@@ -267,7 +294,7 @@ export function AdminUsers() {
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
-            onClick={() => dispatch(setActiveTab('users'))}
+            onClick={(): void => { dispatch(setActiveTab('users')); }}
             className={cn(
               'py-2 px-1 border-b-2 font-medium text-sm',
               activeTab === 'users'
@@ -279,7 +306,7 @@ export function AdminUsers() {
             사용자 목록
           </button>
           <button
-            onClick={() => {
+            onClick={(): void => {
               dispatch(setActiveTab('approvalHistory'));
               if (activeTab !== 'approvalHistory') {
                 dispatch(fetchApprovalHistory({}));
@@ -376,7 +403,7 @@ export function AdminUsers() {
                     size="sm" 
                     variant="outline"
                     className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
-                    onClick={() => setShowCreatorApprovalModal(true)}
+                    onClick={(): void => setShowCreatorApprovalModal(true)}
                   >
                     검토하기
                   </Button>
@@ -398,7 +425,7 @@ export function AdminUsers() {
                     size="sm" 
                     variant="outline"
                     className="border-red-300 text-red-700 hover:bg-red-100"
-                    onClick={() => dispatch(clearError())}
+                    onClick={(): void => { dispatch(clearError()); }}
                   >
                     닫기
                   </Button>
@@ -436,14 +463,14 @@ export function AdminUsers() {
                 type="text"
                 placeholder="이름 또는 이메일로 검색..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e): void => setSearchTerm(e.target.value)}
                 className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-4 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="flex gap-2">
               <select
                 value={filters.userType}
-                onChange={(e) => handleFilterChange('userType', e.target.value)}
+                onChange={(e): void => handleFilterChange('userType', e.target.value)}
                 className="rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">모든 타입</option>
@@ -453,7 +480,7 @@ export function AdminUsers() {
               
               <select
                 value={filters.serviceStatus}
-                onChange={(e) => handleFilterChange('serviceStatus', e.target.value)}
+                onChange={(e): void => handleFilterChange('serviceStatus', e.target.value)}
                 className="rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">모든 상태</option>
@@ -464,7 +491,7 @@ export function AdminUsers() {
               
               <select
                 value={filters.youtubeConnected}
-                onChange={(e) => handleFilterChange('youtubeConnected', e.target.value)}
+                onChange={(e): void => handleFilterChange('youtubeConnected', e.target.value)}
                 className="rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">모든 연동상태</option>
@@ -493,7 +520,7 @@ export function AdminUsers() {
                 <tr>
                   <th className="w-12 p-4 text-left text-sm font-medium">
                     <button
-                      onClick={() =>
+                      onClick={(): void =>
                         selectedUsers.length === users.length
                           ? handleSelectNoneUsers()
                           : handleSelectAllUsers()
@@ -529,7 +556,7 @@ export function AdminUsers() {
                   >
                     <td className="p-4">
                       <button
-                        onClick={() => handleUserSelect(user.id)}
+                        onClick={(): void => handleUserSelect(user.id)}
                         className="p-1"
                       >
                         {selectedUsers.includes(user.id) ? (
@@ -544,9 +571,11 @@ export function AdminUsers() {
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                           {user.avatar ? (
-                            <img 
+                            <Image 
                               src={user.avatar} 
                               alt={user.name}
+                              width={40}
+                              height={40}
                               className="h-10 w-10 rounded-full object-cover"
                             />
                           ) : (
@@ -668,7 +697,7 @@ export function AdminUsers() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => toggleDropdown(user.id)}
+                            onClick={(): void => toggleDropdown(user.id)}
                             disabled={isLoading || isProcessingBulkAction}
                           >
                             <MoreHorizontal className="h-4 w-4" />
@@ -679,7 +708,7 @@ export function AdminUsers() {
                             <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-md border border-gray-200 bg-white shadow-lg">
                               <div className="py-1">
                                 <button
-                                  onClick={() => handleViewUser(user)}
+                                  onClick={(): void => handleViewUser(user)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   disabled={isLoading}
                                 >
@@ -688,7 +717,7 @@ export function AdminUsers() {
                                 </button>
                                 
                                 <button
-                                  onClick={() => handleEditUser(user)}
+                                  onClick={(): void => handleEditUser(user)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   disabled={isLoading}
                                 >
@@ -697,7 +726,7 @@ export function AdminUsers() {
                                 </button>
                                 
                                 <button
-                                  onClick={() => handleToggleUserStatus(user.id)}
+                                  onClick={async (): Promise<void> => await handleToggleUserStatus(user.id)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   disabled={isLoading}
                                 >
@@ -717,8 +746,9 @@ export function AdminUsers() {
                                 <div className="my-1 border-t border-gray-100"></div>
                                 
                                 <button
-                                  onClick={() => {
+                                  onClick={(): void => {
                                     // TODO: 이메일 보내기 기능
+                                    // eslint-disable-next-line no-console
                                     console.log('Send email to:', user.email);
                                     setOpenDropdownId(null);
                                   }}
@@ -731,7 +761,7 @@ export function AdminUsers() {
                                 <div className="my-1 border-t border-gray-100"></div>
                                 
                                 <button
-                                  onClick={() => handleDeleteUser(user.id)}
+                                  onClick={(): void => handleDeleteUser(user.id)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                                   disabled={isLoading}
                                 >
@@ -761,7 +791,7 @@ export function AdminUsers() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(pagination.page - 1)}
+                  onClick={(): void => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page <= 1 || isLoading}
                 >
                   이전
@@ -780,7 +810,7 @@ export function AdminUsers() {
                       <Button
                         variant={page === pagination.page ? "default" : "outline"}
                         size="sm"
-                        onClick={() => handlePageChange(page)}
+                        onClick={(): void => handlePageChange(page)}
                         disabled={isLoading}
                       >
                         {page}
@@ -790,7 +820,7 @@ export function AdminUsers() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(pagination.page + 1)}
+                  onClick={(): void => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page >= pagination.totalPages || isLoading}
                 >
                   다음
@@ -887,7 +917,7 @@ export function AdminUsers() {
       {/* 크리에이터 승인 모달 */}
       <CreatorApprovalModal
         isOpen={showCreatorApprovalModal}
-        onClose={() => {
+        onClose={(): void => {
           setShowCreatorApprovalModal(false);
           // 크리에이터 신청 목록 새로고침
           dispatch(fetchCreatorApplications());

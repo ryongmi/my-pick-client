@@ -37,7 +37,7 @@ export const mockAuthTokens = {
 };
 
 // 로그인 시뮬레이션
-export const mockLogin = async (email: string, password: string) => {
+export const mockLogin = async (email: string, password: string): Promise<{ user: User; token: string }> => {
   // 2초 딜레이 시뮬레이션
   await new Promise(resolve => setTimeout(resolve, 1000));
   
@@ -60,7 +60,7 @@ export const mockLogin = async (email: string, password: string) => {
 };
 
 // 회원가입 시뮬레이션
-export const mockRegister = async (name: string, email: string, password: string) => {
+export const mockRegister = async (name: string, email: string, _password: string): Promise<{ user: User; token: string }> => {
   await new Promise(resolve => setTimeout(resolve, 1500));
   
   // 이메일 중복 체크
@@ -88,7 +88,7 @@ export const mockRegister = async (name: string, email: string, password: string
 };
 
 // 프로필 업데이트 시뮬레이션
-export const mockUpdateProfile = async (userId: string, updates: Partial<User>) => {
+export const mockUpdateProfile = async (userId: string, updates: Partial<User>): Promise<User> => {
   await new Promise(resolve => setTimeout(resolve, 800));
   
   const userIndex = mockUsers.findIndex(u => u.id === userId);

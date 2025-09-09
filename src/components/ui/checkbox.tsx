@@ -18,8 +18,8 @@ export function Checkbox({
   disabled = false,
   className,
   id,
-}: CheckboxProps) {
-  const handleChange = () => {
+}: CheckboxProps): JSX.Element {
+  const handleChange = (): void => {
     if (!disabled && onCheckedChange) {
       onCheckedChange(!checked);
     }

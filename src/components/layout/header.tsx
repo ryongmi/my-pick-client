@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Bell, BarChart3, Menu, X, Star, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Search, Bell, BarChart3, Menu, Star, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -24,12 +24,10 @@ import {
 } from '@/store/slices/creatorApplicationSlice';
 import { CreatorApplicationModal } from '@/components/main/creator-application-modal';
 import { CreatorStatusModal } from '@/components/main/creator-status-modal';
-import { cn } from '@/lib/utils';
 
-export function Header() {
+export function Header(): JSX.Element {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const pathname = usePathname();
   const { user, isAuthenticated } = useAuth();
   const { dropdowns } = useUI();
   const { applicationStatus, isApplicationModalOpen, isStatusModalOpen } = useAppSelector(state => state.creatorApplication);
@@ -42,7 +40,7 @@ export function Header() {
   }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       const target = event.target as Element;
 
       // 드롭다운이나 드롭다운 트리거 버튼을 클릭한 경우 닫지 않음
@@ -56,7 +54,7 @@ export function Header() {
     };
 
     document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    return (): void => document.removeEventListener('click', handleClickOutside);
   }, [dispatch]);
 
   return (

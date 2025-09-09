@@ -9,7 +9,6 @@ import {
   Users,
   Youtube,
   CheckCircle,
-  XCircle,
   Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,7 @@ interface UserFiltersProps {
   compact?: boolean;
 }
 
-export default function UserFilters({ className, compact = false }: UserFiltersProps) {
+export default function UserFilters({ className, compact = false }: UserFiltersProps): JSX.Element {
   const dispatch = useAppDispatch();
   const { filters, pagination } = useAppSelector((state) => state.userManagement);
 
@@ -33,7 +32,7 @@ export default function UserFilters({ className, compact = false }: UserFiltersP
   const [localFilters, setLocalFilters] = useState<UserManagementFilter>(filters);
 
   // 필터 적용
-  const applyFilters = useCallback(() => {
+  const applyFilters = useCallback((): void => {
     dispatch(setFilters(localFilters));
     dispatch(fetchUsers({ page: 1, limit: pagination.limit, filters: localFilters }));
     if (compact) {
@@ -42,7 +41,7 @@ export default function UserFilters({ className, compact = false }: UserFiltersP
   }, [dispatch, localFilters, pagination.limit, compact]);
 
   // 필터 초기화
-  const resetFilters = useCallback(() => {
+  const resetFilters = useCallback((): void => {
     const defaultFilters: UserManagementFilter = {
       search: '',
       userType: 'all',
@@ -58,12 +57,12 @@ export default function UserFilters({ className, compact = false }: UserFiltersP
   }, [dispatch, pagination.limit]);
 
   // 로컬 필터 업데이트
-  const updateLocalFilter = useCallback((key: keyof UserManagementFilter, value: any) => {
+  const updateLocalFilter = useCallback((key: keyof UserManagementFilter, value: UserManagementFilter[keyof UserManagementFilter]): void => {
     setLocalFilters(prev => ({ ...prev, [key]: value }));
   }, []);
 
   // 활성 필터 수 계산
-  const getActiveFilterCount = () => {
+  const getActiveFilterCount = (): number => {
     let count = 0;
     if (filters.search) {count++;}
     if (filters.userType !== 'all') {count++;}
@@ -155,7 +154,7 @@ export default function UserFilters({ className, compact = false }: UserFiltersP
 
 interface FilterContentProps {
   localFilters: UserManagementFilter;
-  updateLocalFilter: (key: keyof UserManagementFilter, value: any) => void;
+  updateLocalFilter: (key: keyof UserManagementFilter, value: UserManagementFilter[keyof UserManagementFilter]) => void;
   applyFilters: () => void;
   resetFilters: () => void;
   compact?: boolean;
@@ -167,7 +166,7 @@ function FilterContent({
   applyFilters, 
   resetFilters,
   compact = false 
-}: FilterContentProps) {
+}: FilterContentProps): JSX.Element {
   const gridCols = compact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
 
   return (
@@ -302,8 +301,8 @@ function FilterContent({
             type="date"
             value={localFilters.dateRange?.start || ''}
             onChange={(e) => updateLocalFilter('dateRange', {
-              ...localFilters.dateRange,
-              start: e.target.value
+              start: e.target.value,
+              end: localFilters.dateRange?.end || ''
             })}
             placeholder="시작일"
           />
@@ -311,7 +310,7 @@ function FilterContent({
             type="date"
             value={localFilters.dateRange?.end || ''}
             onChange={(e) => updateLocalFilter('dateRange', {
-              ...localFilters.dateRange,
+              start: localFilters.dateRange?.start || '',
               end: e.target.value
             })}
             placeholder="종료일"
@@ -333,11 +332,11 @@ function FilterContent({
 }
 
 // 활성 필터 표시 컴포넌트
-export function ActiveFilters({ className }: { className?: string }) {
+export function ActiveFilters({ className }: { className?: string }): JSX.Element | null {
   const dispatch = useAppDispatch();
   const { filters, pagination } = useAppSelector((state) => state.userManagement);
 
-  const removeFilter = useCallback((key: keyof UserManagementFilter) => {
+  const removeFilter = useCallback((key: keyof UserManagementFilter): void => {
     const newFilters = { ...filters };
     
     switch (key) {

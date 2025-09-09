@@ -3,7 +3,7 @@
 import { AdminCreators } from '@/components/admin/admin-creators';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 
-export default function AdminCreatorsPage() {
+export default function AdminCreatorsPage(): JSX.Element {
   useDocumentTitle('크리에이터 관리');
   return <AdminCreators />;
 }

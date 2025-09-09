@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -13,7 +14,7 @@ import { QuickCreatorAddModal } from '@/components/admin/creators/quick-creator-
 import { Creator } from '@/types';
 import { mockGetFollowedCreators } from '@/data/creators';
 
-const MOCK_CREATORS = [
+const _MOCK_CREATORS = [
   {
     id: 'ado',
     name: 'Ado',
@@ -32,36 +33,36 @@ const MOCK_CREATORS = [
   },
 ];
 
-export function Sidebar() {
+export function Sidebar(): JSX.Element {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { sidebarOpen, filters, isMobile } = useUI();
-  const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
+  const { followedCreators } = useAppSelector(state => state.creator);
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // 구독 중인 크리에이터 로드
   useEffect(() => {
-    const loadFollowedCreators = async () => {
+    const loadFollowedCreators = async (): Promise<void> => {
       const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed.data || []));
+      dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
     };
     loadFollowedCreators();
 
     // 구독 상태 변경 이벤트 리스너
-    const handleFollowChange = () => {
+    const handleFollowChange = (): void => {
       loadFollowedCreators();
     };
 
     window.addEventListener('followersChanged', handleFollowChange);
-    return () => window.removeEventListener('followersChanged', handleFollowChange);
+    return (): void => window.removeEventListener('followersChanged', handleFollowChange);
   }, [dispatch]);
 
   // 외부 클릭 감지 및 사이드바 닫기
   useEffect(() => {
     if (!sidebarOpen) {return;}
 
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       const target = event.target as Element;
       
       // 햄버거 버튼 클릭은 무시
@@ -74,7 +75,7 @@ export function Sidebar() {
       }
     };
 
-    const handleEscKey = (event: KeyboardEvent) => {
+    const handleEscKey = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         dispatch(setSidebarOpen(false));
       }
@@ -86,7 +87,7 @@ export function Sidebar() {
       document.addEventListener('keydown', handleEscKey);
     }, 100);
 
-    return () => {
+    return (): void => {
       clearTimeout(timer);
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscKey);
@@ -101,12 +102,12 @@ export function Sidebar() {
       document.body.style.overflow = 'unset';
     }
 
-    return () => {
+    return (): void => {
       document.body.style.overflow = 'unset';
     };
   }, [sidebarOpen, isMobile]);
 
-  const handleCreatorFilter = (creatorId: string) => {
+  const handleCreatorFilter = (creatorId: string): void => {
     const currentFilters = filters.selectedCreators;
     
     if (currentFilters.includes('all')) {
@@ -128,11 +129,11 @@ export function Sidebar() {
     }
   };
 
-  const isCreatorSelected = (creatorId: string) => {
+  const isCreatorSelected = (creatorId: string): boolean => {
     return filters.selectedCreators.includes(creatorId) && !filters.selectedCreators.includes('all');
   };
 
-  const handleQuickAddCreator = async (creator: Creator) => {
+  const handleQuickAddCreator = async (creator: Creator): Promise<void> => {
     try {
       await dispatch(followCreator(creator)).unwrap();
       
@@ -141,6 +142,7 @@ export function Sidebar() {
       
       setShowQuickAddModal(false);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('빠른 크리에이터 추가 오류:', error);
     }
   };
@@ -205,9 +207,11 @@ export function Sidebar() {
                 onClick={() => handleCreatorFilter(creator.id)}
               >
                 {creator.avatar ? (
-                  <img 
+                  <Image 
                     src={creator.avatar} 
                     alt={creator.displayName}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
@@ -239,7 +243,7 @@ export function Sidebar() {
                   </p>
                 </div>
                 {/* 새 콘텐츠 카운트 - 크리에이터별 고정값 */}
-                {(() => {
+                {((): JSX.Element | null => {
                   // 크리에이터별 고정된 새 콘텐츠 수 (실제로는 서버에서 가져올 데이터)
                   const newContentCounts: Record<string, number> = {
                     'ado': 3,

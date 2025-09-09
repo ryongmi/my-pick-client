@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Youtube, AlertCircle, Check, ExternalLink } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { X, Youtube, AlertCircle, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -44,7 +43,7 @@ const CONTENT_CATEGORIES = [
   '기타'
 ];
 
-export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationModalProps) {
+export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationModalProps): JSX.Element | null {
   const dispatch = useAppDispatch();
   const { isSubmitting, applicationStatus, error } = useAppSelector(state => state.creatorApplication);
   const [currentStep, setCurrentStep] = useState(1);
@@ -68,7 +67,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
 
   if (!isOpen) {return null;}
 
-  const validateStep = (step: number) => {
+  const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (step === 1) {
@@ -102,18 +101,18 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
+  const handleNext = (): void => {
     if (validateStep(currentStep)) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = (): void => {
     setCurrentStep(currentStep - 1);
     setErrors({});
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<void> => {
     if (!validateStep(currentStep)) {return;}
 
     try {
@@ -138,12 +137,13 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
       // 성공 시 모달 닫기는 Redux에서 자동으로 처리됨
       alert('크리에이터 신청이 완료되었습니다. 검토 후 연락드리겠습니다.');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('신청 실패:', error);
       // 에러는 Redux state에서 관리됨
     }
   };
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: unknown): void => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -159,7 +159,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
     }
   };
 
-  const updateSocialLinks = (platform: string, value: string) => {
+  const updateSocialLinks = (platform: string, value: string): void => {
     setFormData(prev => ({
       ...prev,
       socialLinks: {
@@ -169,14 +169,14 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
     }));
   };
 
-  const updateSampleVideo = (index: number, value: string) => {
+  const updateSampleVideo = (index: number, value: string): void => {
     setFormData(prev => ({
       ...prev,
       sampleVideos: prev.sampleVideos.map((video, i) => i === index ? value : video)
     }));
   };
 
-  const toggleCategory = (category: string) => {
+  const toggleCategory = (category: string): void => {
     setFormData(prev => {
       const currentCategories = prev.contentCategories;
       const isSelected = currentCategories.includes(category);
@@ -209,7 +209,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
     }
   };
 
-  const renderStep1 = () => (
+  const renderStep1 = (): JSX.Element => (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">기본 채널 정보</h3>
@@ -263,7 +263,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
     </div>
   );
 
-  const renderStep2 = () => (
+  const renderStep2 = (): JSX.Element => (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">콘텐츠 정보</h3>
@@ -371,7 +371,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
     </div>
   );
 
-  const renderStep3 = () => (
+  const renderStep3 = (): JSX.Element => (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">추가 정보 (선택사항)</h3>
@@ -441,7 +441,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
     </div>
   );
 
-  const renderStepContent = () => {
+  const renderStepContent = (): JSX.Element | null => {
     switch (currentStep) {
       case 1:
         return renderStep1();

@@ -1,23 +1,16 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { 
   Users, 
   Search, 
-  Filter, 
   MoreHorizontal, 
-  Check, 
   X, 
   Eye, 
   Edit, 
-  UserPlus,
-  UserMinus,
-  Ban,
-  Trash2,
-  Youtube,
   CheckCircle,
   XCircle,
-  Clock,
   ChevronUp,
   ChevronDown
 } from 'lucide-react';
@@ -39,7 +32,7 @@ import { MyPickUser, UserManagementFilter } from '@/types/userManagement';
 import { cn } from '@/lib/utils';
 
 // 상태 배지 컴포넌트
-const StatusBadge = ({ status }: { status: MyPickUser['serviceStatus'] }) => {
+const StatusBadge = ({ status }: { status: MyPickUser['serviceStatus'] }): JSX.Element => {
   const variants = {
     active: 'bg-green-100 text-green-800 border-green-200',
     inactive: 'bg-gray-100 text-gray-800 border-gray-200',
@@ -63,7 +56,7 @@ const StatusBadge = ({ status }: { status: MyPickUser['serviceStatus'] }) => {
 };
 
 // 사용자 타입 배지 컴포넌트
-const UserTypeBadge = ({ userType }: { userType: MyPickUser['userType'] }) => {
+const UserTypeBadge = ({ userType }: { userType: MyPickUser['userType'] }): JSX.Element => {
   const variants = {
     user: 'bg-blue-100 text-blue-800 border-blue-200',
     creator: 'bg-purple-100 text-purple-800 border-purple-200',
@@ -85,7 +78,7 @@ const UserTypeBadge = ({ userType }: { userType: MyPickUser['userType'] }) => {
 };
 
 // YouTube 연동 상태 아이콘
-const YouTubeConnectionIcon = ({ isConnected, hasError }: { isConnected: boolean; hasError?: boolean }) => {
+const YouTubeConnectionIcon = ({ isConnected, hasError }: { isConnected: boolean; hasError?: boolean }): JSX.Element => {
   if (!isConnected) {
     return <XCircle className="w-4 h-4 text-gray-400" />;
   }
@@ -107,8 +100,8 @@ interface TableHeaderProps {
   className?: string;
 }
 
-const TableHeader = ({ label, sortKey, currentSort, currentOrder, onSort, className }: TableHeaderProps) => {
-  const handleSort = () => {
+const TableHeader = ({ label, sortKey, currentSort, currentOrder, onSort, className }: TableHeaderProps): JSX.Element => {
+  const handleSort = (): void => {
     if (!sortKey) {return;}
     
     const newOrder = currentSort === sortKey && currentOrder === 'asc' ? 'desc' : 'asc';
@@ -136,7 +129,7 @@ const TableHeader = ({ label, sortKey, currentSort, currentOrder, onSort, classN
   );
 };
 
-export default function UserManagementTable() {
+export default function UserManagementTable(): JSX.Element {
   const dispatch = useAppDispatch();
   const {
     users,
@@ -163,45 +156,45 @@ export default function UserManagementTable() {
       }
     }, 500);
 
-    return () => clearTimeout(timeoutId);
+    return (): void => clearTimeout(timeoutId);
   }, [searchInput, filters, dispatch, pagination.limit]);
 
   // 필터 변경 핸들러
-  const handleFilterChange = useCallback((newFilters: Partial<UserManagementFilter>) => {
+  const handleFilterChange = useCallback((newFilters: Partial<UserManagementFilter>): void => {
     dispatch(setFilters(newFilters));
     dispatch(fetchUsers({ page: 1, limit: pagination.limit, filters: { ...filters, ...newFilters } }));
   }, [dispatch, filters, pagination.limit]);
 
   // 정렬 변경 핸들러
-  const handleSort = useCallback((sortBy: UserManagementFilter['sortBy'], sortOrder: UserManagementFilter['sortOrder']) => {
+  const handleSort = useCallback((sortBy: UserManagementFilter['sortBy'], sortOrder: UserManagementFilter['sortOrder']): void => {
     dispatch(setSorting({ sortBy, sortOrder }));
     dispatch(fetchUsers({ page: pagination.page, limit: pagination.limit, filters: { ...filters, sortBy, sortOrder } }));
   }, [dispatch, filters, pagination]);
 
   // 페이지 변경 핸들러
-  const handlePageChange = useCallback((newPage: number) => {
+  const handlePageChange = useCallback((newPage: number): void => {
     dispatch(setPagination({ page: newPage }));
     dispatch(fetchUsers({ page: newPage, limit: pagination.limit, filters }));
   }, [dispatch, filters, pagination.limit]);
 
   // 사용자 선택 핸들러
-  const handleUserSelect = useCallback((userId: string) => {
+  const handleUserSelect = useCallback((userId: string): void => {
     dispatch(toggleUserSelection(userId));
   }, [dispatch]);
 
   // 전체 선택 핸들러
-  const handleSelectAll = useCallback((checked: boolean) => {
+  const handleSelectAll = useCallback((checked: boolean): void => {
     dispatch(toggleAllUsers(checked));
   }, [dispatch]);
 
   // 사용자 상세 보기
-  const handleViewUser = useCallback((user: MyPickUser) => {
+  const handleViewUser = useCallback((user: MyPickUser): void => {
     dispatch(setSelectedUser(user));
     dispatch(setModalOpen({ modal: 'userDetail', open: true }));
   }, [dispatch]);
 
   // 날짜 포맷팅
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null): string => {
     if (!dateString) {return '-';}
     return new Date(dateString).toLocaleString('ko-KR', {
       year: 'numeric',
@@ -213,7 +206,7 @@ export default function UserManagementTable() {
   };
 
   // 숫자 포맷팅
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number): string => {
     return new Intl.NumberFormat('ko-KR').format(num);
   };
 
@@ -263,7 +256,7 @@ export default function UserManagementTable() {
               {/* 사용자 타입 필터 */}
               <select
                 value={filters.userType}
-                onChange={(e) => handleFilterChange({ userType: e.target.value as any })}
+                onChange={(e) => handleFilterChange({ userType: e.target.value as UserManagementFilter['userType'] })}
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">모든 타입</option>
@@ -274,7 +267,7 @@ export default function UserManagementTable() {
               {/* 상태 필터 */}
               <select
                 value={filters.serviceStatus}
-                onChange={(e) => handleFilterChange({ serviceStatus: e.target.value as any })}
+                onChange={(e) => handleFilterChange({ serviceStatus: e.target.value as UserManagementFilter['serviceStatus'] })}
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">모든 상태</option>
@@ -286,7 +279,7 @@ export default function UserManagementTable() {
               {/* YouTube 연동 필터 */}
               <select
                 value={filters.youtubeConnected}
-                onChange={(e) => handleFilterChange({ youtubeConnected: e.target.value as any })}
+                onChange={(e) => handleFilterChange({ youtubeConnected: e.target.value as UserManagementFilter['youtubeConnected'] })}
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">연동 상태</option>
@@ -393,10 +386,12 @@ export default function UserManagementTable() {
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
                           {user.avatar ? (
-                            <img
+                            <Image
                               className="h-10 w-10 rounded-full object-cover"
                               src={user.avatar}
                               alt={user.name}
+                              width={40}
+                              height={40}
                             />
                           ) : (
                             <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">

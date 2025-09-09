@@ -40,7 +40,7 @@ export function PlatformAddModal({
   onClose, 
   onSubmit, 
   editingPlatform 
-}: PlatformAddModalProps) {
+}: PlatformAddModalProps): JSX.Element | null {
   const [formData, setFormData] = useState({
     name: '',
     displayName: '',
@@ -92,7 +92,7 @@ export function PlatformAddModal({
 
   if (!isOpen) {return null;}
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
@@ -115,7 +115,7 @@ export function PlatformAddModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -134,7 +134,7 @@ export function PlatformAddModal({
     onClose();
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number | boolean): void => {
     setFormData(prev => ({
       ...prev,
       [field]: value

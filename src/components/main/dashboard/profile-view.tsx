@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, Twitter, Eye, Clock, Heart } from 'lucide-react';
+import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, Twitter, Eye, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -9,7 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { fetchBookmarks, removeBookmark, toggleBookmarkOptimistic } from '@/store/slices/contentSlice';
 import { cn } from '@/lib/utils';
-import { formatNumber, formatDate } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import { mockGetFollowedCreators } from '@/data/creators';
 import { Creator } from '@/types';
 
@@ -47,7 +47,7 @@ const MOCK_ACTIVITY = [
 
 // MOCK_FOLLOWED_CREATORS 제거 - 실제 데이터 사용
 
-export function ProfileView() {
+export function ProfileView(): JSX.Element {
   const { user } = useAuth();
   const dispatch = useAppDispatch();
   const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
@@ -56,19 +56,19 @@ export function ProfileView() {
 
   // 구독 중인 크리에이터 로드
   useEffect(() => {
-    const loadFollowedCreators = async () => {
+    const loadFollowedCreators = async (): Promise<void> => {
       const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed.data || []));
+      dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
     };
     loadFollowedCreators();
 
     // 구독 상태 변경 이벤트 리스너
-    const handleFollowChange = () => {
+    const handleFollowChange = (): void => {
       loadFollowedCreators();
     };
 
     window.addEventListener('followersChanged', handleFollowChange);
-    return () => window.removeEventListener('followersChanged', handleFollowChange);
+    return (): void => window.removeEventListener('followersChanged', handleFollowChange);
   }, [dispatch]);
 
   // 컴포넌트 마운트 시 북마크 데이터 로드
@@ -84,19 +84,20 @@ export function ProfileView() {
   }, [dispatch, activeTab]);
 
   // 구독 취소 핸들러
-  const handleUnfollow = async (creatorId: string) => {
+  const handleUnfollow = async (creatorId: string): Promise<void> => {
     try {
       await dispatch(unfollowCreator(creatorId)).unwrap();
       
       // 다른 컴포넌트들에게 알림
       window.dispatchEvent(new CustomEvent('followersChanged'));
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('구독 취소 실패:', error);
     }
   };
 
   // 북마크 해제 핸들러
-  const handleRemoveBookmark = async (contentId: string) => {
+  const handleRemoveBookmark = async (contentId: string): Promise<void> => {
     // 낙관적 업데이트
     dispatch(toggleBookmarkOptimistic(contentId));
     
@@ -107,11 +108,12 @@ export function ProfileView() {
     } catch (error) {
       // 에러 시 롤백
       dispatch(toggleBookmarkOptimistic(contentId));
+      // eslint-disable-next-line no-console
       console.error('북마크 해제 실패:', error);
     }
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number): string => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
     }
@@ -128,7 +130,7 @@ export function ProfileView() {
     { id: 'settings', label: '설정', icon: Settings },
   ];
 
-  const renderTabContent = () => {
+  const renderTabContent = (): JSX.Element | null => {
     switch (activeTab) {
       case 'activity':
         return (

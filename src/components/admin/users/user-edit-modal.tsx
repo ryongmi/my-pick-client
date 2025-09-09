@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import {
   X,
   User,
-  Mail,
   Save,
   AlertTriangle,
 } from 'lucide-react';
@@ -23,9 +22,9 @@ interface UserEditModalProps {
   user: MyPickUser | null;
 }
 
-export function UserEditModal({ isOpen, onClose, user }: UserEditModalProps) {
+export function UserEditModal({ isOpen, onClose, user }: UserEditModalProps): JSX.Element | null {
   const dispatch = useAppDispatch();
-  const { isLoading } = useAppSelector((state) => state.userManagement);
+  const { isLoading: _isLoading } = useAppSelector((state) => state.userManagement);
 
   const [formData, setFormData] = useState<Partial<MyPickUser>>({});
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -47,7 +46,7 @@ export function UserEditModal({ isOpen, onClose, user }: UserEditModalProps) {
   if (!isOpen || !user) {return null;}
 
   // 폼 검증
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
     if (!formData.name?.trim()) {
@@ -65,7 +64,7 @@ export function UserEditModal({ isOpen, onClose, user }: UserEditModalProps) {
   };
 
   // 저장 처리
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!validateForm()) {return;}
 
     setIsSaving(true);
@@ -80,6 +79,7 @@ export function UserEditModal({ isOpen, onClose, user }: UserEditModalProps) {
 
       onClose();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('사용자 정보 업데이트 실패:', error);
       // TODO: 에러 토스트 표시
     } finally {
@@ -88,7 +88,7 @@ export function UserEditModal({ isOpen, onClose, user }: UserEditModalProps) {
   };
 
   // 취소 처리
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     if (user) {
       setFormData({
         name: user.name,
@@ -102,7 +102,7 @@ export function UserEditModal({ isOpen, onClose, user }: UserEditModalProps) {
   };
 
   // 폼 필드 변경 처리
-  const handleFieldChange = (field: keyof MyPickUser, value: any) => {
+  const handleFieldChange = (field: keyof MyPickUser, value: unknown): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // 해당 필드의 에러 클리어
     if (formErrors[field]) {

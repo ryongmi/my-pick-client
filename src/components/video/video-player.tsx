@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Loader2, Play, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,15 +11,15 @@ interface VideoPlayerProps {
   autoplay?: boolean;
 }
 
-export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps) {
+export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps): JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
   // YouTube 비디오 ID 추출 (URL에서 ID만 추출)
-  const extractVideoId = (id: string) => {
+  const extractVideoId = (id: string): string => {
     // 이미 ID 형태인 경우
-    if (id.length === 11 && !/[\/\?]/.test(id)) {
+    if (id.length === 11 && !/[/?]/.test(id)) {
       return id;
     }
     
@@ -31,7 +31,7 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps) {
     
     for (const pattern of patterns) {
       const match = id.match(pattern);
-      if (match) {
+      if (match && match[1]) {
         return match[1];
       }
     }
@@ -51,21 +51,21 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps) {
     autohide: '0'
   }).toString()}`;
 
-  const handleIframeLoad = () => {
+  const handleIframeLoad = (): void => {
     setIsLoading(false);
     setHasError(false);
   };
 
-  const handleIframeError = () => {
+  const handleIframeError = (): void => {
     setIsLoading(false);
     setHasError(true);
   };
 
-  const handlePlayClick = () => {
+  const handlePlayClick = (): void => {
     setIsPlaying(true);
   };
 
-  const handleRetry = () => {
+  const handleRetry = (): void => {
     setIsLoading(true);
     setHasError(false);
     // iframe을 다시 로드하기 위해 key를 변경

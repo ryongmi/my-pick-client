@@ -237,7 +237,7 @@ export interface ActivityItem {
   title: string;
   description: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // 설정 타입
@@ -283,7 +283,7 @@ export interface UserInteraction {
 export interface AppError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
   timestamp: string;
   // krgeobuk 서버 추가 필드
   statusCode?: number;
@@ -293,6 +293,6 @@ export interface AppError {
 // 이벤트 타입
 export interface AppEvent {
   type: string;
-  payload: any;
+  payload: unknown;
   timestamp: string;
 }

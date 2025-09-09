@@ -30,8 +30,32 @@ import { CreatorDetailModal } from '@/components/admin/creators/creator-detail-m
 import { CreatorEditModal } from '@/components/admin/creators/creator-edit-modal';
 import { BulkOperations, BulkAction } from '@/components/admin/shared/bulk-operations';
 
+// Type for the local creator data structure used in this component
+interface LocalCreatorData {
+  id: string;
+  name: string;
+  displayName: string;
+  platform: string;
+  channelUrl: string;
+  subscriberCount: number;
+  totalVideos: number;
+  avgViews: number;
+  status: 'active' | 'pending' | 'inactive';
+  verificationStatus: 'verified' | 'pending' | 'unverified';
+  lastActivity: string;
+  joinedDate: string;
+  monthlyGrowth: number;
+  engagementRate: number;
+  contentCategories: string[];
+  topVideo: {
+    title: string;
+    views: number;
+    uploadDate: string;
+  };
+}
+
 // Enhanced mock data with all necessary fields
-const initialCreatorsData = [
+const initialCreatorsData: LocalCreatorData[] = [
   {
     id: 'ado',
     name: 'Ado',
@@ -100,7 +124,7 @@ const initialCreatorsData = [
   },
 ];
 
-const formatNumber = (num: number) => {
+const formatNumber = (num: number): string => {
   if (num >= 1000000000) {
     return (num / 1000000000).toFixed(1) + 'B';
   }
@@ -114,7 +138,7 @@ const formatNumber = (num: number) => {
 };
 
 // Utility functions
-const getStatusIcon = (status: string) => {
+const getStatusIcon = (status: string): JSX.Element | null => {
   switch (status) {
     case 'active':
       return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -127,7 +151,7 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-const getStatusText = (status: string) => {
+const getStatusText = (status: string): string => {
   switch (status) {
     case 'active':
       return '활성';
@@ -140,7 +164,7 @@ const getStatusText = (status: string) => {
   }
 };
 
-const getVerificationIcon = (status: string) => {
+const getVerificationIcon = (status: string): JSX.Element | null => {
   switch (status) {
     case 'verified':
       return <CheckCircle className="h-4 w-4 text-blue-500" />;
@@ -151,9 +175,9 @@ const getVerificationIcon = (status: string) => {
   }
 };
 
-export function AdminCreators() {
+export function AdminCreators(): JSX.Element {
   // State management
-  const [creatorsData, setCreatorsData] = useState(initialCreatorsData);
+  const [creatorsData, setCreatorsData] = useState<LocalCreatorData[]>(initialCreatorsData);
   const [selectedCreators, setSelectedCreators] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -164,18 +188,18 @@ export function AdminCreators() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedCreator, setSelectedCreator] = useState<any>(null);
+  const [selectedCreator, setSelectedCreator] = useState<LocalCreatorData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpenDropdownId(null);
       }
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         setOpenDropdownId(null);
       }
@@ -184,7 +208,7 @@ export function AdminCreators() {
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
 
-    return () => {
+    return (): void => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
@@ -200,15 +224,15 @@ export function AdminCreators() {
   });
 
   // Selection handlers
-  const handleSelectAll = () => {
+  const handleSelectAll = (): void => {
     setSelectedCreators(filteredCreators.map((creator) => creator.id));
   };
 
-  const handleSelectNone = () => {
+  const handleSelectNone = (): void => {
     setSelectedCreators([]);
   };
 
-  const handleCreatorSelect = (creatorId: string) => {
+  const handleCreatorSelect = (creatorId: string): void => {
     setSelectedCreators((prev) =>
       prev.includes(creatorId)
         ? prev.filter((id) => id !== creatorId)
@@ -217,97 +241,111 @@ export function AdminCreators() {
   };
 
   // Action handlers
-  const toggleDropdown = (creatorId: string) => {
+  const toggleDropdown = (creatorId: string): void => {
     setOpenDropdownId(openDropdownId === creatorId ? null : creatorId);
   };
 
   // Modal handlers
-  const handleAddCreator = () => {
+  const handleAddCreator = (): void => {
     setIsAddModalOpen(true);
   };
 
-  const handleViewCreator = (creator: any) => {
+  const handleViewCreator = (creator: LocalCreatorData): void => {
     setSelectedCreator(creator);
     setIsDetailModalOpen(true);
     setOpenDropdownId(null);
   };
 
-  const handleEditCreator = (creator: any) => {
+  const handleEditCreator = (creator: LocalCreatorData): void => {
     setSelectedCreator(creator);
     setIsEditModalOpen(true);
     setOpenDropdownId(null);
   };
 
   // CRUD operations
-  const handleCreatorAdd = async (formData: any) => {
+  const handleCreatorAdd = async (formData: { name: string; displayName: string; description: string; platforms: { type: string; username: string; url: string; }[]; }): Promise<void> => {
     setIsLoading(true);
     try {
+      // Type guard and form data extraction
+      const platforms = Array.isArray(formData.platforms) ? formData.platforms : [];
+      const firstPlatform = platforms[0];
+      
       // Create new creator with mock data structure
-      const newCreator = {
+      const newCreator: LocalCreatorData = {
         id: `creator_${Date.now()}`,
-        name: String(formData.name || ''),
-        displayName: String(formData.displayName || ''),
-        platform: String(formData.platforms[0]?.type || 'youtube'),
-        channelUrl: String(formData.platforms[0]?.url || ''),
+        name: formData.name || 'New Creator',
+        displayName: formData.displayName || 'New Creator',
+        platform: firstPlatform?.type || 'YouTube',
+        channelUrl: firstPlatform?.url || 'https://youtube.com/@newcreator',
         subscriberCount: Math.floor(Math.random() * 1000000) + 10000,
         totalVideos: Math.floor(Math.random() * 100) + 5,
         avgViews: Math.floor(Math.random() * 500000) + 50000,
-        status: 'pending',
-        verificationStatus: 'pending',
-        lastActivity: new Date().toISOString().split('T')[0],
-        joinedDate: new Date().toISOString().split('T')[0],
+        status: 'pending' as const,
+        verificationStatus: 'pending' as const,
+        lastActivity: new Date().toISOString().split('T')[0] || new Date().toISOString(),
+        joinedDate: new Date().toISOString().split('T')[0] || new Date().toISOString(),
         monthlyGrowth: (Math.random() - 0.5) * 20,
         engagementRate: Math.random() * 15 + 5,
         contentCategories: ['신규'],
         topVideo: {
           title: '새 크리에이터의 인기 영상',
           views: Math.floor(Math.random() * 100000) + 10000,
-          uploadDate: new Date().toISOString().split('T')[0],
+          uploadDate: new Date().toISOString().split('T')[0] || new Date().toISOString(),
         },
       };
 
-      setCreatorsData(prev => [...prev, newCreator as any]);
+      setCreatorsData(prev => [...prev, newCreator]);
+      // eslint-disable-next-line no-console
       console.log('Creator added successfully:', newCreator);
-    } catch (error) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line no-console
       console.error('Error adding creator:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCreatorEdit = async (formData: any) => {
+  const handleCreatorEdit = async (formData: { name: string; displayName: string; description: string; platforms: { type: string; username: string; url: string; }[]; }): Promise<void> => {
     if (!selectedCreator) {return;}
     
     setIsLoading(true);
     try {
+      // Type guard and form data extraction
+      const platforms = Array.isArray(formData.platforms) ? formData.platforms : [];
+      const firstPlatform = platforms[0];
+      
       setCreatorsData(prev => prev.map(creator => 
         creator.id === selectedCreator.id 
           ? {
               ...creator,
-              name: formData.name,
-              displayName: formData.displayName,
-              channelUrl: formData.platforms[0]?.url || creator.channelUrl,
-              platform: formData.platforms[0]?.type || creator.platform,
+              name: formData.name || creator.name,
+              displayName: formData.displayName || creator.displayName,
+              channelUrl: firstPlatform?.url || creator.channelUrl,
+              platform: firstPlatform?.type || creator.platform,
             }
           : creator
       ));
+      // eslint-disable-next-line no-console
       console.log('Creator updated successfully');
-    } catch (error) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line no-console
       console.error('Error updating creator:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCreatorDelete = async (creatorId: string) => {
+  const handleCreatorDelete = async (creatorId: string): Promise<void> => {
     if (!confirm('정말로 이 크리에이터를 삭제하시겠습니까?')) {return;}
     
     setIsLoading(true);
     try {
       setCreatorsData(prev => prev.filter(creator => creator.id !== creatorId));
       setSelectedCreators(prev => prev.filter(id => id !== creatorId));
+      // eslint-disable-next-line no-console
       console.log('Creator deleted successfully');
-    } catch (error) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line no-console
       console.error('Error deleting creator:', error);
     } finally {
       setIsLoading(false);
@@ -315,7 +353,7 @@ export function AdminCreators() {
     }
   };
 
-  const handleStatusToggle = async (creatorId: string) => {
+  const handleStatusToggle = async (creatorId: string): Promise<void> => {
     setIsLoading(true);
     try {
       setCreatorsData(prev => prev.map(creator => 
@@ -326,8 +364,10 @@ export function AdminCreators() {
             }
           : creator
       ));
+      // eslint-disable-next-line no-console
       console.log('Creator status updated successfully');
-    } catch (error) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line no-console
       console.error('Error updating creator status:', error);
     } finally {
       setIsLoading(false);
@@ -335,7 +375,7 @@ export function AdminCreators() {
     }
   };
 
-  const handleBulkAction = async (action: BulkAction, creatorIds: string[]) => {
+  const handleBulkAction = async (action: BulkAction, creatorIds: string[]): Promise<void> => {
     setIsLoading(true);
     try {
       switch (action) {
@@ -357,18 +397,23 @@ export function AdminCreators() {
           setCreatorsData(prev => prev.filter(creator => !creatorIds.includes(creator.id)));
           setSelectedCreators([]);
           break;
-        case 'export':
+        case 'export': {
           // Mock export functionality
           const exportData = creatorsData.filter(creator => creatorIds.includes(creator.id));
+          // eslint-disable-next-line no-console
           console.log('Exporting creators:', exportData);
           break;
+        }
         case 'refresh':
           // Mock refresh functionality
+          // eslint-disable-next-line no-console
           console.log('Refreshing creator data for:', creatorIds);
           break;
       }
+      // eslint-disable-next-line no-console
       console.log(`Bulk ${action} completed for ${creatorIds.length} creators`);
-    } catch (error) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line no-console
       console.error(`Error in bulk ${action}:`, error);
     } finally {
       setIsLoading(false);
@@ -472,14 +517,14 @@ export function AdminCreators() {
                 type="text"
                 placeholder="크리에이터 이름으로 검색..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e): void => setSearchTerm(e.target.value)}
                 className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-4 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="flex gap-2">
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e): void => setStatusFilter(e.target.value)}
                 className="rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">모든 상태</option>
@@ -508,7 +553,7 @@ export function AdminCreators() {
                 <tr>
                   <th className="w-12 p-4 text-center text-sm font-medium">
                     <button
-                      onClick={() =>
+                      onClick={(): void =>
                         selectedCreators.length === filteredCreators.length
                           ? handleSelectNone()
                           : handleSelectAll()
@@ -545,7 +590,7 @@ export function AdminCreators() {
                   >
                     <td className="p-4">
                       <button
-                        onClick={() => handleCreatorSelect(creator.id)}
+                        onClick={(): void => handleCreatorSelect(creator.id)}
                         className="p-1"
                       >
                         {selectedCreators.includes(creator.id) ? (
@@ -655,7 +700,7 @@ export function AdminCreators() {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => window.open(creator.channelUrl, '_blank')}
+                          onClick={(): Window | null => window.open(creator.channelUrl, '_blank')}
                           title="채널 보기"
                         >
                           <ExternalLink className="h-4 w-4" />
@@ -667,7 +712,7 @@ export function AdminCreators() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => toggleDropdown(creator.id)}
+                            onClick={(): void => toggleDropdown(creator.id)}
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
@@ -677,7 +722,7 @@ export function AdminCreators() {
                             <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-md border border-gray-200 bg-white shadow-lg">
                               <div className="py-1">
                                 <button 
-                                  onClick={() => handleViewCreator(creator)}
+                                  onClick={(): void => handleViewCreator(creator)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   disabled={isLoading}
                                 >
@@ -685,7 +730,7 @@ export function AdminCreators() {
                                   상세 보기
                                 </button>
                                 <button 
-                                  onClick={() => handleEditCreator(creator)}
+                                  onClick={(): void => handleEditCreator(creator)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   disabled={isLoading}
                                 >
@@ -694,7 +739,7 @@ export function AdminCreators() {
                                 </button>
                                 <div className="my-1 border-t border-gray-100"></div>
                                 <button 
-                                  onClick={() => handleStatusToggle(creator.id)}
+                                  onClick={async (): Promise<void> => await handleStatusToggle(creator.id)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   disabled={isLoading}
                                 >
@@ -712,7 +757,7 @@ export function AdminCreators() {
                                 </button>
                                 <div className="my-1 border-t border-gray-100"></div>
                                 <button 
-                                  onClick={() => handleCreatorDelete(creator.id)}
+                                  onClick={async (): Promise<void> => await handleCreatorDelete(creator.id)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                                   disabled={isLoading}
                                 >
@@ -736,28 +781,30 @@ export function AdminCreators() {
       {/* Modal Components */}
       <CreatorAddModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={(): void => setIsAddModalOpen(false)}
         onSubmit={handleCreatorAdd}
       />
 
       <CreatorDetailModal
         isOpen={isDetailModalOpen}
-        onClose={() => {
+        onClose={(): void => {
           setIsDetailModalOpen(false);
           setSelectedCreator(null);
         }}
         creator={selectedCreator}
       />
 
-      <CreatorEditModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setSelectedCreator(null);
-        }}
-        onSubmit={handleCreatorEdit}
-        creator={selectedCreator}
-      />
+      {selectedCreator && (
+        <CreatorEditModal
+          isOpen={isEditModalOpen}
+          onClose={(): void => {
+            setIsEditModalOpen(false);
+            setSelectedCreator(null);
+          }}
+          onSubmit={handleCreatorEdit}
+          creator={selectedCreator}
+        />
+      )}
     </div>
   );
 }

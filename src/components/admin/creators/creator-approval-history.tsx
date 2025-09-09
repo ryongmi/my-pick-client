@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils';
 import { CreatorApplication, CreatorApprovalHistoryFilter } from '@/types/userManagement';
 import { CreatorHistoryDetailModal } from './creator-history-detail-modal';
 
-export function CreatorApprovalHistory() {
+export function CreatorApprovalHistory(): JSX.Element {
   const dispatch = useAppDispatch();
   
   // Redux state
@@ -61,7 +61,7 @@ export function CreatorApprovalHistory() {
       }
     }, 500);
     
-    return () => {
+    return (): void => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
@@ -69,28 +69,28 @@ export function CreatorApprovalHistory() {
   }, [searchTerm, filters.search, dispatch]);
 
   // 필터 핸들러들
-  const handleFilterChange = (key: keyof CreatorApprovalHistoryFilter, value: any) => {
+  const handleFilterChange = (key: keyof CreatorApprovalHistoryFilter, value: string): void => {
     dispatch(setApprovalHistoryFilters({ [key]: value }));
   };
 
   // 페이지네이션 핸들러
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page: number): void => {
     dispatch(setApprovalHistoryPagination({ page }));
   };
 
   // 정렬 핸들러
-  const handleSort = (sortBy: CreatorApprovalHistoryFilter['sortBy']) => {
+  const handleSort = (sortBy: CreatorApprovalHistoryFilter['sortBy']): void => {
     const newSortOrder = filters.sortBy === sortBy && filters.sortOrder === 'desc' ? 'asc' : 'desc';
     dispatch(setApprovalHistoryFilters({ sortBy, sortOrder: newSortOrder }));
   };
 
   // 상세 보기 핸들러
-  const handleViewDetail = (application: CreatorApplication) => {
+  const handleViewDetail = (application: CreatorApplication): void => {
     setSelectedApplication(application);
     setShowDetailModal(true);
   };
 
-  const formatSubscriberCount = (count: number) => {
+  const formatSubscriberCount = (count: number): string => {
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(1)}M`;
     } else if (count >= 1000) {
@@ -99,7 +99,7 @@ export function CreatorApprovalHistory() {
     return count.toLocaleString();
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'approved':
         return 'text-green-600 bg-green-100';
@@ -110,7 +110,7 @@ export function CreatorApprovalHistory() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): JSX.Element | null => {
     switch (status) {
       case 'approved':
         return <CheckCircle className="h-4 w-4" />;
@@ -121,7 +121,7 @@ export function CreatorApprovalHistory() {
     }
   };
 
-  const getSortIcon = (column: string) => {
+  const getSortIcon = (column: string): JSX.Element | null => {
     if (filters.sortBy !== column) {return null;}
     return filters.sortOrder === 'asc' ? 
       <ChevronUp className="h-4 w-4" /> : 

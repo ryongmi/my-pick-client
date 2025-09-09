@@ -13,7 +13,7 @@ export interface PersonalizedDashboardProps {
   showTraditionalFeed?: boolean;
 }
 
-export function PersonalizedDashboard({ showTraditionalFeed = true }: PersonalizedDashboardProps) {
+export function PersonalizedDashboard({ showTraditionalFeed = true }: PersonalizedDashboardProps): JSX.Element {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'widgets' | 'feed' | 'hybrid'>('hybrid');
   const [isCompact, setIsCompact] = useState(false);
@@ -25,18 +25,19 @@ export function PersonalizedDashboard({ showTraditionalFeed = true }: Personaliz
     loadWidgets();
   }, []);
 
-  const handleWidgetReorder = (newWidgets: any[]) => {
-    saveWidgets(newWidgets);
+  const handleWidgetReorder = (newWidgets: unknown[]): void => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    saveWidgets(newWidgets as any);
   };
 
-  const handleWidgetToggle = (widgetId: string, enabled: boolean) => {
+  const handleWidgetToggle = (widgetId: string, enabled: boolean): void => {
     const updatedWidgets = widgets.map(widget =>
       widget.id === widgetId ? { ...widget, enabled } : widget
     );
     saveWidgets(updatedWidgets);
   };
 
-  const handleWidgetResize = (widgetId: string, span: { cols: number; rows: number }) => {
+  const handleWidgetResize = (widgetId: string, span: { cols: number; rows: number }): void => {
     const updatedWidgets = widgets.map(widget =>
       widget.id === widgetId ? { ...widget, span } : widget
     );
@@ -46,7 +47,7 @@ export function PersonalizedDashboard({ showTraditionalFeed = true }: Personaliz
   const enabledWidgetsCount = widgets.filter(w => w.enabled).length;
   const totalWidgetsCount = widgets.length;
 
-  const getViewModeLabel = () => {
+  const getViewModeLabel = (): string => {
     switch (viewMode) {
       case 'widgets':
         return '위젯 모드';

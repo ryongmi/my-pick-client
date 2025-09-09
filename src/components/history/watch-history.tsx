@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Play, 
@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
@@ -179,7 +178,7 @@ const MOCK_WATCH_HISTORY: WatchHistoryItem[] = [
   },
 ];
 
-export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps) {
+export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps): JSX.Element {
   const [historyItems, setHistoryItems] = useState<WatchHistoryItem[]>(MOCK_WATCH_HISTORY);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'date' | 'duration' | 'progress'>('date');
@@ -207,14 +206,17 @@ export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps) {
       filtered = filtered.filter(item => {
         const watchedDate = new Date(item.watchedAt);
         switch (timeFilter) {
-          case 'today':
+          case 'today': {
             return watchedDate.toDateString() === now.toDateString();
-          case 'week':
+          }
+          case 'week': {
             const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
             return watchedDate >= weekAgo;
-          case 'month':
+          }
+          case 'month': {
             const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
             return watchedDate >= monthAgo;
+          }
           default:
             return true;
         }
@@ -246,7 +248,7 @@ export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps) {
     return filtered;
   }, [historyItems, searchQuery, timeFilter, showCompleted, showIncomplete, sortBy]);
 
-  const handleSelectAll = (checked: boolean) => {
+  const handleSelectAll = (checked: boolean): void => {
     if (checked) {
       setSelectedItems(new Set(filteredAndSortedItems.map(item => item.id)));
     } else {
@@ -254,7 +256,7 @@ export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps) {
     }
   };
 
-  const handleSelectItem = (itemId: string, checked: boolean) => {
+  const handleSelectItem = (itemId: string, checked: boolean): void => {
     const newSelected = new Set(selectedItems);
     if (checked) {
       newSelected.add(itemId);
@@ -264,7 +266,7 @@ export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps) {
     setSelectedItems(newSelected);
   };
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = async (): Promise<void> => {
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
@@ -274,7 +276,7 @@ export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps) {
     }, 1000);
   };
 
-  const handleDeleteItem = async (itemId: string) => {
+  const handleDeleteItem = async (itemId: string): Promise<void> => {
     setIsLoading(true);
     setTimeout(() => {
       setHistoryItems(prev => prev.filter(item => item.id !== itemId));
@@ -282,7 +284,7 @@ export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps) {
     }, 500);
   };
 
-  const getCreatorColor = (creatorId: string) => {
+  const getCreatorColor = (creatorId: string): string => {
     const colors = {
       ado: 'from-purple-400 to-pink-500',
       hikakin: 'from-blue-400 to-cyan-500',
@@ -290,7 +292,7 @@ export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps) {
     return colors[creatorId as keyof typeof colors] || 'from-gray-400 to-gray-600';
   };
 
-  const groupItemsByDate = (items: WatchHistoryItem[]) => {
+  const groupItemsByDate = (items: WatchHistoryItem[]): { [key: string]: WatchHistoryItem[] } => {
     const groups: { [key: string]: WatchHistoryItem[] } = {};
     
     items.forEach(item => {

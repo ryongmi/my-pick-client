@@ -17,7 +17,7 @@ interface TabsProps {
   className?: string;
 }
 
-export function Tabs({ value, onValueChange, children, className }: TabsProps) {
+export function Tabs({ value, onValueChange, children, className }: TabsProps): JSX.Element {
   return (
     <TabsContext.Provider value={{ value, onValueChange }}>
       <div className={cn('w-full', className)}>
@@ -32,7 +32,7 @@ interface TabsListProps {
   className?: string;
 }
 
-export function TabsList({ children, className }: TabsListProps) {
+export function TabsList({ children, className }: TabsListProps): JSX.Element {
   return (
     <div className={cn(
       'inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground',
@@ -49,7 +49,7 @@ interface TabsTriggerProps {
   className?: string;
 }
 
-export function TabsTrigger({ value, children, className }: TabsTriggerProps) {
+export function TabsTrigger({ value, children, className }: TabsTriggerProps): JSX.Element {
   const context = useContext(TabsContext);
   
   if (!context) {
@@ -82,7 +82,7 @@ interface TabsContentProps {
   className?: string;
 }
 
-export function TabsContent({ value, children, className }: TabsContentProps) {
+export function TabsContent({ value, children, className }: TabsContentProps): JSX.Element | null {
   const context = useContext(TabsContext);
   
   if (!context) {

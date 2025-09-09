@@ -10,18 +10,18 @@ interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-export default function MainLayout({ children }: MainLayoutProps) {
+export default function MainLayout({ children }: MainLayoutProps): JSX.Element {
   const dispatch = useAppDispatch();
   const { sidebarOpen } = useUI();
 
   useEffect(() => {
-    const checkMobile = () => {
+    const checkMobile = (): void => {
       dispatch(setIsMobile(window.innerWidth < 768));
     };
 
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    return (): void => window.removeEventListener('resize', checkMobile);
   }, [dispatch]);
 
   return (

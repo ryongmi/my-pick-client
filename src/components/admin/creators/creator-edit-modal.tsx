@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, ExternalLink, Youtube, Twitter, Instagram } from 'lucide-react';
+import { X, Plus, Trash2, ExternalLink, Youtube, Twitter, Instagram, LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,17 @@ interface CreatorEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreatorFormData) => void;
-  creator?: any; // 수정할 크리에이터 데이터
+  creator?: {
+    id: string;
+    name: string;
+    displayName: string;
+    description?: string;
+    platforms?: {
+      type: Platform['type'];
+      username?: string;
+      url: string;
+    }[];
+  }; // 수정할 크리에이터 데이터
 }
 
 interface CreatorFormData {
@@ -28,8 +38,8 @@ interface CreatorFormData {
 }
 
 // 플랫폼 아이콘 매핑 (하드코딩된 아이콘 대신 동적 매핑용)
-const getPlatformIcon = (platformName: string) => {
-  const iconMap: Record<string, any> = {
+const getPlatformIcon = (platformName: string): LucideIcon => {
+  const iconMap: Record<string, LucideIcon> = {
     'youtube': Youtube,
     'twitter': Twitter,
     'instagram': Instagram,
@@ -39,7 +49,7 @@ const getPlatformIcon = (platformName: string) => {
 };
 
 // 플랫폼 색상 매핑
-const getPlatformColor = (platformName: string) => {
+const getPlatformColor = (platformName: string): string => {
   const colorMap: Record<string, string> = {
     'youtube': 'text-red-500',
     'twitter': 'text-blue-500',
@@ -49,7 +59,7 @@ const getPlatformColor = (platformName: string) => {
   return colorMap[platformName.toLowerCase()] || 'text-gray-500';
 };
 
-export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: CreatorEditModalProps) {
+export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: CreatorEditModalProps): JSX.Element | null {
   // Redux에서 활성화된 플랫폼 가져오기
   const enabledPlatforms = useAppSelector(selectEnabledPlatforms);
   
@@ -73,11 +83,15 @@ export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: Creator
         name: creator.name || '',
         displayName: creator.displayName || '',
         description: creator.description || '',
-        platforms: creator.platforms || [
+        platforms: creator.platforms?.map(platform => ({
+          type: platform.type,
+          username: platform.username || '',
+          url: platform.url
+        })) || [
           { 
             type: 'youtube', 
             username: creator.name || '', 
-            url: creator.channelUrl || '' 
+            url: '' 
           }
         ],
       });
@@ -94,14 +108,14 @@ export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: Creator
 
   if (!isOpen) {return null;}
 
-  const handleInputChange = (field: keyof CreatorFormData, value: string) => {
+  const handleInputChange = (field: keyof CreatorFormData, value: string): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
-  const handlePlatformChange = (index: number, field: string, value: string) => {
+  const handlePlatformChange = (index: number, field: string, value: string): void => {
     setFormData(prev => ({
       ...prev,
       platforms: prev.platforms.map((platform, i) =>
@@ -110,14 +124,14 @@ export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: Creator
     }));
   };
 
-  const addPlatform = () => {
+  const addPlatform = (): void => {
     setFormData(prev => ({
       ...prev,
       platforms: [...prev.platforms, { type: defaultPlatformType as Platform['type'], username: '', url: '' }],
     }));
   };
 
-  const removePlatform = (index: number) => {
+  const removePlatform = (index: number): void => {
     if (formData.platforms.length > 1) {
       setFormData(prev => ({
         ...prev,
@@ -126,7 +140,7 @@ export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: Creator
     }
   };
 
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
@@ -151,7 +165,7 @@ export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: Creator
     return Object.keys(newErrors).length === 0;
   };
 
-  const isValidUrl = (url: string) => {
+  const isValidUrl = (url: string): boolean => {
     try {
       new URL(url);
       return true;
@@ -160,7 +174,7 @@ export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: Creator
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     if (validateForm()) {
       onSubmit(formData);
@@ -171,7 +185,7 @@ export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: Creator
     }
   };
 
-  const handleReset = () => {
+  const handleReset = (): void => {
     setFormData({
       name: '',
       displayName: '',
@@ -181,14 +195,14 @@ export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: Creator
     setErrors({});
   };
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     if (!isEditMode) {
       handleReset();
     }
     onClose();
   };
 
-  const getDynamicPlatformIcon = (type: Platform['type']) => {
+  const getDynamicPlatformIcon = (type: Platform['type']): LucideIcon => {
     return getPlatformIcon(type);
   };
 
@@ -293,7 +307,7 @@ export function CreatorEditModal({ isOpen, onClose, onSubmit, creator }: Creator
                     {formData.platforms.map((platform, index) => {
                       const PlatformIcon = getDynamicPlatformIcon(platform.type);
                       const platformColor = getPlatformColor(platform.type);
-                      const platformData = enabledPlatforms.find(p => p.name.toLowerCase() === platform.type);
+                      const _platformData = enabledPlatforms.find(p => p.name.toLowerCase() === platform.type);
                       
                       return (
                         <div key={index} className="border rounded-lg p-4 bg-gray-50">

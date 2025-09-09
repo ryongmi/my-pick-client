@@ -1,6 +1,6 @@
 'use client';
 
-import { X, ExternalLink, TrendingUp, TrendingDown, Users, Video, Eye, Heart, MessageCircle, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { X, ExternalLink, TrendingUp, TrendingDown, Users, Video, Eye, Heart, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -8,13 +8,34 @@ import { cn } from '@/lib/utils';
 interface CreatorDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  creator: any; // 크리에이터 데이터 타입
+  creator: {
+    id: string;
+    name: string;
+    displayName: string;
+    platform: string;
+    channelUrl: string;
+    subscriberCount: number;
+    totalVideos: number;
+    avgViews: number;
+    status: string;
+    verificationStatus: string;
+    lastActivity: string;
+    joinedDate: string;
+    monthlyGrowth: number;
+    engagementRate: number;
+    contentCategories: string[];
+    topVideo: {
+      title: string;
+      views: number;
+      uploadDate: string;
+    };
+  } | null; // 크리에이터 데이터 타입
 }
 
-export function CreatorDetailModal({ isOpen, onClose, creator }: CreatorDetailModalProps) {
+export function CreatorDetailModal({ isOpen, onClose, creator }: CreatorDetailModalProps): JSX.Element | null {
   if (!isOpen || !creator) {return null;}
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number): string => {
     if (num >= 1000000000) {
       return (num / 1000000000).toFixed(1) + 'B';
     }
@@ -27,7 +48,7 @@ export function CreatorDetailModal({ isOpen, onClose, creator }: CreatorDetailMo
     return num.toString();
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): JSX.Element | null => {
     switch (status) {
       case 'active':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -40,7 +61,7 @@ export function CreatorDetailModal({ isOpen, onClose, creator }: CreatorDetailMo
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: string): string => {
     switch (status) {
       case 'active':
         return '활성';
@@ -53,7 +74,7 @@ export function CreatorDetailModal({ isOpen, onClose, creator }: CreatorDetailMo
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800';

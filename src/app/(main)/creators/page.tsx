@@ -11,7 +11,7 @@ import { mockGetFollowedCreators } from '@/data/creators';
 import { Creator } from '@/types';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 
-export default function CreatorsPage() {
+export default function CreatorsPage(): JSX.Element {
   useDocumentTitle('크리에이터');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Creator[]>([]);
@@ -23,7 +23,7 @@ export default function CreatorsPage() {
 
   // 초기 데이터 로드
   useEffect(() => {
-    const loadInitialData = async () => {
+    const loadInitialData = async (): Promise<void> => {
       try {
         // Redux를 통해 크리에이터 데이터 로드
         await dispatch(fetchCreators({ 
@@ -33,7 +33,7 @@ export default function CreatorsPage() {
         
         // 팔로우된 크리에이터 데이터 로드 (mock에서 가져와서 Redux에 저장)
         const followed = await mockGetFollowedCreators();
-        dispatch(updateFollowedCreators(followed.data));
+        dispatch(updateFollowedCreators(followed.data as Creator[]));
       } catch (_error) {
         // 초기 데이터 로드 실패
       }
@@ -43,17 +43,17 @@ export default function CreatorsPage() {
 
   // 구독 상태 변경 이벤트 리스너
   useEffect(() => {
-    const handleFollowChange = async () => {
+    const handleFollowChange = async (): Promise<void> => {
       const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed.data));
+      dispatch(updateFollowedCreators(followed.data as Creator[]));
     };
 
     window.addEventListener('followersChanged', handleFollowChange);
-    return () => window.removeEventListener('followersChanged', handleFollowChange);
+    return (): void => window.removeEventListener('followersChanged', handleFollowChange);
   }, [dispatch]);
 
   // 검색 함수
-  const handleSearch = async () => {
+  const handleSearch = async (): Promise<void> => {
     if (!searchTerm.trim()) {
       setSearchResults([]);
       return;
@@ -67,7 +67,7 @@ export default function CreatorsPage() {
         sortBy: sortBy,
         limit: 10
       })).unwrap();
-      setSearchResults(response.data?.items || []);
+      setSearchResults((response.data?.items as Creator[]) || []);
     } catch (_error) {
       // 검색 오류
     }
@@ -81,14 +81,14 @@ export default function CreatorsPage() {
   }, [searchTerm]);
 
   // 엔터키 검색
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent): void => {
     if (e.key === 'Enter') {
       handleSearch();
     }
   };
 
   // 팔로우/언팔로우
-  const handleFollowToggle = async (creator: Creator) => {
+  const handleFollowToggle = async (creator: Creator): Promise<void> => {
     const isFollowed = followedCreators.some(c => c.id === creator.id);
     
     try {
@@ -105,7 +105,7 @@ export default function CreatorsPage() {
     }
   };
 
-  const getPlatformIcon = (platformType: string) => {
+  const getPlatformIcon = (platformType: string): JSX.Element | null => {
     switch (platformType) {
       case 'youtube':
         return <Youtube className="h-4 w-4 text-red-600" />;
@@ -116,7 +116,7 @@ export default function CreatorsPage() {
     }
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number): string => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
     }
@@ -197,7 +197,7 @@ export default function CreatorsPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {(() => {
+                {((): JSX.Element => {
                   const creatorsToShow = searchResults.length > 0 ? searchResults : creators;
                   // 구독 중인 크리에이터 제외
                   const unfollowedCreators = creatorsToShow.filter(creator => 

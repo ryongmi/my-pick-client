@@ -46,7 +46,7 @@ export const mockNotifications: Notification[] = [
   },
 ];
 
-export const mockGetNotifications = async (page = 1, limit = 20) => {
+export const mockGetNotifications = async (page = 1, limit = 20): Promise<{ data: Notification[]; pagination: { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean } }> => {
   await new Promise(resolve => setTimeout(resolve, 400));
   
   const startIndex = (page - 1) * limit;
@@ -66,14 +66,14 @@ export const mockGetNotifications = async (page = 1, limit = 20) => {
   };
 };
 
-export const mockGetUnreadCount = async () => {
+export const mockGetUnreadCount = async (): Promise<{ count: number }> => {
   await new Promise(resolve => setTimeout(resolve, 200));
   
   const unreadCount = mockNotifications.filter(n => !n.isRead).length;
   return { count: unreadCount };
 };
 
-export const mockMarkAsRead = async (id: string) => {
+export const mockMarkAsRead = async (id: string): Promise<{ success: boolean }> => {
   await new Promise(resolve => setTimeout(resolve, 300));
   
   const notification = mockNotifications.find(n => n.id === id);
@@ -85,7 +85,7 @@ export const mockMarkAsRead = async (id: string) => {
   return { success: true };
 };
 
-export const mockMarkAllAsRead = async () => {
+export const mockMarkAllAsRead = async (): Promise<{ success: boolean }> => {
   await new Promise(resolve => setTimeout(resolve, 500));
   
   mockNotifications.forEach(notification => {
@@ -95,7 +95,7 @@ export const mockMarkAllAsRead = async () => {
   return { success: true };
 };
 
-export const mockUpdateNotificationSettings = async (settings: any) => {
+export const mockUpdateNotificationSettings = async (_settings: unknown): Promise<{ success: boolean }> => {
   await new Promise(resolve => setTimeout(resolve, 400));
   
   // 설정 저장 시뮬레이션

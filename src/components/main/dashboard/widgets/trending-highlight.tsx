@@ -31,7 +31,7 @@ export interface TrendingHighlightProps {
 export function TrendingHighlight({ 
   showCategory = true, 
   showRank = true 
-}: TrendingHighlightProps) {
+}: TrendingHighlightProps): JSX.Element {
   const [trendingContent, setTrendingContent] = useState<TrendingContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -61,7 +61,7 @@ export function TrendingHighlight({
     }, 1200);
   }, []);
 
-  const formatViewCount = (count: number) => {
+  const formatViewCount = (count: number): string => {
     if (count >= 1000000) {
       return (count / 1000000).toFixed(1) + 'M';
     }
@@ -71,14 +71,14 @@ export function TrendingHighlight({
     return count.toString();
   };
 
-  const getTrendingColor = (score: number) => {
+  const getTrendingColor = (score: number): string => {
     if (score >= 90) {return 'text-red-500';}
     if (score >= 70) {return 'text-orange-500';}
     if (score >= 50) {return 'text-yellow-500';}
     return 'text-green-500';
   };
 
-  const getTrendingBadgeColor = (rank: number) => {
+  const getTrendingBadgeColor = (rank: number): string => {
     if (rank === 1) {return 'bg-gradient-to-r from-yellow-400 to-orange-500';}
     if (rank <= 3) {return 'bg-gradient-to-r from-gray-300 to-gray-400';}
     if (rank <= 10) {return 'bg-gradient-to-r from-orange-300 to-red-400';}

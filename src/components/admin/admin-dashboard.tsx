@@ -53,7 +53,7 @@ const MOCK_POPULAR_CREATORS = [
   },
 ];
 
-export function AdminDashboard() {
+export function AdminDashboard(): JSX.Element {
   return (
     <div className="space-y-6">
       {/* 페이지 헤더 */}

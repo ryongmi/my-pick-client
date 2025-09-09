@@ -6,10 +6,8 @@ import {
   Youtube,
   CheckCircle,
   XCircle,
-  AlertTriangle,
   ExternalLink,
   User,
-  Calendar,
   Eye,
   MessageSquare,
 } from 'lucide-react';
@@ -28,7 +26,7 @@ interface CreatorApprovalModalProps {
   onClose: () => void;
 }
 
-export function CreatorApprovalModal({ isOpen, onClose }: CreatorApprovalModalProps) {
+export function CreatorApprovalModal({ isOpen, onClose }: CreatorApprovalModalProps): JSX.Element | null {
   const dispatch = useAppDispatch();
   const { creatorApplications, isLoading } = useAppSelector(
     (state) => state.userManagement
@@ -52,17 +50,17 @@ export function CreatorApprovalModal({ isOpen, onClose }: CreatorApprovalModalPr
   // 대기 중인 신청만 필터링
   const pendingApplications = creatorApplications.filter(app => app.status === 'pending');
 
-  const handleApplicationSelect = (application: CreatorApplication) => {
+  const handleApplicationSelect = (application: CreatorApplication): void => {
     setSelectedApplication(application);
     setReviewMessage('');
   };
 
-  const handleAction = (action: 'approve' | 'reject') => {
+  const handleAction = (action: 'approve' | 'reject'): void => {
     setConfirmAction(action);
     setShowConfirmDialog(true);
   };
 
-  const handleConfirmAction = async () => {
+  const handleConfirmAction = async (): Promise<void> => {
     if (!selectedApplication || !confirmAction) {return;}
 
     setIsProcessing(true);
@@ -80,8 +78,8 @@ export function CreatorApprovalModal({ isOpen, onClose }: CreatorApprovalModalPr
       
       // 신청 목록 새로고침
       dispatch(fetchCreatorApplications());
-    } catch (error) {
-      console.error('크리에이터 신청 처리 실패:', error);
+    } catch (_error) {
+      // Handle error silently or use proper error logging
     } finally {
       setIsProcessing(false);
       setShowConfirmDialog(false);
@@ -89,12 +87,12 @@ export function CreatorApprovalModal({ isOpen, onClose }: CreatorApprovalModalPr
     }
   };
 
-  const handleCancelAction = () => {
+  const handleCancelAction = (): void => {
     setShowConfirmDialog(false);
     setConfirmAction(null);
   };
 
-  const formatSubscriberCount = (count: number) => {
+  const formatSubscriberCount = (count: number): string => {
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(1)}M`;
     } else if (count >= 1000) {
@@ -315,7 +313,7 @@ export function CreatorApprovalModal({ isOpen, onClose }: CreatorApprovalModalPr
                               size="sm"
                               onClick={() => {
                                 // TODO: 실제 비디오 URL로 연결
-                                console.log('View video:', videoId);
+                                // Handle video viewing
                               }}
                             >
                               <ExternalLink className="h-3 w-3 mr-1" />

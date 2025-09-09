@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { 
   Play, 
   Eye, 
-  Clock, 
   User, 
   Heart, 
   Bookmark,
@@ -14,22 +13,18 @@ import {
   Calendar,
   Tag,
   Search,
-  TrendingUp,
   Youtube,
-  CheckCircle2,
-  Star
+  CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { cn, formatNumber, formatDate, formatDuration } from '@/lib/utils';
 
 interface SearchResult {
@@ -177,7 +172,7 @@ const MOCK_SEARCH_RESULTS: SearchResult[] = [
   },
 ];
 
-export function UnifiedSearch({ query, searchType }: UnifiedSearchProps) {
+export function UnifiedSearch({ query, searchType }: UnifiedSearchProps): JSX.Element {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [sortBy, setSortBy] = useState<'relevance' | 'date' | 'views' | 'duration'>('relevance');
   const [isLoading, setIsLoading] = useState(true);
@@ -239,7 +234,7 @@ export function UnifiedSearch({ query, searchType }: UnifiedSearchProps) {
     }, 800);
   }, [query, searchType]);
 
-  const getCreatorColor = (creatorId: string) => {
+  const getCreatorColor = (creatorId: string): string => {
     const colors = {
       ado: 'from-purple-400 to-pink-500',
       hikakin: 'from-blue-400 to-cyan-500',
@@ -248,7 +243,7 @@ export function UnifiedSearch({ query, searchType }: UnifiedSearchProps) {
     return colors[creatorId as keyof typeof colors] || 'from-gray-400 to-gray-600';
   };
 
-  const getMatchTypeBadge = (matchType: SearchResult['matchType']) => {
+  const getMatchTypeBadge = (matchType: SearchResult['matchType']): JSX.Element | null => {
     switch (matchType) {
       case 'title':
         return <Badge variant="secondary" className="text-xs bg-green-50 text-green-700">제목 일치</Badge>;
@@ -266,7 +261,7 @@ export function UnifiedSearch({ query, searchType }: UnifiedSearchProps) {
   };
 
   // 비디오 결과 컴포넌트
-  const VideoResult = ({ result }: { result: SearchResult }) => (
+  const VideoResult = ({ result }: { result: SearchResult }): JSX.Element => (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex gap-4">
@@ -372,7 +367,7 @@ export function UnifiedSearch({ query, searchType }: UnifiedSearchProps) {
   );
 
   // 크리에이터 결과 컴포넌트
-  const CreatorResult = ({ result }: { result: SearchResult }) => (
+  const CreatorResult = ({ result }: { result: SearchResult }): JSX.Element => (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex gap-4 items-center">
@@ -431,7 +426,7 @@ export function UnifiedSearch({ query, searchType }: UnifiedSearchProps) {
   );
 
   // 카테고리 결과 컴포넌트
-  const CategoryResult = ({ result }: { result: SearchResult }) => (
+  const CategoryResult = ({ result }: { result: SearchResult }): JSX.Element => (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
@@ -462,7 +457,7 @@ export function UnifiedSearch({ query, searchType }: UnifiedSearchProps) {
     </Card>
   );
 
-  const LoadingSkeleton = () => (
+  const LoadingSkeleton = (): JSX.Element => (
     <div className="space-y-4">
       {[...Array(5)].map((_, i) => (
         <Card key={i} className="animate-pulse">
@@ -521,7 +516,7 @@ export function UnifiedSearch({ query, searchType }: UnifiedSearchProps) {
           <span className="text-sm text-muted-foreground">정렬:</span>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as 'relevance' | 'date' | 'views' | 'duration')}
             className="text-sm border rounded px-2 py-1 bg-background"
           >
             <option value="relevance">관련도순</option>

@@ -25,6 +25,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { followCreator, unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { mockGetFollowedCreators } from '@/data/creators';
 import { cn, formatNumber, formatDate } from '@/lib/utils';
+import type { Creator } from '@/types';
 
 interface VideoInfoProps {
   videoId: string;
@@ -82,7 +83,7 @@ const MOCK_VIDEO_DATA = {
   },
 };
 
-export function VideoInfo({ videoId }: VideoInfoProps) {
+export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
   const dispatch = useAppDispatch();
   const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -107,9 +108,9 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
 
   // 구독한 크리에이터 목록 초기 로드
   useEffect(() => {
-    const loadFollowedCreators = async () => {
+    const loadFollowedCreators = async (): Promise<void> => {
       const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed.data || []));
+      dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
     };
     
     if (followedCreators.length === 0) {
@@ -127,17 +128,17 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
     );
   }
 
-  const handleBookmark = () => {
+  const handleBookmark = (): void => {
     setIsBookmarked(!isBookmarked);
     // TODO: API 호출
   };
 
-  const handleLike = () => {
+  const handleLike = (): void => {
     setIsLiked(!isLiked);
     // TODO: API 호출
   };
 
-  const handleShare = () => {
+  const handleShare = (): void => {
     if (navigator.share) {
       navigator.share({
         title: videoData.title,
@@ -149,12 +150,13 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
     }
   };
 
-  const handleCreatorClick = () => {
+  const handleCreatorClick = (): void => {
     // TODO: 크리에이터 프로필 페이지로 이동
+    // eslint-disable-next-line no-console
     console.log('크리에이터 프로필로 이동:', videoData.creator.id);
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (): Promise<void> => {
     if (!videoData) {return;}
 
     try {
@@ -196,6 +198,7 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
       window.dispatchEvent(new CustomEvent('followersChanged'));
       
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('구독 처리 실패:', error);
       // TODO: 에러 토스트 메시지 표시
     }

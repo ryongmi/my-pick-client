@@ -33,7 +33,7 @@ import { PlatformConfig } from '@/types/platform';
 import { PlatformAddModal } from '@/components/admin/platforms/platform-add-modal';
 import { BulkOperations, BulkAction } from '@/components/admin/shared/bulk-operations';
 
-export function AdminPlatforms() {
+export function AdminPlatforms(): JSX.Element {
   const dispatch = useAppDispatch();
   
   // Redux state
@@ -56,13 +56,13 @@ export function AdminPlatforms() {
 
   // 드롭다운 외부 클릭 시 닫기 및 ESC키 핸들링
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setOpenDropdownId(null);
       }
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
         setOpenDropdownId(null);
         setShowDeleteConfirm(false);
@@ -72,7 +72,7 @@ export function AdminPlatforms() {
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
 
-    return () => {
+    return (): void => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
@@ -91,7 +91,7 @@ export function AdminPlatforms() {
   });
 
   // 선택 관련 핸들러들
-  const handlePlatformSelect = (platformId: string) => {
+  const handlePlatformSelect = (platformId: string): void => {
     setSelectedPlatforms((prev) =>
       prev.includes(platformId)
         ? prev.filter((id) => id !== platformId)
@@ -99,18 +99,19 @@ export function AdminPlatforms() {
     );
   };
 
-  const handleSelectAllPlatforms = () => {
+  const handleSelectAllPlatforms = (): void => {
     setSelectedPlatforms(filteredPlatforms.map((platform) => platform.id));
   };
 
-  const handleSelectNonePlatforms = () => {
+  const handleSelectNonePlatforms = (): void => {
     setSelectedPlatforms([]);
   };
 
   // 일괄 작업 핸들러
-  const handlePlatformBulkAction = async (action: BulkAction, platformIds: string[]) => {
+  const handlePlatformBulkAction = async (action: BulkAction, platformIds: string[]): Promise<void> => {
     setIsLoading(true);
     try {
+      // eslint-disable-next-line no-console
       console.log(`플랫폼 일괄 작업: ${action}`, platformIds);
 
       switch (action) {
@@ -123,20 +124,25 @@ export function AdminPlatforms() {
         case 'delete':
           platformIds.forEach((id) => dispatch(removePlatform(id)));
           break;
-        case 'export':
+        case 'export': {
           const exportData = allPlatforms.filter((platform) =>
             platformIds.includes(platform.id)
           );
+          // eslint-disable-next-line no-console
           console.log('플랫폼 내보내기 데이터:', exportData);
           break;
+        }
         case 'refresh':
+          // eslint-disable-next-line no-console
           console.log('플랫폼 데이터 새로고침');
           break;
       }
 
       setSelectedPlatforms([]);
+      // eslint-disable-next-line no-console
       console.log(`일괄 ${action} 완료: ${platformIds.length}개 플랫폼`);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(`일괄 ${action} 실패:`, error);
     } finally {
       setIsLoading(false);
@@ -144,7 +150,7 @@ export function AdminPlatforms() {
   };
 
   // CRUD 작업 핸들러들
-  const handleAddPlatform = async (platformData: Omit<PlatformConfig, 'id'>) => {
+  const handleAddPlatform = async (platformData: Omit<PlatformConfig, 'id'>): Promise<void> => {
     setIsLoading(true);
     try {
       const newPlatform: PlatformConfig = {
@@ -153,15 +159,17 @@ export function AdminPlatforms() {
       };
 
       dispatch(addPlatform(newPlatform));
+      // eslint-disable-next-line no-console
       console.log('새 플랫폼 추가:', newPlatform);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('플랫폼 추가 실패:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleUpdatePlatform = async (platformData: Omit<PlatformConfig, 'id'>) => {
+  const handleUpdatePlatform = async (platformData: Omit<PlatformConfig, 'id'>): Promise<void> => {
     if (!editingPlatform) {return;}
     
     setIsLoading(true);
@@ -172,8 +180,10 @@ export function AdminPlatforms() {
       };
 
       dispatch(updatePlatform(updatedPlatform));
+      // eslint-disable-next-line no-console
       console.log('플랫폼 수정:', updatedPlatform);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('플랫폼 수정 실패:', error);
     } finally {
       setIsLoading(false);
@@ -182,7 +192,7 @@ export function AdminPlatforms() {
     setEditingPlatform(null);
   };
 
-  const handleTogglePlatform = async (platformId: string) => {
+  const handleTogglePlatform = async (platformId: string): Promise<void> => {
     setIsLoading(true);
     try {
       const platform = allPlatforms.find((p) => p.id === platformId);
@@ -192,9 +202,11 @@ export function AdminPlatforms() {
         } else {
           dispatch(enablePlatform(platformId));
         }
+        // eslint-disable-next-line no-console
         console.log('플랫폼 상태 토글:', platformId);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('플랫폼 상태 변경 실패:', error);
     } finally {
       setIsLoading(false);
@@ -202,7 +214,7 @@ export function AdminPlatforms() {
     }
   };
 
-  const handleDuplicatePlatform = async (platform: PlatformConfig) => {
+  const handleDuplicatePlatform = async (platform: PlatformConfig): Promise<void> => {
     setIsLoading(true);
     try {
       const duplicatedPlatform: Omit<PlatformConfig, 'id'> = {
@@ -214,8 +226,10 @@ export function AdminPlatforms() {
       };
 
       await handleAddPlatform(duplicatedPlatform);
+      // eslint-disable-next-line no-console
       console.log('플랫폼 복제:', duplicatedPlatform);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('플랫폼 복제 실패:', error);
     } finally {
       setIsLoading(false);
@@ -224,30 +238,32 @@ export function AdminPlatforms() {
   };
 
   // 드롭다운 메뉴 핸들러들
-  const toggleDropdown = (platformId: string) => {
+  const toggleDropdown = (platformId: string): void => {
     setOpenDropdownId(openDropdownId === platformId ? null : platformId);
   };
 
-  const handleEditPlatform = (platform: PlatformConfig) => {
+  const handleEditPlatform = (platform: PlatformConfig): void => {
     setEditingPlatform(platform);
     setShowPlatformAddModal(true);
     setOpenDropdownId(null);
   };
 
-  const handleDeletePlatform = (platformId: string) => {
+  const handleDeletePlatform = (platformId: string): void => {
     setDeletingPlatformId(platformId);
     setShowDeleteConfirm(true);
     setOpenDropdownId(null);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (): Promise<void> => {
     if (!deletingPlatformId) {return;}
     
     setIsLoading(true);
     try {
       dispatch(removePlatform(deletingPlatformId));
+      // eslint-disable-next-line no-console
       console.log('플랫폼 삭제:', deletingPlatformId);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('플랫폼 삭제 실패:', error);
     } finally {
       setIsLoading(false);
@@ -256,12 +272,12 @@ export function AdminPlatforms() {
     }
   };
 
-  const handleCancelDelete = () => {
+  const handleCancelDelete = (): void => {
     setShowDeleteConfirm(false);
     setDeletingPlatformId(null);
   };
 
-  const handleClosePlatformModal = () => {
+  const handleClosePlatformModal = (): void => {
     setShowPlatformAddModal(false);
     setEditingPlatform(null);
   };
@@ -278,7 +294,7 @@ export function AdminPlatforms() {
         </div>
         <div className="flex gap-2">
           <Button 
-            onClick={() => setShowPlatformAddModal(true)}
+            onClick={(): void => setShowPlatformAddModal(true)}
             disabled={isLoading}
           >
             플랫폼 추가
@@ -361,14 +377,14 @@ export function AdminPlatforms() {
                 type="text"
                 placeholder="플랫폼 이름으로 검색..."
                 value={platformSearchTerm}
-                onChange={(e) => setPlatformSearchTerm(e.target.value)}
+                onChange={(e): void => setPlatformSearchTerm(e.target.value)}
                 className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-4 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="flex gap-2">
               <select
                 value={platformStatusFilter}
-                onChange={(e) => setPlatformStatusFilter(e.target.value)}
+                onChange={(e): void => setPlatformStatusFilter(e.target.value)}
                 className="rounded-md border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">모든 상태</option>
@@ -396,7 +412,7 @@ export function AdminPlatforms() {
                 <tr>
                   <th className="w-12 p-4 text-left text-sm font-medium">
                     <button
-                      onClick={() =>
+                      onClick={(): void =>
                         selectedPlatforms.length === filteredPlatforms.length
                           ? handleSelectNonePlatforms()
                           : handleSelectAllPlatforms()
@@ -432,7 +448,7 @@ export function AdminPlatforms() {
                   >
                     <td className="p-4">
                       <button
-                        onClick={() => handlePlatformSelect(platform.id)}
+                        onClick={(): void => handlePlatformSelect(platform.id)}
                         className="p-1"
                       >
                         {selectedPlatforms.includes(platform.id) ? (
@@ -497,7 +513,7 @@ export function AdminPlatforms() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => toggleDropdown(platform.id)}
+                            onClick={(): void => toggleDropdown(platform.id)}
                             disabled={isLoading}
                           >
                             <MoreHorizontal className="h-4 w-4" />
@@ -508,7 +524,7 @@ export function AdminPlatforms() {
                             <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-md border border-gray-200 bg-white shadow-lg">
                               <div className="py-1">
                                 <button
-                                  onClick={() => handleEditPlatform(platform)}
+                                  onClick={(): void => handleEditPlatform(platform)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   disabled={isLoading}
                                 >
@@ -516,7 +532,7 @@ export function AdminPlatforms() {
                                   수정
                                 </button>
                                 <button
-                                  onClick={() => handleDuplicatePlatform(platform)}
+                                  onClick={async (): Promise<void> => await handleDuplicatePlatform(platform)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   disabled={isLoading}
                                 >
@@ -525,7 +541,7 @@ export function AdminPlatforms() {
                                 </button>
                                 <div className="my-1 border-t border-gray-100"></div>
                                 <button
-                                  onClick={() => handleTogglePlatform(platform.id)}
+                                  onClick={async (): Promise<void> => await handleTogglePlatform(platform.id)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   disabled={isLoading}
                                 >
@@ -543,7 +559,7 @@ export function AdminPlatforms() {
                                 </button>
                                 <div className="my-1 border-t border-gray-100"></div>
                                 <button
-                                  onClick={() => handleDeletePlatform(platform.id)}
+                                  onClick={(): void => handleDeletePlatform(platform.id)}
                                   className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                                   disabled={isLoading}
                                 >

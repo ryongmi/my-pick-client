@@ -24,7 +24,7 @@ export interface ContinueWatchingProps {
   limit?: number;
 }
 
-export function ContinueWatching({ limit = 3 }: ContinueWatchingProps) {
+export function ContinueWatching({ limit = 3 }: ContinueWatchingProps): JSX.Element {
   const [watchList, setWatchList] = useState<WatchProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -92,13 +92,13 @@ export function ContinueWatching({ limit = 3 }: ContinueWatchingProps) {
     }, 800);
   }, [limit]);
 
-  const formatDuration = (seconds: number) => {
+  const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const getCreatorColor = (creatorId: string) => {
+  const getCreatorColor = (creatorId: string): string => {
     const colors = {
       ado: 'from-pink-400 to-purple-500',
       hikakin: 'from-blue-400 to-cyan-500',
@@ -108,12 +108,13 @@ export function ContinueWatching({ limit = 3 }: ContinueWatchingProps) {
     return colors[creatorId as keyof typeof colors] || 'from-gray-400 to-gray-600';
   };
 
-  const handleContinueWatching = (item: WatchProgress) => {
+  const handleContinueWatching = (item: WatchProgress): void => {
     // In real app, this would navigate to video with timestamp
+    // eslint-disable-next-line no-console
     console.log(`Continue watching ${item.title} from ${formatDuration(item.watchedDuration)}`);
   };
 
-  const handleRemoveFromList = (itemId: string) => {
+  const handleRemoveFromList = (itemId: string): void => {
     setWatchList(prev => prev.filter(item => item.id !== itemId));
   };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, TrendingUp, Clock, User, Tag, Play } from 'lucide-react';
+import { Search, User, Tag, Play } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -84,12 +84,12 @@ const MOCK_SUGGESTIONS: Suggestion[] = [
   },
 ];
 
-export function SearchSuggestions({ query, onSelect }: SearchSuggestionsProps) {
+export function SearchSuggestions({ query, onSelect }: SearchSuggestionsProps): JSX.Element | null {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isVisible, setIsVisible] = useState(false);
 
-  useEffect(() => {
+  useEffect((): void => {
     if (!query.trim()) {
       setSuggestions([]);
       setIsVisible(false);
@@ -106,8 +106,8 @@ export function SearchSuggestions({ query, onSelect }: SearchSuggestionsProps) {
     setSelectedIndex(-1);
   }, [query]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  useEffect((): (() => void) => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
       if (!isVisible || suggestions.length === 0) {return;}
 
       switch (e.key) {
@@ -138,12 +138,12 @@ export function SearchSuggestions({ query, onSelect }: SearchSuggestionsProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isVisible, suggestions, selectedIndex, onSelect]);
 
-  const handleSuggestionClick = (suggestion: Suggestion) => {
+  const handleSuggestionClick = (suggestion: Suggestion): void => {
     onSelect(suggestion.text);
     setIsVisible(false);
   };
 
-  const getTypeIcon = (type: Suggestion['type']) => {
+  const getTypeIcon = (type: Suggestion['type']): JSX.Element => {
     switch (type) {
       case 'creator':
         return <User className="h-4 w-4 text-blue-500" />;
@@ -156,7 +156,7 @@ export function SearchSuggestions({ query, onSelect }: SearchSuggestionsProps) {
     }
   };
 
-  const getTypeLabel = (type: Suggestion['type']) => {
+  const getTypeLabel = (type: Suggestion['type']): string => {
     switch (type) {
       case 'creator':
         return '크리에이터';
@@ -169,7 +169,7 @@ export function SearchSuggestions({ query, onSelect }: SearchSuggestionsProps) {
     }
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number): string => {
     if (num >= 1000000) {
       return Math.floor(num / 1000000) + 'M';
     }
@@ -179,8 +179,8 @@ export function SearchSuggestions({ query, onSelect }: SearchSuggestionsProps) {
     return num.toString();
   };
 
-  const highlightMatch = (text: string, query: string) => {
-    if (!query.trim()) {return text;}
+  const highlightMatch = (text: string, query: string): (string | JSX.Element)[] => {
+    if (!query.trim()) {return [text];}
 
     const regex = new RegExp(`(${query})`, 'gi');
     const parts = text.split(regex);
