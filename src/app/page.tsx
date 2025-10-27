@@ -8,82 +8,28 @@ import { Card } from '@/components/ui/card';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useUI, useContent } from '@/hooks/redux';
 import { useAuth } from '@/hooks/useAuth';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import { setPlatformFilter, clearFilters } from '@/store/slices/uiSlice';
 import { setSelectedPlatform, selectSelectedPlatform } from '@/store/slices/platformSlice';
 import { updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { mockGetFollowedCreators } from '@/data/creators';
 import { Creator } from '@/types';
-import { 
-  fetchContent, 
+import {
+  fetchContent,
   fetchMoreContent,
-  toggleBookmarkOptimistic, 
-  toggleLikeOptimistic, 
-  bookmarkContent, 
-  removeBookmark, 
-  likeContent, 
-  unlikeContent 
+  toggleBookmarkOptimistic,
+  toggleLikeOptimistic,
+  bookmarkContent,
+  removeBookmark,
+  likeContent,
+  unlikeContent
 } from '@/store/slices/contentSlice';
 import { cn } from '@/lib/utils';
 import { formatNumber, formatDate } from '@/lib/utils';
 
-const _MOCK_CONTENT = [
-  {
-    id: '1',
-    title: '【歌ってみた】새로운 커버곡 / Ado',
-    description: '오늘은 특별한 커버곡을 준비했어요! 많은 분들이 요청해주신 곡인데요...',
-    thumbnail: '',
-    platform: 'youtube' as const,
-    creator: {
-      id: 'ado',
-      name: 'Ado',
-      displayName: 'Ado',
-      avatar: '',
-    },
-    publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2시간 전
-    viewCount: 520000,
-    likeCount: 45000,
-    duration: '15:23',
-    isBookmarked: false,
-    isLiked: false,
-  },
-  {
-    id: '2',
-    title: '今日はレコーディングでした！新しい曲もうすぐ完成します🎵',
-    description: '',
-    platform: 'twitter' as const,
-    creator: {
-      id: 'ado',
-      name: 'Ado',
-      displayName: 'Ado',
-      avatar: '',
-    },
-    publishedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30분 전
-    likeCount: 5800,
-    isBookmarked: false,
-    isLiked: false,
-  },
-  {
-    id: '3',
-    title: '【검증】1000만원의 〇〇 사봤다!',
-    description: '안녕하세요! 히카킨입니다! 오늘은 무려 1000만원의...',
-    thumbnail: '',
-    platform: 'youtube' as const,
-    creator: {
-      id: 'hikakin',
-      name: '히카킨',
-      displayName: '히카킨',
-      avatar: '',
-    },
-    publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5시간 전
-    viewCount: 1200000,
-    likeCount: 89000,
-    duration: '8:45',
-    isBookmarked: false,
-    isLiked: false,
-  },
-];
+export default function HomePage(): JSX.Element {
+  useDocumentTitle('대시보드');
 
-export function MainContent(): JSX.Element {
   const dispatch = useAppDispatch();
   const { filters } = useUI();
   const { contents, isLoading, hasMore, isLoadingMore, pagination } = useContent();
@@ -95,7 +41,7 @@ export function MainContent(): JSX.Element {
   // 인증 상태 디버깅
   useEffect(() => {
     // eslint-disable-next-line no-console
-    console.log('[MainContent] Auth Status:', {
+    console.log('[HomePage] Auth Status:', {
       isLoggedIn,
       isAuthenticated,
       hasUser: !!user,
@@ -104,7 +50,7 @@ export function MainContent(): JSX.Element {
     });
   }, [isLoggedIn, isAuthenticated, user, loading]);
 
-  // SSO 로그인 처리 (portal-client와 동일)
+  // SSO 로그인 처리
   const handleLogin = (): void => {
     const returnUrl = typeof window !== 'undefined' ? window.location.pathname : '/';
     const redirectUri = encodeURIComponent(`${window.location.origin}${returnUrl}`);
@@ -215,7 +161,7 @@ export function MainContent(): JSX.Element {
   const handleBookmark = async (contentId: string): Promise<void> => {
     // 낙관적 업데이트
     dispatch(toggleBookmarkOptimistic(contentId));
-    
+
     // 실제 API 호출
     const content = contents.find(c => c.id === contentId);
     try {
@@ -235,7 +181,7 @@ export function MainContent(): JSX.Element {
   const handleLike = async (contentId: string): Promise<void> => {
     // 낙관적 업데이트
     dispatch(toggleLikeOptimistic(contentId));
-    
+
     // 실제 API 호출
     const content = contents.find(c => c.id === contentId);
     try {
@@ -254,11 +200,11 @@ export function MainContent(): JSX.Element {
 
   // Redux store에서 가져온 콘텐츠 사용 (무한스크롤 반영)
   const displayContent = contents;
-  
+
   const filteredContent = displayContent.filter(content => {
     // 크리에이터 필터 - 팔로우한 크리에이터 기준으로 필터링
     let creatorMatch = false;
-    
+
     if (filters.selectedCreators.includes('all')) {
       // 전체 보기 시 로직 개선
       if (followedCreators.length > 0) {
@@ -273,10 +219,10 @@ export function MainContent(): JSX.Element {
       // 특정 크리에이터 선택 시
       creatorMatch = content.creator ? filters.selectedCreators.includes(content.creator.id) : false;
     }
-    
+
     // 플랫폼 필터
     const platformMatch = selectedPlatform === 'all' || content.platform === selectedPlatform;
-    
+
     return creatorMatch && platformMatch;
   });
 
@@ -317,7 +263,7 @@ export function MainContent(): JSX.Element {
                   YouTube
                 </div>
               </div>
-            
+
             {/* 콘텐츠 정보 */}
             <div className="p-4 flex-1">
               <div className="flex items-start justify-between">
@@ -454,11 +400,13 @@ export function MainContent(): JSX.Element {
   // 로딩 중
   if (loading) {
     return (
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">로딩 중...</p>
+      <div className="p-6">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">로딩 중...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -468,178 +416,182 @@ export function MainContent(): JSX.Element {
   // 미인증 사용자용 UI
   if (!isLoggedIn) {
     return (
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* 헤로 섹션 */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 text-sm font-medium rounded-full mb-6">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-            크리에이터 콘텐츠 허브
-          </div>
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-gray-700 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-6">
-            MyPick
-          </h2>
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            좋아하는 크리에이터의 YouTube와 Twitter 콘텐츠를 <br />
-            한 곳에서 쉽고 빠르게 관리하세요.
-          </p>
+      <div className="p-6">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* 헤로 섹션 */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 text-sm font-medium rounded-full mb-6">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+              크리에이터 콘텐츠 허브
+            </div>
+            <h2 className="text-5xl font-bold bg-gradient-to-r from-gray-700 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-6">
+              MyPick
+            </h2>
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+              좋아하는 크리에이터의 YouTube와 Twitter 콘텐츠를 <br />
+              한 곳에서 쉽고 빠르게 관리하세요.
+            </p>
 
-          {/* 통계 섹션 */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12 max-w-2xl mx-auto">
-            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
-              <div className="text-3xl font-bold text-blue-500 mb-2">∞</div>
-              <div className="text-sm text-gray-500">크리에이터 콘텐츠</div>
-            </div>
-            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
-              <div className="text-3xl font-bold text-green-600 mb-2">🎥</div>
-              <div className="text-sm text-gray-500">YouTube 영상</div>
-            </div>
-            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
-              <div className="text-3xl font-bold text-orange-600 mb-2">🐦</div>
-              <div className="text-sm text-gray-500">Twitter 포스트</div>
+            {/* 통계 섹션 */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12 max-w-2xl mx-auto">
+              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
+                <div className="text-3xl font-bold text-blue-500 mb-2">∞</div>
+                <div className="text-sm text-gray-500">크리에이터 콘텐츠</div>
+              </div>
+              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
+                <div className="text-3xl font-bold text-green-600 mb-2">🎥</div>
+                <div className="text-sm text-gray-500">YouTube 영상</div>
+              </div>
+              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
+                <div className="text-3xl font-bold text-orange-600 mb-2">🐦</div>
+                <div className="text-sm text-gray-500">Twitter 포스트</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* 미인증 사용자용 안내 */}
-        <div className="text-center py-16">
-          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <User className="w-12 h-12 text-blue-500" />
+          {/* 미인증 사용자용 안내 */}
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <User className="w-12 h-12 text-blue-500" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">로그인이 필요합니다</h3>
+            <p className="text-gray-500 mb-6">크리에이터 콘텐츠를 보려면 로그인하세요.</p>
+            <button
+              onClick={handleLogin}
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-400 to-indigo-400 text-gray-800 font-medium rounded-xl hover:from-blue-500 hover:to-indigo-500 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              로그인하기
+            </button>
           </div>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">로그인이 필요합니다</h3>
-          <p className="text-gray-500 mb-6">크리에이터 콘텐츠를 보려면 로그인하세요.</p>
-          <button
-            onClick={handleLogin}
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-400 to-indigo-400 text-gray-800 font-medium rounded-xl hover:from-blue-500 hover:to-indigo-500 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
-          >
-            로그인하기
-          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
-      <div className="space-y-6">
-        {/* 필터 상태 표시 */}
-        <div className="bg-background rounded-lg shadow-sm p-4 border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <span className="text-sm text-muted-foreground">현재 필터:</span>
-            <div className="flex items-center space-x-2">
-              {filters.selectedCreators.includes('all') ? (
-                <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                  전체 보기
-                </span>
-              ) : (
-                filters.selectedCreators.map(creatorId => (
-                  <span key={creatorId} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                    {getCreatorDisplayName(creatorId)}
-                  </span>
-                ))
-              )}
-            </div>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-muted-foreground hover:text-foreground"
-            onClick={handleClearFilters}
-          >
-            필터 초기화
-          </Button>
-        </div>
-        </div>
-
-        {/* 플랫폼 필터 */}
-        <div className="flex gap-2 mb-4">
-          <Button
-            variant={selectedPlatform === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handlePlatformFilter('all')}
-          >
-            전체
-          </Button>
-          <Button
-            variant={selectedPlatform === 'youtube' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handlePlatformFilter('youtube')}
-          >
-            <Youtube className="h-4 w-4 mr-1" />
-            YouTube
-          </Button>
-          <Button
-            variant={selectedPlatform === 'twitter' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handlePlatformFilter('twitter')}
-          >
-            <Twitter className="h-4 w-4 mr-1" />
-            Twitter
-          </Button>
-        </div>
-
-        {/* 콘텐츠 타임라인 */}
+    <div className="p-6">
+      <div className="w-full max-w-7xl mx-auto">
         <div className="space-y-6">
-      {isLoading ? (
-            // 로딩 상태
-            <div className="space-y-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
-                  <div className="flex">
-                    <div className="w-64 h-36 bg-gray-200 rounded"></div>
-                    <div className="flex-1 p-4">
-                      <div className="h-6 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
-                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          {/* 필터 상태 표시 */}
+          <div className="bg-background rounded-lg shadow-sm p-4 border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <span className="text-sm text-muted-foreground">현재 필터:</span>
+              <div className="flex items-center space-x-2">
+                {filters.selectedCreators.includes('all') ? (
+                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                    전체 보기
+                  </span>
+                ) : (
+                  filters.selectedCreators.map(creatorId => (
+                    <span key={creatorId} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                      {getCreatorDisplayName(creatorId)}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={handleClearFilters}
+            >
+              필터 초기화
+            </Button>
+          </div>
+          </div>
+
+          {/* 플랫폼 필터 */}
+          <div className="flex gap-2 mb-4">
+            <Button
+              variant={selectedPlatform === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handlePlatformFilter('all')}
+            >
+              전체
+            </Button>
+            <Button
+              variant={selectedPlatform === 'youtube' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handlePlatformFilter('youtube')}
+            >
+              <Youtube className="h-4 w-4 mr-1" />
+              YouTube
+            </Button>
+            <Button
+              variant={selectedPlatform === 'twitter' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handlePlatformFilter('twitter')}
+            >
+              <Twitter className="h-4 w-4 mr-1" />
+              Twitter
+            </Button>
+          </div>
+
+          {/* 콘텐츠 타임라인 */}
+          <div className="space-y-6">
+        {isLoading ? (
+              // 로딩 상태
+              <div className="space-y-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+                    <div className="flex">
+                      <div className="w-64 h-36 bg-gray-200 rounded"></div>
+                      <div className="flex-1 p-4">
+                        <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : filteredContent.length > 0 ? (
-            <>
-              {filteredContent.map((content, index) => (
-                <div key={content.id} className={index > 0 ? "mt-6" : ""}>
-                  {renderContentCard(content)}
-                </div>
-              ))}
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">선택한 필터에 맞는 콘텐츠가 없습니다.</p>
-            </div>
-          )}
-        
-        {/* 무한 스크롤 로딩 인디케이터 */}
-        {hasMore ? <div 
-            ref={loadingRef}
-            className="py-8 text-center"
-          >
-            {isLoadingMore ? (
-              <div className="inline-flex items-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
-                <span className="text-muted-foreground">더 많은 콘텐츠를 불러오는 중...</span>
+                ))}
               </div>
+            ) : filteredContent.length > 0 ? (
+              <>
+                {filteredContent.map((content, index) => (
+                  <div key={content.id} className={index > 0 ? "mt-6" : ""}>
+                    {renderContentCard(content)}
+                  </div>
+                ))}
+              </>
             ) : (
-              <div className="text-muted-foreground text-sm">
-                스크롤하여 더 많은 콘텐츠 보기
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">선택한 필터에 맞는 콘텐츠가 없습니다.</p>
               </div>
             )}
-          </div> : null}
-        
-        {/* 모든 콘텐츠 로드 완료 메시지 */}
-        {!hasMore && !isLoading && filteredContent.length > 0 && (
-          <div className="py-8 text-center">
-            <span className="text-muted-foreground text-sm">모든 콘텐츠를 불러왔습니다</span>
+
+          {/* 무한 스크롤 로딩 인디케이터 */}
+          {hasMore ? <div
+              ref={loadingRef}
+              className="py-8 text-center"
+            >
+              {isLoadingMore ? (
+                <div className="inline-flex items-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mr-3"></div>
+                  <span className="text-muted-foreground">더 많은 콘텐츠를 불러오는 중...</span>
+                </div>
+              ) : (
+                <div className="text-muted-foreground text-sm">
+                  스크롤하여 더 많은 콘텐츠 보기
+                </div>
+              )}
+            </div> : null}
+
+          {/* 모든 콘텐츠 로드 완료 메시지 */}
+          {!hasMore && !isLoading && filteredContent.length > 0 && (
+            <div className="py-8 text-center">
+              <span className="text-muted-foreground text-sm">모든 콘텐츠를 불러왔습니다</span>
+            </div>
+          )}
           </div>
-        )}
         </div>
       </div>
     </div>
