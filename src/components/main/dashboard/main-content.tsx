@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useUI, useContent } from '@/hooks/redux';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { setPlatformFilter, clearFilters } from '@/store/slices/uiSlice';
 import { setSelectedPlatform, selectSelectedPlatform } from '@/store/slices/platformSlice';
 import { updateFollowedCreators } from '@/store/slices/creatorSlice';
@@ -25,7 +25,6 @@ import {
 } from '@/store/slices/contentSlice';
 import { cn } from '@/lib/utils';
 import { formatNumber, formatDate } from '@/lib/utils';
-import { PlatformFilter } from '@/components/admin/platforms/platform-filter';
 
 const _MOCK_CONTENT = [
   {
@@ -88,10 +87,22 @@ export function MainContent(): JSX.Element {
   const dispatch = useAppDispatch();
   const { filters } = useUI();
   const { contents, isLoading, hasMore, isLoadingMore, pagination } = useContent();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user, loading, isAuthenticated } = useAuth();
   const { followedCreators } = useAppSelector(state => state.creator);
   const selectedPlatform = useAppSelector(selectSelectedPlatform);
   const loadingRef = useRef<HTMLDivElement>(null);
+
+  // 인증 상태 디버깅
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[MainContent] Auth Status:', {
+      isLoggedIn,
+      isAuthenticated,
+      hasUser: !!user,
+      loading,
+      userId: user?.id
+    });
+  }, [isLoggedIn, isAuthenticated, user, loading]);
 
   // SSO 로그인 처리 (portal-client와 동일)
   const handleLogin = (): void => {
@@ -440,101 +451,76 @@ export function MainContent(): JSX.Element {
     }
   };
 
-  // 미인증 사용자용 UI (portal-client 스타일)
+  // 로딩 중
+  if (loading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">로딩 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 미인증 사용자용 UI
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        {/* 헤더 */}
-        <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-white/30 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                </div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-700 to-gray-600 bg-clip-text text-transparent">
-                  MyPick
-                </h1>
-              </div>
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={handleLogin}
-                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-400 to-indigo-400 text-gray-800 text-sm font-medium rounded-lg hover:from-blue-500 hover:to-indigo-500 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  로그인 / 회원가입
-                </button>
-              </div>
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* 헤로 섹션 */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 text-sm font-medium rounded-full mb-6">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            크리에이터 콘텐츠 허브
+          </div>
+          <h2 className="text-5xl font-bold bg-gradient-to-r from-gray-700 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-6">
+            MyPick
+          </h2>
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+            좋아하는 크리에이터의 YouTube와 Twitter 콘텐츠를 <br />
+            한 곳에서 쉽고 빠르게 관리하세요.
+          </p>
+
+          {/* 통계 섹션 */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12 max-w-2xl mx-auto">
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
+              <div className="text-3xl font-bold text-blue-500 mb-2">∞</div>
+              <div className="text-sm text-gray-500">크리에이터 콘텐츠</div>
+            </div>
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
+              <div className="text-3xl font-bold text-green-600 mb-2">🎥</div>
+              <div className="text-sm text-gray-500">YouTube 영상</div>
+            </div>
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
+              <div className="text-3xl font-bold text-orange-600 mb-2">🐦</div>
+              <div className="text-sm text-gray-500">Twitter 포스트</div>
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* 메인 콘텐츠 */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* 헤로 섹션 */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 text-sm font-medium rounded-full mb-6">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
-              크리에이터 콘텐츠 허브
-            </div>
-            <h2 className="text-5xl font-bold bg-gradient-to-r from-gray-700 via-blue-700 to-indigo-700 bg-clip-text text-transparent mb-6">
-              MyPick
-            </h2>
-            <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-              좋아하는 크리에이터의 YouTube와 Twitter 콘텐츠를 <br />
-              한 곳에서 쉽고 빠르게 관리하세요.
-            </p>
-
-            {/* 통계 섹션 */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12 max-w-2xl mx-auto">
-              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
-                <div className="text-3xl font-bold text-blue-500 mb-2">∞</div>
-                <div className="text-sm text-gray-500">크리에이터 콘텐츠</div>
-              </div>
-              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
-                <div className="text-3xl font-bold text-green-600 mb-2">🎥</div>
-                <div className="text-sm text-gray-500">YouTube 영상</div>
-              </div>
-              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
-                <div className="text-3xl font-bold text-orange-600 mb-2">🐦</div>
-                <div className="text-sm text-gray-500">Twitter 포스트</div>
-              </div>
-            </div>
+        {/* 미인증 사용자용 안내 */}
+        <div className="text-center py-16">
+          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <User className="w-12 h-12 text-blue-500" />
           </div>
-
-          {/* 미인증 사용자용 안내 */}
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <User className="w-12 h-12 text-blue-500" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">로그인이 필요합니다</h3>
-            <p className="text-gray-500 mb-6">크리에이터 콘텐츠를 보려면 로그인하세요.</p>
-            <button
-              onClick={handleLogin}
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-400 to-indigo-400 text-gray-800 font-medium rounded-xl hover:from-blue-500 hover:to-indigo-500 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              로그인하기
-            </button>
-          </div>
-        </main>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">로그인이 필요합니다</h3>
+          <p className="text-gray-500 mb-6">크리에이터 콘텐츠를 보려면 로그인하세요.</p>
+          <button
+            onClick={handleLogin}
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-400 to-indigo-400 text-gray-800 font-medium rounded-xl hover:from-blue-500 hover:to-indigo-500 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            로그인하기
+          </button>
+        </div>
       </div>
     );
   }
@@ -572,11 +558,32 @@ export function MainContent(): JSX.Element {
         </div>
         </div>
 
-        {/* 동적 플랫폼 필터 */}
-        <PlatformFilter
-          selectedPlatform={selectedPlatform}
-          onPlatformChange={handlePlatformFilter}
-        />
+        {/* 플랫폼 필터 */}
+        <div className="flex gap-2 mb-4">
+          <Button
+            variant={selectedPlatform === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handlePlatformFilter('all')}
+          >
+            전체
+          </Button>
+          <Button
+            variant={selectedPlatform === 'youtube' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handlePlatformFilter('youtube')}
+          >
+            <Youtube className="h-4 w-4 mr-1" />
+            YouTube
+          </Button>
+          <Button
+            variant={selectedPlatform === 'twitter' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handlePlatformFilter('twitter')}
+          >
+            <Twitter className="h-4 w-4 mr-1" />
+            Twitter
+          </Button>
+        </div>
 
         {/* 콘텐츠 타임라인 */}
         <div className="space-y-6">
