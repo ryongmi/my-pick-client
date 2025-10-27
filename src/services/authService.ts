@@ -42,11 +42,12 @@ export class AuthService extends BaseService {
     try {
       // auth-server의 /auth/initialize 엔드포인트 호출
       // RefreshToken(HttpOnly Cookie)을 사용하여 새로운 AccessToken 발급
-      const response = await authApi.post<ApiResponse<{ accessToken: string; user: User }>>(
+      const response = await authApi.post<{ accessToken: string; user: User }>(
         '/auth/initialize'
       );
 
-      const { accessToken, user } = response.data.data;
+      // authApi는 ResponseFormat<T>를 반환하므로 response.data에서 직접 추출
+      const { accessToken, user } = response.data;
 
       // AccessToken 저장
       tokenManager.setAccessToken(accessToken);
