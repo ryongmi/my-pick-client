@@ -13,8 +13,14 @@ export class CreatorService extends BaseService {
    */
   async getCreators(params?: Record<string, unknown>): Promise<PaginatedResponse<unknown>> {
     try {
+      // platform이 'all'이면 쿼리에서 제거
+      const filteredParams = { ...params };
+      if (filteredParams.platform === 'all') {
+        delete filteredParams.platform;
+      }
+
       const response = await mypickApi.get<PaginatedResponse<unknown>>('/creators', {
-        params,
+        params: filteredParams,
       });
       return response.data;
     } catch (error) {
