@@ -36,7 +36,6 @@ interface SearchResult {
   creator?: {
     id: string;
     name: string;
-    displayName: string;
     verified?: boolean;
   };
   metadata: {
@@ -69,7 +68,6 @@ const MOCK_SEARCH_RESULTS: SearchResult[] = [
     creator: {
       id: 'ado',
       name: 'Ado',
-      displayName: 'Ado',
       verified: true,
     },
     metadata: {
@@ -106,7 +104,6 @@ const MOCK_SEARCH_RESULTS: SearchResult[] = [
     creator: {
       id: 'hikakin',
       name: '히카킨',
-      displayName: '히카킨',
       verified: true,
     },
     metadata: {
@@ -129,7 +126,6 @@ const MOCK_SEARCH_RESULTS: SearchResult[] = [
     creator: {
       id: 'ado',
       name: 'Ado',
-      displayName: 'Ado',
       verified: true,
     },
     metadata: {
@@ -198,7 +194,7 @@ export function UnifiedSearch({ query, searchType }: UnifiedSearchProps): JSX.El
         result.title.toLowerCase().includes(queryLower) ||
         result.description?.toLowerCase().includes(queryLower) ||
         result.metadata.tags?.some(tag => tag.toLowerCase().includes(queryLower)) ||
-        result.creator?.displayName.toLowerCase().includes(queryLower) ||
+        result.creator?.name.toLowerCase().includes(queryLower) ||
         result.metadata.category?.toLowerCase().includes(queryLower)
       );
     });
@@ -299,10 +295,10 @@ export function UnifiedSearch({ query, searchType }: UnifiedSearchProps): JSX.El
                     "w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold",
                     `bg-gradient-to-r ${getCreatorColor(result.creator.id)}`
                   )}>
-                    {result.creator.displayName.charAt(0)}
+                    {result.creator.name.charAt(0)}
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {result.creator.displayName}
+                    {result.creator.name}
                   </span>
                   {result.creator.verified ? <CheckCircle2 className="h-4 w-4 text-blue-500" /> : null}
                 </div> : null}

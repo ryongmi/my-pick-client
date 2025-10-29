@@ -6,7 +6,20 @@ export const mockUsers: User[] = [
     name: '김철수',
     email: 'user@example.com',
     avatar: '',
-    role: 'user',
+    isEmailVerified: true,
+    oauthAccount: {
+      provider: 'google',
+      providerId: 'google-123',
+      email: 'user@example.com',
+      name: '김철수',
+    },
+    roles: [
+      {
+        roleId: 'role-user',
+        roleName: 'user',
+        assignedAt: new Date('2024-01-15T00:00:00Z'),
+      },
+    ],
     createdAt: '2024-01-15T00:00:00Z',
     updatedAt: '2024-03-15T00:00:00Z',
   },
@@ -15,7 +28,20 @@ export const mockUsers: User[] = [
     name: '관리자',
     email: 'admin@example.com',
     avatar: '',
-    role: 'admin',
+    isEmailVerified: true,
+    oauthAccount: {
+      provider: 'google',
+      providerId: 'google-456',
+      email: 'admin@example.com',
+      name: '관리자',
+    },
+    roles: [
+      {
+        roleId: 'role-admin',
+        roleName: 'admin',
+        assignedAt: new Date('2024-01-01T00:00:00Z'),
+      },
+    ],
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-03-15T00:00:00Z',
   },
@@ -24,7 +50,20 @@ export const mockUsers: User[] = [
     name: '프리미엄 사용자',
     email: 'premium@example.com',
     avatar: '',
-    role: 'premium',
+    isEmailVerified: true,
+    oauthAccount: {
+      provider: 'google',
+      providerId: 'google-789',
+      email: 'premium@example.com',
+      name: '프리미엄 사용자',
+    },
+    roles: [
+      {
+        roleId: 'role-premium',
+        roleName: 'premium',
+        assignedAt: new Date('2024-02-01T00:00:00Z'),
+      },
+    ],
     createdAt: '2024-02-01T00:00:00Z',
     updatedAt: '2024-03-15T00:00:00Z',
   },
@@ -50,8 +89,9 @@ export const mockLogin = async (email: string, password: string): Promise<{ user
   if (password !== 'password123') {
     throw new Error('비밀번호가 올바르지 않습니다.');
   }
-  
-  const token = mockAuthTokens[user.role] || mockAuthTokens.user;
+
+  const userRole = user.roles?.[0]?.roleName as keyof typeof mockAuthTokens;
+  const token = mockAuthTokens[userRole] || mockAuthTokens.user;
   
   return {
     user,
@@ -74,7 +114,20 @@ export const mockRegister = async (name: string, email: string, _password: strin
     name,
     email,
     avatar: '',
-    role: 'user',
+    isEmailVerified: false,
+    oauthAccount: {
+      provider: 'google',
+      providerId: `google-${Date.now()}`,
+      email,
+      name,
+    },
+    roles: [
+      {
+        roleId: 'role-user',
+        roleName: 'user',
+        assignedAt: new Date(),
+      },
+    ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

@@ -10,10 +10,6 @@ export interface VideoDetail {
   creator: {
     id: string;
     name: string;
-    displayName: string;
-    avatar: string;
-    subscriberCount: number;
-    verified: boolean;
   };
   publishedAt: string;
   viewCount: number;
@@ -34,7 +30,7 @@ export interface RelatedVideo {
   thumbnail: string;
   creator: {
     id: string;
-    displayName: string;
+    name: string;
   };
   viewCount: number;
   duration: string;
@@ -90,10 +86,6 @@ const mockVideoDetailApi = {
         creator: {
           id: 'ado',
           name: 'Ado',
-          displayName: 'Ado',
-          avatar: '',
-          subscriberCount: 7200000,
-          verified: true,
         },
         publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         viewCount: 520000,
@@ -115,10 +107,6 @@ const mockVideoDetailApi = {
         creator: {
           id: 'hikakin',
           name: '히카킨',
-          displayName: '히카킨',
-          avatar: '',
-          subscriberCount: 5400000,
-          verified: true,
         },
         publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
         viewCount: 1200000,
@@ -150,31 +138,40 @@ const mockVideoDetailApi = {
         id: '3',
         title: '【Live】특별 라이브 방송! 새로운 곡 공개',
         thumbnail: '',
-        creator: { id: 'ado', displayName: 'Ado' },
         viewCount: 340000,
         duration: '45:12',
         publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         platform: 'youtube',
+      creator: {
+        id: 'ado',
+        name: 'Ado',
+      },
       },
       {
         id: '4',
         title: '【Q&A】팬들의 질문에 답해드려요!',
         thumbnail: '',
-        creator: { id: 'ado', displayName: 'Ado' },
         viewCount: 680000,
         duration: '23:45',
         publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         platform: 'youtube',
+      creator: {
+        id: 'ado',
+        name: 'Ado',
+      },
       },
       {
         id: '5',
         title: '【Vlog】스튜디오에서의 하루',
         thumbnail: '',
-        creator: { id: 'hikakin', displayName: '히카킨' },
         viewCount: 920000,
         duration: '12:30',
         publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         platform: 'youtube',
+      creator: {
+        id: 'ado',
+        name: 'Ado',
+      },
       },
     ];
     

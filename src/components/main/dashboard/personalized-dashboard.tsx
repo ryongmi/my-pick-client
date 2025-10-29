@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardGrid } from './dashboard-grid';
 import { WidgetConfigurator, useWidgetConfig } from './widget-configurator';
-import { MainContent } from './main-content';
 import { cn } from '@/lib/utils';
 
 export interface PersonalizedDashboardProps {
@@ -195,7 +194,10 @@ export function PersonalizedDashboard({ showTraditionalFeed = true }: Personaliz
               </CardHeader>
               <CardContent className="p-0">
                 <div className="max-h-[800px] overflow-y-auto px-6 pb-6">
-                  <MainContent />
+                  {/* TODO: MainContent가 page.tsx로 이동됨 - 필요시 대체 컴포넌트 추가 */}
+                  <div className="p-4 text-center text-muted-foreground">
+                    콘텐츠 피드가 여기에 표시됩니다
+                  </div>
                 </div>
               </CardContent>
             </Card>

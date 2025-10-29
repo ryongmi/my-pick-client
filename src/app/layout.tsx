@@ -1,9 +1,45 @@
+'use client';
+
 import { Inter } from 'next/font/google';
+import { useEffect } from 'react';
 import './globals.css';
-import { Providers } from '@/components/providers';
-import { AuthGuard } from '@/components/auth/auth-guard';
+import { Providers } from '@/components/providers/Providers';
+import { Header } from '@/components/layout/header';
+import { Sidebar } from '@/components/layout/sidebar';
+import { useAppDispatch, useUI } from '@/hooks/redux';
+import { setIsMobile } from '@/store/slices/uiSlice';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+
+/**
+ * 루트 레이아웃
+ * - Providers (Redux, ThemeProvider, AuthProvider, AuthGuard 포함)
+ * - Header + Sidebar (모든 페이지 공통)
+ */
+function RootLayoutClient({ children }: { children: React.ReactNode }): JSX.Element {
+  const dispatch = useAppDispatch();
+  const { sidebarOpen } = useUI();
+
+  useEffect(() => {
+    const checkMobile = (): void => {
+      dispatch(setIsMobile(window.innerWidth < 768));
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return (): void => window.removeEventListener('resize', checkMobile);
+  }, [dispatch]);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      {sidebarOpen ? <Sidebar /> : null}
+      <main className="mt-16 overflow-auto">
+        {children}
+      </main>
+    </div>
+  );
+}
 
 export default function RootLayout({
   children,
@@ -22,9 +58,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} antialiased`}>
         <Providers>
-          <AuthGuard>
+          <RootLayoutClient>
             {children}
-          </AuthGuard>
+          </RootLayoutClient>
         </Providers>
       </body>
     </html>

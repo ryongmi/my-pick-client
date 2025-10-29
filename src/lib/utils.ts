@@ -43,7 +43,12 @@ export function formatDate(date: string | Date, format: 'short' | 'long' | 'rela
 }
 
 // 숫자 포맷팅
-export function formatNumber(num: number, compact?: boolean): string {
+export function formatNumber(num: number | undefined, compact?: boolean): string {
+  // undefined나 null 처리
+  if (num === undefined || num === null) {
+    return '0';
+  }
+
   if (compact) {
     if (num >= 1000000) {
       return Math.floor(num / 1000000) + 'M';
@@ -53,7 +58,7 @@ export function formatNumber(num: number, compact?: boolean): string {
     }
     return num.toString();
   }
-  
+
   if (num >= 1000000) {
     return (num / 1000000).toFixed(1) + 'M';
   }

@@ -36,7 +36,6 @@ interface WatchHistoryItem {
   creator: {
     id: string;
     name: string;
-    displayName: string;
   };
   duration: number; // seconds
   watchedDuration: number; // seconds
@@ -64,7 +63,6 @@ const MOCK_WATCH_HISTORY: WatchHistoryItem[] = [
     creator: {
       id: 'ado',
       name: 'Ado',
-      displayName: 'Ado',
     },
     duration: 263, // 4:23
     watchedDuration: 263,
@@ -84,7 +82,6 @@ const MOCK_WATCH_HISTORY: WatchHistoryItem[] = [
     creator: {
       id: 'hikakin',
       name: '히카킨',
-      displayName: '히카킨',
     },
     duration: 525, // 8:45
     watchedDuration: 320,
@@ -104,7 +101,6 @@ const MOCK_WATCH_HISTORY: WatchHistoryItem[] = [
     creator: {
       id: 'ado',
       name: 'Ado',
-      displayName: 'Ado',
     },
     duration: 2712, // 45:12
     watchedDuration: 1450,
@@ -124,7 +120,6 @@ const MOCK_WATCH_HISTORY: WatchHistoryItem[] = [
     creator: {
       id: 'ado',
       name: 'Ado',
-      displayName: 'Ado',
     },
     duration: 1425, // 23:45
     watchedDuration: 890,
@@ -144,7 +139,6 @@ const MOCK_WATCH_HISTORY: WatchHistoryItem[] = [
     creator: {
       id: 'hikakin',
       name: '히카킨',
-      displayName: '히카킨',
     },
     duration: 750, // 12:30
     watchedDuration: 750,
@@ -164,7 +158,6 @@ const MOCK_WATCH_HISTORY: WatchHistoryItem[] = [
     creator: {
       id: 'hikakin',
       name: '히카킨',
-      displayName: '히카킨',
     },
     duration: 1102, // 18:22
     watchedDuration: 450,
@@ -195,7 +188,7 @@ export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps): JS
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(item =>
         item.title.toLowerCase().includes(query) ||
-        item.creator.displayName.toLowerCase().includes(query) ||
+        item.creator.name.toLowerCase().includes(query) ||
         item.category.toLowerCase().includes(query)
       );
     }
@@ -485,9 +478,9 @@ export function WatchHistory({ searchQuery, timeFilter }: WatchHistoryProps): JS
                               "w-4 h-4 rounded-full mr-2 flex items-center justify-center text-white text-xs font-bold",
                               `bg-gradient-to-r ${getCreatorColor(item.creator.id)}`
                             )}>
-                              {item.creator.displayName.charAt(0)}
+                              {item.creator.name.charAt(0)}
                             </div>
-                            <span>{item.creator.displayName}</span>
+                            <span>{item.creator.name}</span>
                           </div>
                           <span>•</span>
                           <span>{item.category}</span>

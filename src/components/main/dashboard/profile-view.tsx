@@ -5,7 +5,7 @@ import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, Twitter,
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { fetchBookmarks, removeBookmark, toggleBookmarkOptimistic } from '@/store/slices/contentSlice';
 import { cn } from '@/lib/utils';
@@ -179,18 +179,18 @@ export function ProfileView(): JSX.Element {
                           creator.id === 'kuzuha' ? 'bg-gradient-to-r from-green-400 to-teal-500' :
                           'bg-gradient-to-r from-gray-400 to-gray-600'
                         )}>
-                          {creator.displayName.charAt(0)}
+                          {creator.name.charAt(0)}
                         </div>
                         <div className="ml-4 flex-1">
                           <div className="flex items-center gap-2">
-                            <h4 className="font-medium">{creator.displayName}</h4>
-                            {creator.isVerified ? <Star className="h-4 w-4 text-blue-500 fill-current" /> : null}
+                            <h4 className="font-medium">{creator.name}</h4>
+                            {creator.isActive ? <Star className="h-4 w-4 text-blue-500 fill-current" /> : null}
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {creator.platforms?.map(p => p.type === 'youtube' ? 'YouTube' : 'Twitter').join(' • ')}
+                            {creator.platformCount ? `${creator.platformCount}개 플랫폼` : '플랫폼 정보 없음'}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            팔로워 {formatNumber(creator.followerCount || 0)} • {creator.contentCount || 0}개 콘텐츠
+                            구독자 {formatNumber(creator.subscriberCount || 0)} • {creator.videoCount || 0}개 영상
                           </p>
                         </div>
                         <Button 
@@ -298,9 +298,9 @@ export function ProfileView(): JSX.Element {
                                       content.creator.id === 'hikakin' ? 'bg-gradient-to-r from-blue-400 to-cyan-500' :
                                       'bg-gradient-to-r from-gray-400 to-gray-600'
                                     )}>
-                                      {content.creator.displayName.charAt(0)}
+                                      {content.creator.name.charAt(0)}
                                     </div>
-                                    <span className="font-medium">{content.creator.displayName}</span>
+                                    <span className="font-medium">{content.creator.name}</span>
                                   </>
                                 )}
                               </div>

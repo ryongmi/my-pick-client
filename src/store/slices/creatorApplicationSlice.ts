@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { CreatorApplication } from '@/types/userManagement';
-import { creatorApi, errorUtils } from '@/lib/api';
+import { mypickApi } from '@/lib/httpClient';
+import { errorUtils } from '@/lib/httpClient';
 
 // 신청 데이터 타입
 export interface CreatorApplicationFormData {
@@ -53,8 +54,8 @@ export const submitCreatorApplication = createAsyncThunk(
   async (formData: CreatorApplicationFormData, { rejectWithValue }) => {
     try {
       // Creator application API not implemented yet in server
-      // Using creator API as placeholder until server implements creator applications
-      const response = await creatorApi.addCreator(formData);
+      // Using mypick API as placeholder until server implements creator applications
+      const response = await mypickApi.post('/creators/applications', formData);
       return response.data;
     } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '신청 제출에 실패했습니다.';
@@ -84,7 +85,7 @@ export const resubmitCreatorApplication = createAsyncThunk(
   async (formData: CreatorApplicationFormData, { rejectWithValue }) => {
     try {
       // Creator resubmit API not implemented yet in server
-      const response = await creatorApi.addCreator(formData);
+      const response = await mypickApi.post('/creators/applications', formData);
       return response.data;
     } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '재신청에 실패했습니다.';

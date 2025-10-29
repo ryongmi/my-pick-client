@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Plus } from 'lucide-react';
@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useUI } from '@/hooks/redux';
 import { setCreatorFilter, setSidebarOpen } from '@/store/slices/uiSlice';
-import { followCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
+import { updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { cn } from '@/lib/utils';
-import { QuickCreatorAddModal } from '@/components/admin/creators/quick-creator-add-modal';
 import { Creator } from '@/types';
 import { mockGetFollowedCreators } from '@/data/creators';
 
@@ -18,7 +17,6 @@ const _MOCK_CREATORS = [
   {
     id: 'ado',
     name: 'Ado',
-    displayName: 'Ado',
     avatar: '',
     platforms: ['youtube', 'twitter'],
     newContentCount: 5,
@@ -26,7 +24,6 @@ const _MOCK_CREATORS = [
   {
     id: 'hikakin',
     name: '히카킨',
-    displayName: '히카킨',
     avatar: '',
     platforms: ['youtube', 'twitter'],
     newContentCount: 2,
@@ -38,7 +35,6 @@ export function Sidebar(): JSX.Element {
   const router = useRouter();
   const { sidebarOpen, filters, isMobile } = useUI();
   const { followedCreators } = useAppSelector(state => state.creator);
-  const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // 구독 중인 크리에이터 로드
@@ -133,20 +129,6 @@ export function Sidebar(): JSX.Element {
     return filters.selectedCreators.includes(creatorId) && !filters.selectedCreators.includes('all');
   };
 
-  const handleQuickAddCreator = async (creator: Creator): Promise<void> => {
-    try {
-      await dispatch(followCreator(creator)).unwrap();
-      
-      // 다른 컴포넌트들에게 알림
-      window.dispatchEvent(new CustomEvent('followersChanged'));
-      
-      setShowQuickAddModal(false);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('빠른 크리에이터 추가 오류:', error);
-    }
-  };
-
   return (
     <>
       {/* 배경 오버레이 (모바일에서만 표시) */}
@@ -176,14 +158,6 @@ export function Sidebar(): JSX.Element {
         {/* 사이드바 헤더 */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">내 크리에이터</h2>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => setShowQuickAddModal(true)}
-            className="hover:bg-primary/10"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
         </div>
 
 
@@ -206,10 +180,10 @@ export function Sidebar(): JSX.Element {
                 )}
                 onClick={() => handleCreatorFilter(creator.id)}
               >
-                {creator.avatar ? (
+                {creator.profileImageUrl ? (
                   <Image 
-                    src={creator.avatar} 
-                    alt={creator.displayName}
+                    src={creator.profileImageUrl} 
+                    alt={creator.name}
                     width={40}
                     height={40}
                     className="w-10 h-10 rounded-full object-cover"
@@ -231,15 +205,13 @@ export function Sidebar(): JSX.Element {
                     creator.id === 'kurzgesagt' ? 'bg-gradient-to-r from-cyan-400 to-blue-500' :
                     'bg-gradient-to-r from-gray-400 to-gray-600'
                   )}>
-                    {creator.displayName.charAt(0)}
+                    {creator.name.charAt(0)}
                   </div>
                 )}
                 <div className="ml-3 flex-1">
-                  <p className="font-medium text-sm">{creator.displayName}</p>
+                  <p className="font-medium text-sm">{creator.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {creator.platforms?.map(platform => 
-                      platform.type === 'youtube' ? 'YouTube' : 'Twitter'
-                    ).join(' • ')}
+                    {creator.platformCount ? `${creator.platformCount}개 플랫폼` : '플랫폼 정보 없음'}
                   </p>
                 </div>
                 {/* 새 콘텐츠 카운트 - 크리에이터별 고정값 */}
@@ -271,13 +243,6 @@ export function Sidebar(): JSX.Element {
           <Plus className="h-4 w-4 mr-2" />
           크리에이터 추가
         </Button>
-
-        {/* 빠른 크리에이터 추가 모달 */}
-        <QuickCreatorAddModal
-          isOpen={showQuickAddModal}
-          onClose={() => setShowQuickAddModal(false)}
-          onAddCreator={handleQuickAddCreator}
-        />
       </div>
     </aside>
     </>

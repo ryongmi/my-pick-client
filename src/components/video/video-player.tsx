@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Loader2, Play, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 interface VideoPlayerProps {
   videoId: string;
@@ -12,7 +11,7 @@ interface VideoPlayerProps {
 }
 
 export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps): JSX.Element {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(autoplay); // autoplay일 때만 로딩 상태
   const [hasError, setHasError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -40,9 +39,9 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps): JS
   };
 
   const youtubeVideoId = extractVideoId(videoId);
-  
+
   const embedUrl = `https://www.youtube.com/embed/${youtubeVideoId}?${new URLSearchParams({
-    autoplay: autoplay ? '1' : '0',
+    autoplay: (autoplay || isPlaying) ? '1' : '0',
     rel: '0',
     modestbranding: '1',
     fs: '1',
@@ -63,6 +62,7 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps): JS
 
   const handlePlayClick = (): void => {
     setIsPlaying(true);
+    setIsLoading(true); // 재생 버튼 클릭 시 로딩 시작
   };
 
   const handleRetry = (): void => {
@@ -76,7 +76,7 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps): JS
     <Card className="overflow-hidden">
       <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
         {/* 로딩 상태 */}
-        {isLoading && !hasError ? <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+        {isLoading && !hasError ? <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">동영상을 불러오는 중...</p>
@@ -84,7 +84,7 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps): JS
           </div> : null}
 
         {/* 에러 상태 */}
-        {hasError ? <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+        {hasError ? <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
             <div className="text-center p-6">
               <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-3" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -119,10 +119,7 @@ export function VideoPlayer({ videoId, autoplay = false }: VideoPlayerProps): JS
 
         {/* YouTube iframe */}
         {(isPlaying || autoplay) ? <iframe
-            className={cn(
-              "absolute inset-0 w-full h-full",
-              isLoading && "opacity-0"
-            )}
+            className="absolute inset-0 w-full h-full"
             src={embedUrl}
             title="YouTube video player"
             frameBorder="0"

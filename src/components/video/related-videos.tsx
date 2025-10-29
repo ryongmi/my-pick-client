@@ -20,7 +20,7 @@ interface Video {
   thumbnail: string;
   creator: {
     id: string;
-    displayName: string;
+    name: string;
   };
   viewCount: number;
   duration: string;
@@ -40,7 +40,7 @@ const MOCK_RELATED_VIDEOS: Video[] = [
     thumbnail: '',
     creator: {
       id: 'ado',
-      displayName: 'Ado',
+      name: 'Ado',
     },
     viewCount: 340000,
     duration: '45:12',
@@ -57,7 +57,7 @@ const MOCK_RELATED_VIDEOS: Video[] = [
     thumbnail: '',
     creator: {
       id: 'ado',
-      displayName: 'Ado',
+      name: 'Ado',
     },
     viewCount: 680000,
     duration: '23:45',
@@ -74,7 +74,7 @@ const MOCK_RELATED_VIDEOS: Video[] = [
     thumbnail: '',
     creator: {
       id: 'hikakin',
-      displayName: '히카킨',
+      name: '히카킨',
     },
     viewCount: 920000,
     duration: '12:30',
@@ -91,7 +91,7 @@ const MOCK_RELATED_VIDEOS: Video[] = [
     thumbnail: '',
     creator: {
       id: 'hikakin',
-      displayName: '히카킨',
+      name: '히카킨',
     },
     viewCount: 450000,
     duration: '18:22',
@@ -108,7 +108,7 @@ const MOCK_RELATED_VIDEOS: Video[] = [
     thumbnail: '',
     creator: {
       id: 'ado',
-      displayName: 'Ado',
+      name: 'Ado',
     },
     viewCount: 1200000,
     duration: '25:18',
@@ -125,7 +125,7 @@ const MOCK_RELATED_VIDEOS: Video[] = [
     thumbnail: '',
     creator: {
       id: 'hikakin',
-      displayName: '히카킨',
+      name: '히카킨',
     },
     viewCount: 780000,
     duration: '31:45',
@@ -142,7 +142,7 @@ const MOCK_RELATED_VIDEOS: Video[] = [
     thumbnail: '',
     creator: {
       id: 'ado',
-      displayName: 'Ado',
+      name: 'Ado',
     },
     viewCount: 2800000,
     duration: '4:12',
@@ -159,7 +159,7 @@ const MOCK_RELATED_VIDEOS: Video[] = [
     thumbnail: '',
     creator: {
       id: 'ado',
-      displayName: 'Ado',
+      name: 'Ado',
     },
     viewCount: 1800000,
     duration: '5:45',
@@ -327,7 +327,7 @@ export function RelatedVideos({ currentVideoId }: RelatedVideosProps): JSX.Eleme
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-muted-foreground font-medium">
-                    {video.creator.displayName}
+                    {video.creator.name}
                   </p>
                   {getRecommendationBadge(video.recommendationType)}
                 </div>

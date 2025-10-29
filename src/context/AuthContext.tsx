@@ -1,16 +1,14 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { logoutUser, fetchUserProfile, initializeAuth, clearUser } from "@/store/slices/authSlice";
-import { tokenManager } from "@/lib/api";
-import type { User } from "@/types";
+import React, { createContext, useContext, useEffect, useRef, ReactNode } from 'react';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { initializeAuth, clearUser, fetchUserProfile, logoutUser } from '@/store/slices/authSlice';
+import type { UserProfile } from '@/types';
 
 interface AuthContextType {
-  user: User | null;
+  user: UserProfile | null;
   loading: boolean;
   isLoggedIn: boolean;
-  isAuthenticated: boolean; // header.tsx에서 사용하는 속성 추가
   error: string | null;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -18,74 +16,78 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }): JSX.Element {
+/**
+ * AuthProvider
+ *
+ * Redux store의 인증 상태를 Context API를 통해 제공합니다.
+ * - 초기 인증 상태 확인 (RefreshToken 기반)
+ * - 토큰 이벤트 리스닝
+ * - 로그아웃/사용자 정보 새로고침 함수 제공
+ */
+export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated, isLoading, error, isInitialized } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, isLoading, error, isInitialized } = useAppSelector(
+    (state) => state.auth
+  );
   const initializeRef = useRef(false);
 
-  // 초기 인증 상태 확인 (쿠키 기반)
+  // 초기 인증 상태 확인
   useEffect(() => {
     const checkInitialAuth = async (): Promise<void> => {
-      // 이미 초기화되었거나 진행 중이면 스킵 (StrictMode 대응)
-      if (isInitialized || isLoading || initializeRef.current) {
+      // StrictMode 대응: 이미 초기화되었으면 스킵
+      if (isInitialized || initializeRef.current) {
         return;
       }
 
       initializeRef.current = true;
 
       try {
+        // RefreshToken으로 AccessToken + 사용자 정보 한 번에 조회
         await dispatch(initializeAuth()).unwrap();
       } catch (_error) {
-        // 인증되지 않은 사용자
+        // 인증되지 않은 사용자 (정상 동작)
       } finally {
-        // 초기화 완료 후 플래그 해제
         initializeRef.current = false;
       }
     };
 
     // TokenManager 이벤트 리스너 설정
     const handleTokenCleared = (): void => {
-      dispatch(clearUser());
+        dispatch(clearUser());
     };
 
-    const handleTokenUpdated = (event: CustomEvent): void => {
-      // 새 토큰이 설정되면 사용자 정보 갱신
-      if (event.detail?.accessToken && !user) {
-        dispatch(fetchUserProfile());
-      }
-    };
+    // const handleTokenUpdated = (event: CustomEvent): void => {
+    //   // 새 토큰이 설정되면 사용자 정보 갱신
+    //   if (event.detail?.accessToken && !user) {
+    //     dispatch(fetchUserProfile());
+    //   }
+    // };
 
-    // 이벤트 리스너 등록
     window.addEventListener('tokenCleared', handleTokenCleared);
-    window.addEventListener('tokenUpdated', handleTokenUpdated as EventListener);
+    // window.addEventListener('tokenUpdated', handleTokenUpdated as EventListener);
 
-    // 초기 인증 확인
     checkInitialAuth();
 
     return (): void => {
       window.removeEventListener('tokenCleared', handleTokenCleared);
-      window.removeEventListener('tokenUpdated', handleTokenUpdated as EventListener);
+      // window.removeEventListener('tokenUpdated', handleTokenUpdated as EventListener);
     };
-  }, [dispatch, isInitialized, isLoading, user]);
+  }, [dispatch, isInitialized]);
 
-  // 로그아웃
   const logout = async (): Promise<void> => {
     try {
       await dispatch(logoutUser()).unwrap();
     } catch (_error) {
-      // 로그아웃 실패 오류 로그
-      // 로그아웃 실패해도 클라이언트 상태는 초기화
+      // 로그아웃 실패 시에도 클라이언트 상태는 클리어
       dispatch(clearUser());
-      tokenManager.clearAccessToken();
     }
   };
 
-  // 사용자 정보 새로고침
   const refreshUser = async (): Promise<void> => {
     try {
       await dispatch(fetchUserProfile()).unwrap();
     } catch (_error) {
-      // 사용자 정보 새로고침 실패 오류 로그
+      // 사용자 정보 새로고침 실패
     }
   };
 
@@ -93,7 +95,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
     user,
     loading: isLoading,
     isLoggedIn: isAuthenticated,
-    isAuthenticated, // 동일한 값으로 설정
     error,
     logout,
     refreshUser,
@@ -102,10 +103,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth(): AuthContextType {
+/**
+ * useAuth Hook (Context 버전)
+ *
+ * AuthContext를 사용하여 인증 상태를 조회합니다.
+ *
+ * @example
+ * const { user, isLoggedIn, logout } = useAuth();
+ */
+export function useAuthContext(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuthContext must be used within an AuthProvider');
   }
   return context;
 }

@@ -1,5 +1,5 @@
 import { authApi, tokenManager } from '@/lib/httpClient';
-import type { User, ApiResponse } from '@/types';
+import type { UserProfile, ApiResponse } from '@/types';
 import { BaseService } from './base';
 
 /**
@@ -25,9 +25,9 @@ export class AuthService extends BaseService {
   /**
    * 사용자 정보 조회
    */
-  async getUserProfile(): Promise<User> {
+  async getUserProfile(): Promise<UserProfile> {
     try {
-      const response = await authApi.get<ApiResponse<User>>('/users/me');
+      const response = await authApi.get<ApiResponse<UserProfile>>('/users/me');
       return response.data.data;
     } catch (error) {
       this.handleError(error);
@@ -38,22 +38,22 @@ export class AuthService extends BaseService {
    * 클라이언트 초기화 (RefreshToken으로 AccessToken 갱신 및 사용자 정보 조회)
    * 페이지 로드 시 한 번만 호출하여 인증 상태 복원
    */
-  async initialize(): Promise<{ user: User | null }> {
+  async initialize(): Promise<{ user: UserProfile | null }> {
     try {
       // auth-server의 /auth/initialize 엔드포인트 호출
       // RefreshToken(HttpOnly Cookie)을 사용하여 새로운 AccessToken 발급
-      const response = await authApi.post<{ accessToken: string; user: User }>(
+      const response = await authApi.post<{ accessToken: string; user: UserProfile }>(
         '/auth/initialize'
       );
 
-      // authApi는 ResponseFormat<T>를 반환하므로 response.data에서 직접 추출
+      // authApi는 이미 언패킹되어 response.data에 직접 접근 가능
       const { accessToken, user } = response.data;
 
       // AccessToken 저장
       tokenManager.setAccessToken(accessToken);
 
       return { user };
-    } catch (error) {
+    } catch (_error) {
       // 초기화 실패 (RefreshToken 없음 또는 만료)
       tokenManager.clearAccessToken();
       return { user: null };

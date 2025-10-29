@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Creator, CreatorStats } from '@/types';
-import { creatorApi, errorUtils } from '@/lib/api';
+import { creatorService } from '@/services';
 
 interface CreatorState {
   // 크리에이터 데이터
@@ -78,11 +78,12 @@ export const fetchCreators = createAsyncThunk(
     sortBy?: string;
   } = {}, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.getCreators(params);
+      const response = await creatorService.getCreators(params);
       return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(
+        error instanceof Error ? error.message : '크리에이터 조회에 실패했습니다.'
+      );
     }
   }
 );
@@ -97,11 +98,12 @@ export const fetchMoreCreators = createAsyncThunk(
     sortBy?: string;
   }, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.getCreators(params);
+      const response = await creatorService.getCreators(params);
       return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(
+        error instanceof Error ? error.message : '크리에이터 추가 조회에 실패했습니다.'
+      );
     }
   }
 );
@@ -110,11 +112,12 @@ export const fetchCreatorById = createAsyncThunk(
   'creator/fetchCreatorById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.getCreator(id);
-      return response.data;
+      const response = await creatorService.getCreator(id);
+      return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(
+        error instanceof Error ? error.message : '크리에이터 상세 조회에 실패했습니다.'
+      );
     }
   }
 );
@@ -123,11 +126,12 @@ export const fetchCreatorStats = createAsyncThunk(
   'creator/fetchCreatorStats',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.getCreatorStats(id);
-      return response.data;
+      const response = await creatorService.getCreatorStats(id);
+      return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(
+        error instanceof Error ? error.message : '크리에이터 통계 조회에 실패했습니다.'
+      );
     }
   }
 );
@@ -136,11 +140,12 @@ export const followCreator = createAsyncThunk(
   'creator/followCreator',
   async (creator: Creator, { rejectWithValue }) => {
     try {
-      await creatorApi.followCreator(creator.id);
+      await creatorService.followCreator(creator.id);
       return creator;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(
+        error instanceof Error ? error.message : '크리에이터 구독에 실패했습니다.'
+      );
     }
   }
 );
@@ -149,11 +154,12 @@ export const unfollowCreator = createAsyncThunk(
   'creator/unfollowCreator',
   async (creatorId: string, { rejectWithValue }) => {
     try {
-      await creatorApi.unfollowCreator(creatorId);
+      await creatorService.unfollowCreator(creatorId);
       return creatorId;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(
+        error instanceof Error ? error.message : '크리에이터 구독 취소에 실패했습니다.'
+      );
     }
   }
 );
@@ -162,11 +168,12 @@ export const addCreator = createAsyncThunk(
   'creator/addCreator',
   async (creatorData: unknown, { rejectWithValue }) => {
     try {
-      const response = await creatorApi.addCreator(creatorData as Record<string, unknown>);
-      return response.data;
+      const response = await creatorService.addCreator(creatorData as Record<string, unknown>);
+      return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(
+        error instanceof Error ? error.message : '크리에이터 추가에 실패했습니다.'
+      );
     }
   }
 );
@@ -175,11 +182,12 @@ export const syncCreator = createAsyncThunk(
   'creator/syncCreator',
   async (id: string, { rejectWithValue }) => {
     try {
-      await creatorApi.syncCreator(id);
+      await creatorService.syncCreator(id);
       return id;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
-      return rejectWithValue(errorMessage);
+      return rejectWithValue(
+        error instanceof Error ? error.message : '크리에이터 동기화에 실패했습니다.'
+      );
     }
   }
 );
@@ -267,11 +275,31 @@ const creatorSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCreators.fulfilled, (state, action) => {
+        console.log('fetchCreators.fulfilled', action.payload);
         state.isLoading = false;
-        const payload = (action.payload as unknown) as { data?: Creator[]; pagination?: typeof state.pagination };
-        state.creators = payload.data || [];
-        state.pagination = payload.pagination || state.pagination;
-        state.hasMore = payload.pagination?.hasNext || false;
+        const payload = action.payload as {
+          items?: Creator[];
+          pageInfo?: {
+            totalItems: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+            hasPreviousPage: boolean;
+            hasNextPage: boolean;
+          };
+        };
+        state.creators = payload.items || [];
+        if (payload.pageInfo) {
+          state.pagination = {
+            page: payload.pageInfo.page,
+            limit: payload.pageInfo.limit,
+            total: payload.pageInfo.totalItems,
+            totalPages: payload.pageInfo.totalPages,
+            hasNext: payload.pageInfo.hasNextPage,
+            hasPrev: payload.pageInfo.hasPreviousPage,
+          };
+          state.hasMore = payload.pageInfo.hasNextPage;
+        }
       })
       .addCase(fetchCreators.rejected, (state, action) => {
         state.isLoading = false;
@@ -284,11 +312,31 @@ const creatorSlice = createSlice({
         state.isLoadingMore = true;
       })
       .addCase(fetchMoreCreators.fulfilled, (state, action) => {
+        console.log('fetchMoreCreators.fulfilled', action.payload);
         state.isLoadingMore = false;
-        const payload = (action.payload as unknown) as { data?: Creator[]; pagination?: typeof state.pagination };
-        state.creators = [...state.creators, ...(payload.data || [])];
-        state.pagination = payload.pagination || state.pagination;
-        state.hasMore = payload.pagination?.hasNext || false;
+        const payload = action.payload as {
+          items?: Creator[];
+          pageInfo?: {
+            totalItems: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+            hasPreviousPage: boolean;
+            hasNextPage: boolean;
+          };
+        };
+        state.creators = [...state.creators, ...(payload.items || [])];
+        if (payload.pageInfo) {
+          state.pagination = {
+            page: payload.pageInfo.page,
+            limit: payload.pageInfo.limit,
+            total: payload.pageInfo.totalItems,
+            totalPages: payload.pageInfo.totalPages,
+            hasNext: payload.pageInfo.hasNextPage,
+            hasPrev: payload.pageInfo.hasPreviousPage,
+          };
+          state.hasMore = payload.pageInfo.hasNextPage;
+        }
       })
       .addCase(fetchMoreCreators.rejected, (state, action) => {
         state.isLoadingMore = false;

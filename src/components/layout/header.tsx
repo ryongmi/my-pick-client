@@ -8,19 +8,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useUI } from '@/hooks/redux';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import {
   toggleSidebar,
   toggleDropdown,
   closeAllDropdowns,
 } from '@/store/slices/uiSlice';
 import { logoutUser } from '@/store/slices/authSlice';
-import { 
+import {
   openApplicationModal,
   closeApplicationModal,
   openStatusModal,
   closeStatusModal,
-  fetchApplicationStatus 
+  fetchApplicationStatus
 } from '@/store/slices/creatorApplicationSlice';
 import { CreatorApplicationModal } from '@/components/main/creator-application-modal';
 import { CreatorStatusModal } from '@/components/main/creator-status-modal';
@@ -236,7 +236,7 @@ export function Header(): JSX.Element {
                     >
                       설정
                     </Button>
-                    
+
                     {/* 크리에이터 신청 관련 메뉴 */}
                     {applicationStatus === 'none' && (
                       <Button
@@ -251,7 +251,7 @@ export function Header(): JSX.Element {
                         크리에이터 신청하기
                       </Button>
                     )}
-                    
+
                     {applicationStatus === 'pending' && (
                       <Button
                         variant="ghost"
@@ -265,7 +265,7 @@ export function Header(): JSX.Element {
                         신청 상태 확인
                       </Button>
                     )}
-                    
+
                     {applicationStatus === 'approved' && (
                       <Button
                         variant="ghost"
@@ -279,7 +279,7 @@ export function Header(): JSX.Element {
                         크리에이터 대시보드
                       </Button>
                     )}
-                    
+
                     {applicationStatus === 'rejected' && (
                       <Button
                         variant="ghost"
@@ -293,8 +293,8 @@ export function Header(): JSX.Element {
                         재신청하기
                       </Button>
                     )}
-                    
-                    {user?.role === 'admin' && (
+
+                    {user?.roles?.some(role => role.roleName === 'admin') && (
                       <Button
                         variant="ghost"
                         className="w-full justify-start"
@@ -323,15 +323,15 @@ export function Header(): JSX.Element {
           </div>
         </div>
       </header>
-      
+
       {/* 크리에이터 신청 모달 */}
-      <CreatorApplicationModal 
+      <CreatorApplicationModal
         isOpen={isApplicationModalOpen}
         onClose={() => dispatch(closeApplicationModal())}
       />
-      
+
       {/* 크리에이터 상태 모달 */}
-      <CreatorStatusModal 
+      <CreatorStatusModal
         isOpen={isStatusModalOpen}
         onClose={() => dispatch(closeStatusModal())}
       />

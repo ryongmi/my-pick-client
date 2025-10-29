@@ -1,34 +1,64 @@
 // Core 패키지 타입 import
 import type { ResponseFormat, PaginatedResult } from '@krgeobuk/core/interfaces';
 
-// 기본 타입 정의
-export interface User {
+// UserProfile 타입 정의 (@krgeobuk/user 패키지가 설치되지 않아 임시로 정의)
+// TODO: @krgeobuk/user 패키지 설치 후 import로 변경
+export interface UserProfile {
   id: string;
   name: string;
   email: string;
+  phoneNumber?: string;
+  isEmailVerified: boolean;
   avatar?: string;
-  role: 'user' | 'admin' | 'premium';
+  oauthAccount: {
+    provider: 'google' | 'naver' | 'kakao';
+    providerId: string;
+    email: string;
+    name: string;
+    picture?: string;
+  };
+  roles?: Array<{
+    roleId: string;
+    roleName: string;
+    assignedAt: Date;
+  }>;
+  permissions?: Array<{
+    permissionId: string;
+    permissionName: string;
+    resource: string;
+    action: string;
+  }>;
+  services?: Array<{
+    serviceId: string;
+    serviceName: string;
+    hasAccess: boolean;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
 
-// Creator 타입 - 서버 구조에 맞게 수정
+// UserProfile을 User로 재export (하위 호환성)
+export type User = UserProfile;
+
+// Creator 타입 - 서버 CreatorSearchResultDto에 맞춤
 export interface Creator {
   id: string;
-  userId?: string; // 서버 필드 (선택적)
+  userId?: string;
   name: string;
-  displayName: string;
-  avatar?: string; // 선택적으로 변경
-  platforms?: Platform[]; // 서버에서는 별도 엔티티로 관리
   description?: string;
-  isVerified: boolean;
-  category: string; // 서버 필드 추가
-  tags?: string[]; // 서버 필드 추가
-  followerCount?: number; // 계산 필드로 변경
-  contentCount?: number; // 계산 필드로 변경
-  totalViews?: number; // 계산 필드로 변경
+  profileImageUrl?: string;
+  isActive: boolean;
+
+  // 통계 정보
+  subscriberCount?: number;
+  videoCount?: number;
+  totalViews?: number;
+
+  // 플랫폼 수
+  platformCount?: number;
+
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 // 크리에이터 상세 정보 (플랫폼 포함)
@@ -60,35 +90,68 @@ export interface Platform {
   lastSyncError?: string;
 }
 
-// Content 타입 - 서버 구조에 맞게 수정
+// 백엔드 Content 통계 정보 타입
+export interface ContentStatistics {
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  engagementRate: number;
+  updatedAt: string;
+}
+
+// 백엔드 Content 동기화 정보 타입
+export interface ContentSyncInfo {
+  lastSyncedAt?: string;
+  expiresAt?: string;
+  isAuthorizedData?: boolean;
+  syncError?: string;
+  syncRetryCount?: number;
+  nextSyncAt?: string;
+  syncStatus: 'pending' | 'syncing' | 'completed' | 'failed';
+}
+
+// Content 타입 - 백엔드 my-pick-server에 맞춤
 export interface Content {
   id: string;
-  type: 'youtube_video' | 'twitter_post' | 'instagram_post'; // 서버 필드
-  creator?: Creator; // 서버에서는 creatorId로 연결
-  creatorId: string; // 서버 필드
-  platform: Platform['type'];
-  platformId: string; // 서버 필드
+  type: 'youtube_video' | 'twitter_post' | 'instagram_post';
   title: string;
   description?: string;
-  thumbnail?: string;
+  thumbnail: string;
   url: string;
+  platform: 'youtube' | 'twitter' | 'instagram' | 'tiktok';
+  platformId: string;
+  duration?: number; // 초 단위
   publishedAt: string;
-  duration?: number; // 서버에서는 초 단위 number
-  // 통계 정보는 별도 엔티티로 분리됨
+  creatorId: string;
+
+  // 백엔드 메타데이터
+  language?: string;
+  isLive: boolean;
+  quality?: 'sd' | 'hd' | '4k';
+  ageRestriction: boolean;
+  status: 'active' | 'inactive' | 'under_review' | 'flagged' | 'removed';
+
+  // JSON 필드 (백엔드에서 통합 관리)
+  statistics?: ContentStatistics;
+  syncInfo?: ContentSyncInfo;
+
+  // 추가 정보 (클라이언트 전용 - 조인 결과)
+  creator?: Creator;
+
+  // 사용자 상호작용 정보 (TODO: UserInteraction 모듈 구현 후 추가)
+  isBookmarked?: boolean;
+  isLiked?: boolean;
+
+  // 편의를 위한 계산 필드 (statistics에서 추출)
   viewCount?: number;
   likeCount?: number;
   commentCount?: number;
-  shares?: number; // 서버 필드
-  engagementRate?: number; // 서버 필드
-  // 사용자 상호작용 정보
-  isBookmarked?: boolean;
-  isLiked?: boolean;
-  watchedAt?: Date;
-  watchDuration?: number;
-  rating?: number;
-  metadata?: ContentMetadata;
-  createdAt?: string;
-  updatedAt?: string;
+
+  // 타임스탬프
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
 }
 
 // ContentMetadata - 서버 구조에 맞게 확장

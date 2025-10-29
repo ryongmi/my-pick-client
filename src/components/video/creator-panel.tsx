@@ -31,7 +31,6 @@ const MOCK_CREATOR_DATA = {
   'ado': {
     id: 'ado',
     name: 'Ado',
-    displayName: 'Ado',
     avatar: '',
     subscriberCount: 7200000,
     totalViews: 890000000,
@@ -84,7 +83,6 @@ const MOCK_CREATOR_DATA = {
   'hikakin': {
     id: 'hikakin',
     name: '히카킨',
-    displayName: '히카킨',
     avatar: '',
     subscriberCount: 5400000,
     totalViews: 12000000000,
@@ -191,25 +189,14 @@ export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps): 
         const creatorToFollow = {
           id: creatorData.id,
           name: creatorData.name,
-          displayName: creatorData.displayName,
           avatar: creatorData.avatar,
-          category: 'entertainment', // 기본 카테고리 추가
-          platforms: [
-            {
-              type: 'youtube' as const,
-              platformId: creatorData.id,
-              username: creatorData.name,
-              url: creatorData.socialLinks.youtube,
-              isActive: true,
-              followerCount: creatorData.subscriberCount,
-              lastSync: new Date().toISOString(),
-            }
-          ],
           description: creatorData.description,
-          isVerified: creatorData.verified,
-          followerCount: creatorData.subscriberCount,
-          contentCount: creatorData.videoCount,
+          profileImageUrl: creatorData.avatar,
+          isActive: true,
+          subscriberCount: creatorData.subscriberCount,
+          videoCount: creatorData.videoCount,
           totalViews: creatorData.totalViews,
+          platformCount: 1,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -259,14 +246,14 @@ export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps): 
               "w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl",
               `bg-gradient-to-br ${creatorData.bannerColor}`
             )}>
-              {creatorData.displayName.charAt(0)}
+              {creatorData.name.charAt(0)}
             </div>
             
             <div className="flex-1">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h2 className="text-xl font-bold">{creatorData.displayName}</h2>
+                    <h2 className="text-xl font-bold">{creatorData.name}</h2>
                     {creatorData.verified ? <Badge variant="secondary" className="text-xs">
                         인증됨
                       </Badge> : null}

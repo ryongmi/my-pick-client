@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Content, ContentFilter } from '@/types';
-import { contentApi, errorUtils } from '@/lib/api';
+import { contentService } from '@/services';
 
 interface ContentState {
   // 콘텐츠 데이터
@@ -92,10 +92,10 @@ export const fetchContent = createAsyncThunk(
     sortBy?: string;
   } = {}, { rejectWithValue }) => {
     try {
-      const response = await contentApi.getContent(params);
+      const response = await contentService.getContent(params);
       return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
+      const errorMessage = error instanceof Error ? error.message : "콘텐츠 작업에 실패했습니다.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -112,10 +112,23 @@ export const fetchMoreContent = createAsyncThunk(
     sortBy?: string;
   }, { rejectWithValue }) => {
     try {
-      const response = await contentApi.getContent(params);
+      const response = await contentService.getContent(params);
       return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
+      const errorMessage = error instanceof Error ? error.message : "콘텐츠 작업에 실패했습니다.";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const fetchContentDetail = createAsyncThunk(
+  'content/fetchContentDetail',
+  async (contentId: string, { rejectWithValue }) => {
+    try {
+      const response = await contentService.getContentById(contentId);
+      return response;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "콘텐츠를 불러오는데 실패했습니다.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -128,10 +141,10 @@ export const fetchBookmarks = createAsyncThunk(
     limit?: number;
   } = {}, { rejectWithValue }) => {
     try {
-      const response = await contentApi.getBookmarks(params.page, params.limit);
+      const response = await contentService.getBookmarks(params.page, params.limit);
       return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
+      const errorMessage = error instanceof Error ? error.message : "콘텐츠 작업에 실패했습니다.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -141,10 +154,10 @@ export const bookmarkContent = createAsyncThunk(
   'content/bookmarkContent',
   async (id: string, { rejectWithValue }) => {
     try {
-      await contentApi.bookmarkContent(id);
+      await contentService.bookmarkContent(id);
       return id;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
+      const errorMessage = error instanceof Error ? error.message : "콘텐츠 작업에 실패했습니다.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -154,10 +167,10 @@ export const removeBookmark = createAsyncThunk(
   'content/removeBookmark',
   async (id: string, { rejectWithValue }) => {
     try {
-      await contentApi.removeBookmark(id);
+      await contentService.removeBookmark(id);
       return id;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
+      const errorMessage = error instanceof Error ? error.message : "콘텐츠 작업에 실패했습니다.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -167,10 +180,10 @@ export const likeContent = createAsyncThunk(
   'content/likeContent',
   async (id: string, { rejectWithValue }) => {
     try {
-      await contentApi.likeContent(id);
+      await contentService.likeContent(id);
       return id;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
+      const errorMessage = error instanceof Error ? error.message : "콘텐츠 작업에 실패했습니다.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -180,10 +193,10 @@ export const unlikeContent = createAsyncThunk(
   'content/unlikeContent',
   async (id: string, { rejectWithValue }) => {
     try {
-      await contentApi.unlikeContent(id);
+      await contentService.unlikeContent(id);
       return id;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error);
+      const errorMessage = error instanceof Error ? error.message : "콘텐츠 작업에 실패했습니다.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -242,26 +255,33 @@ const contentSlice = createSlice({
       .addCase(fetchContent.fulfilled, (state, action) => {
         state.isLoading = false;
         const payload = (action.payload as unknown) as {
-          data?: unknown[];
-          pagination?: {
-            hasNext?: boolean;
-            page?: number;
-            limit?: number;
-            total?: number;
-            totalPages?: number;
-            hasPrev?: boolean;
-          };
+          items?: unknown[];
+          totalItems?: number;
+          page?: number;
+          limit?: number;
+          totalPages?: number;
+          hasPreviousPage?: boolean;
+          hasNextPage?: boolean;
         };
-        state.contents = (payload.data as Content[]) || [];
+
+        // items를 contents로 매핑하고 viewCount 등 계산 필드 추가
+        const contents = (payload.items as Content[]) || [];
+        state.contents = contents.map(content => ({
+          ...content,
+          viewCount: content.statistics?.views || 0,
+          likeCount: content.statistics?.likes || 0,
+          commentCount: content.statistics?.comments || 0,
+        }));
+
         state.pagination = {
-          page: payload.pagination?.page || state.pagination.page,
-          limit: payload.pagination?.limit || state.pagination.limit,
-          total: payload.pagination?.total || state.pagination.total,
-          totalPages: payload.pagination?.totalPages || state.pagination.totalPages,
-          hasNext: payload.pagination?.hasNext || state.pagination.hasNext,
-          hasPrev: payload.pagination?.hasPrev || state.pagination.hasPrev
+          page: payload.page || 1,
+          limit: payload.limit || 20,
+          total: payload.totalItems || 0,
+          totalPages: payload.totalPages || 0,
+          hasNext: payload.hasNextPage || false,
+          hasPrev: payload.hasPreviousPage || false
         };
-        state.hasMore = payload.pagination?.hasNext || false;
+        state.hasMore = payload.hasNextPage || false;
       })
       .addCase(fetchContent.rejected, (state, action) => {
         state.isLoading = false;
@@ -304,27 +324,35 @@ const contentSlice = createSlice({
       .addCase(fetchMoreContent.fulfilled, (state, action) => {
         state.isLoadingMore = false;
         const payload = (action.payload as unknown) as {
-          data?: unknown[];
-          pagination?: {
-            hasNext?: boolean;
-            page?: number;
-            limit?: number;
-            total?: number;
-            totalPages?: number;
-            hasPrev?: boolean;
-          };
+          items?: unknown[];
+          totalItems?: number;
+          page?: number;
+          limit?: number;
+          totalPages?: number;
+          hasPreviousPage?: boolean;
+          hasNextPage?: boolean;
         };
+
+        // items를 contents로 매핑하고 viewCount 등 계산 필드 추가
+        const newContents = (payload.items as Content[]) || [];
+        const mappedContents = newContents.map(content => ({
+          ...content,
+          viewCount: content.statistics?.views || 0,
+          likeCount: content.statistics?.likes || 0,
+          commentCount: content.statistics?.comments || 0,
+        }));
+
         // 기존 콘텐츠에 새 콘텐츠 추가
-        state.contents = [...state.contents, ...((payload.data as Content[]) || [])];
+        state.contents = [...state.contents, ...mappedContents];
         state.pagination = {
-          page: payload.pagination?.page || state.pagination.page,
-          limit: payload.pagination?.limit || state.pagination.limit,
-          total: payload.pagination?.total || state.pagination.total,
-          totalPages: payload.pagination?.totalPages || state.pagination.totalPages,
-          hasNext: payload.pagination?.hasNext || state.pagination.hasNext,
-          hasPrev: payload.pagination?.hasPrev || state.pagination.hasPrev
+          page: payload.page || state.pagination.page,
+          limit: payload.limit || state.pagination.limit,
+          total: payload.totalItems || state.pagination.total,
+          totalPages: payload.totalPages || state.pagination.totalPages,
+          hasNext: payload.hasNextPage || false,
+          hasPrev: payload.hasPreviousPage || false
         };
-        state.hasMore = payload.pagination?.hasNext || false;
+        state.hasMore = payload.hasNextPage || false;
       })
       .addCase(fetchMoreContent.rejected, (state, action) => {
         state.isLoadingMore = false;
@@ -340,25 +368,58 @@ const contentSlice = createSlice({
       .addCase(fetchBookmarks.fulfilled, (state, action) => {
         state.isLoadingBookmarks = false;
         const payload = (action.payload as unknown) as {
-          data?: unknown[];
-          pagination?: {
-            page?: number;
-            limit?: number;
-            total?: number;
-            hasNext?: boolean;
-          };
+          items?: unknown[];
+          totalItems?: number;
+          page?: number;
+          limit?: number;
+          totalPages?: number;
+          hasPreviousPage?: boolean;
+          hasNextPage?: boolean;
         };
-        state.bookmarkedContents = (payload.data as Content[]) || [];
+
+        // items를 bookmarkedContents로 매핑하고 viewCount 등 계산 필드 추가
+        const bookmarks = (payload.items as Content[]) || [];
+        state.bookmarkedContents = bookmarks.map(content => ({
+          ...content,
+          viewCount: content.statistics?.views || 0,
+          likeCount: content.statistics?.likes || 0,
+          commentCount: content.statistics?.comments || 0,
+        }));
+
         state.bookmarkPagination = {
-          page: payload.pagination?.page || state.bookmarkPagination.page,
-          limit: payload.pagination?.limit || state.bookmarkPagination.limit,
-          total: payload.pagination?.total || state.bookmarkPagination.total,
-          hasNext: payload.pagination?.hasNext || state.bookmarkPagination.hasNext
+          page: payload.page || state.bookmarkPagination.page,
+          limit: payload.limit || state.bookmarkPagination.limit,
+          total: payload.totalItems || state.bookmarkPagination.total,
+          hasNext: payload.hasNextPage || state.bookmarkPagination.hasNext
         };
       })
       .addCase(fetchBookmarks.rejected, (state, action) => {
         state.isLoadingBookmarks = false;
         state.error = action.payload as string;
+      })
+
+    // Fetch content detail
+    builder
+      .addCase(fetchContentDetail.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchContentDetail.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const content = action.payload as Content;
+
+        // selectedContent에 저장하고 계산 필드 추가
+        state.selectedContent = {
+          ...content,
+          viewCount: content.statistics?.views || 0,
+          likeCount: content.statistics?.likes || 0,
+          commentCount: content.statistics?.comments || 0,
+        };
+      })
+      .addCase(fetchContentDetail.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+        state.selectedContent = null;
       });
   },
 });

@@ -25,10 +25,11 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { followCreator, unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
 import { mockGetFollowedCreators } from '@/data/creators';
 import { cn, formatNumber, formatDate } from '@/lib/utils';
-import type { Creator } from '@/types';
+import type { Creator, Content } from '@/types';
 
 interface VideoInfoProps {
   videoId: string;
+  content?: Content;
 }
 
 // Mock 데이터 (실제로는 API에서 가져옴)
@@ -83,7 +84,7 @@ const MOCK_VIDEO_DATA = {
   },
 };
 
-export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
+export function VideoInfo({ videoId, content }: VideoInfoProps): JSX.Element {
   const dispatch = useAppDispatch();
   const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -91,18 +92,18 @@ export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showMoreActions, setShowMoreActions] = useState(false);
 
-  // Mock 데이터에서 비디오 정보 가져오기
-  const videoData = MOCK_VIDEO_DATA[videoId as keyof typeof MOCK_VIDEO_DATA];
+  // Content prop이 있으면 사용, 없으면 Mock 데이터 사용 (하위 호환)
+  const videoData = content || MOCK_VIDEO_DATA[videoId as keyof typeof MOCK_VIDEO_DATA];
 
   // 현재 크리에이터의 구독 상태 확인
-  const isFollowingCreator = videoData ? followedCreators.some(
-    creator => creator.id === videoData.creator.id
+  const isFollowingCreator = videoData?.creator ? followedCreators.some(
+    creator => creator.id === videoData.creator?.id
   ) : false;
 
   useEffect(() => {
     if (videoData) {
-      setIsBookmarked(videoData.isBookmarked);
-      setIsLiked(videoData.isLiked);
+      setIsBookmarked(videoData.isBookmarked || false);
+      setIsLiked(videoData.isLiked || false);
     }
   }, [videoData]);
 
@@ -153,11 +154,11 @@ export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
   const handleCreatorClick = (): void => {
     // TODO: 크리에이터 프로필 페이지로 이동
     // eslint-disable-next-line no-console
-    console.log('크리에이터 프로필로 이동:', videoData.creator.id);
+    console.log('크리에이터 프로필로 이동:', videoData?.creator?.id);
   };
 
   const handleSubscribe = async (): Promise<void> => {
-    if (!videoData) {return;}
+    if (!videoData || !videoData.creator) {return;}
 
     try {
       if (isFollowingCreator) {
@@ -165,32 +166,21 @@ export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
         await dispatch(unfollowCreator(videoData.creator.id)).unwrap();
       } else {
         // 구독
+        const creator = videoData.creator;
         const creatorToFollow = {
-          id: videoData.creator.id,
-          name: videoData.creator.name,
-          displayName: videoData.creator.displayName,
-          avatar: videoData.creator.avatar,
-          category: 'entertainment', // 기본 카테고리 추가
-          platforms: [
-            {
-              type: 'youtube' as const,
-              platformId: videoData.creator.id,
-              username: videoData.creator.name,
-              url: `https://youtube.com/@${videoData.creator.name}`,
-              isActive: true,
-              followerCount: videoData.creator.subscriberCount,
-              lastSync: new Date().toISOString(),
-            }
-          ],
-          description: `${videoData.creator.displayName}의 채널`,
-          isVerified: videoData.creator.verified,
-          followerCount: videoData.creator.subscriberCount,
-          contentCount: 0,
+          id: creator.id,
+          name: creator.name,
+          profileImageUrl: ('profileImageUrl' in creator ? creator.profileImageUrl : undefined) || '',
+          isActive: true,
+          description: ('description' in creator ? creator.description : undefined) || `${creator.name}의 채널`,
+          subscriberCount: ('subscriberCount' in creator ? creator.subscriberCount : 0),
+          videoCount: 0,
           totalViews: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          platformCount: 1,
+          createdAt: ('createdAt' in creator ? creator.createdAt : undefined) || new Date().toISOString(),
+          updatedAt: ('updatedAt' in creator ? creator.updatedAt : undefined) || new Date().toISOString(),
         };
-        
+
         await dispatch(followCreator(creatorToFollow)).unwrap();
       }
 
@@ -204,9 +194,9 @@ export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
     }
   };
 
-  const truncatedDescription = videoData.description.length > 200 
+  const truncatedDescription = videoData?.description && videoData.description.length > 200
     ? videoData.description.substring(0, 200) + '...'
-    : videoData.description;
+    : (videoData?.description || '');
 
   return (
     <div className="space-y-6">
@@ -238,7 +228,7 @@ export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
               <Youtube className="h-3 w-3 mr-1" />
               YouTube
             </Badge>
-            <Badge variant="outline">{videoData.category}</Badge>
+            {'category' in videoData && videoData.category && <Badge variant="outline">{videoData.category}</Badge>}
           </div>
 
           {/* 액션 버튼들 */}
@@ -288,7 +278,7 @@ export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open(videoData.originalUrl, '_blank')}
+              onClick={() => window.open(('url' in videoData ? videoData.url : '') || ('originalUrl' in videoData ? videoData.originalUrl : ''), '_blank')}
               className="flex items-center gap-2"
             >
               <Youtube className="h-4 w-4" />
@@ -341,25 +331,29 @@ export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
       {/* 크리에이터 정보 */}
       <Card className="p-6">
         <div className="flex items-start justify-between">
-          <div 
-            className="flex items-start gap-4 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={handleCreatorClick}
-          >
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold">
-              {videoData.creator.displayName.charAt(0)}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-lg">{videoData.creator.displayName}</h3>
-                {videoData.creator.verified ? <Badge variant="secondary" className="text-xs">
-                    인증됨
-                  </Badge> : null}
+          {videoData.creator && (
+            <div
+              className="flex items-start gap-4 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={handleCreatorClick}
+            >
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold">
+                {videoData.creator.name.charAt(0)}
               </div>
-              <p className="text-sm text-muted-foreground">
-                구독자 {formatNumber(videoData.creator.subscriberCount)}명
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-lg">{videoData.creator.name}</h3>
+                  {('verified' in videoData.creator ? videoData.creator.verified : videoData.creator.isActive) && (
+                    <Badge variant="secondary" className="text-xs">
+                      인증됨
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  구독자 {formatNumber(('subscriberCount' in videoData.creator ? videoData.creator.subscriberCount : videoData.creator.subscriberCount) || 0)}명
+                </p>
+              </div>
             </div>
-          </div>
+          )}
           
           <Button 
             size="sm"
@@ -388,47 +382,51 @@ export function VideoInfo({ videoId }: VideoInfoProps): JSX.Element {
           <h3 className="font-semibold">설명</h3>
           
           {/* 태그 */}
-          <div>
-            <h4 className="text-sm font-medium mb-2 flex items-center">
-              <Tag className="h-4 w-4 mr-1" />
-              태그
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {videoData.tags.map((tag, index) => (
-                <Badge key={index} variant="outline" className="cursor-pointer hover:bg-accent">
-                  #{tag}
-                </Badge>
-              ))}
+          {'tags' in videoData && videoData.tags && videoData.tags.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium mb-2 flex items-center">
+                <Tag className="h-4 w-4 mr-1" />
+                태그
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {videoData.tags.map((tag, index) => (
+                  <Badge key={index} variant="outline" className="cursor-pointer hover:bg-accent">
+                    #{tag}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <Separator />
 
           {/* 설명 텍스트 */}
-          <div className="space-y-2">
-            <p className="text-sm leading-relaxed whitespace-pre-line">
-              {showFullDescription ? videoData.description : truncatedDescription}
-            </p>
-            
-            {videoData.description.length > 200 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowFullDescription(!showFullDescription)}
-                className="p-0 h-auto text-primary hover:underline flex items-center"
-              >
-                {showFullDescription ? (
-                  <>
-                    접기 <ChevronUp className="h-3 w-3 ml-1" />
-                  </>
-                ) : (
-                  <>
-                    더보기 <ChevronDown className="h-3 w-3 ml-1" />
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
+          {videoData.description && (
+            <div className="space-y-2">
+              <p className="text-sm leading-relaxed whitespace-pre-line">
+                {showFullDescription ? videoData.description : truncatedDescription}
+              </p>
+
+              {videoData.description.length > 200 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowFullDescription(!showFullDescription)}
+                  className="p-0 h-auto text-primary hover:underline flex items-center"
+                >
+                  {showFullDescription ? (
+                    <>
+                      접기 <ChevronUp className="h-3 w-3 ml-1" />
+                    </>
+                  ) : (
+                    <>
+                      더보기 <ChevronDown className="h-3 w-3 ml-1" />
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </Card>
     </div>

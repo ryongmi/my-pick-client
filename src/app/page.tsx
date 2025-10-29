@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Eye, Clock, Heart, Bookmark, Play, Youtube, Twitter, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -75,12 +76,12 @@ export default function HomePage(): JSX.Element {
     console.log('[DEBUG] Fetching content with filters:', {
       creators: filters.selectedCreators,
       platforms: [selectedPlatform],
-      sortBy: 'newest'
+      // sortBy: 'newest'
     });
     dispatch(fetchContent({
       creators: filters.selectedCreators,
       platforms: [selectedPlatform],
-      sortBy: 'newest'
+      // sortBy: 'newest'
     }));
   }, [dispatch, filters.selectedCreators, selectedPlatform]);
 
@@ -149,7 +150,7 @@ export default function HomePage(): JSX.Element {
   // 크리에이터 이름을 정확히 가져오는 함수
   const getCreatorDisplayName = (creatorId: string): string => {
     const creator = followedCreators.find(c => c.id === creatorId);
-    return creator?.displayName || creatorId;
+    return creator?.name || creatorId;
   };
 
   // 필터 초기화 함수
@@ -235,7 +236,6 @@ export default function HomePage(): JSX.Element {
     creator?: {
       id: string;
       name: string;
-      displayName: string;
       avatar?: string;
     };
     publishedAt: string;
@@ -252,9 +252,25 @@ export default function HomePage(): JSX.Element {
             <div className="flex flex-col sm:flex-row">
               {/* 썸네일 */}
               <div className="relative w-full sm:w-64 h-48 sm:h-36 flex-shrink-0">
-                <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Play className="h-12 w-12 text-white" />
-                </div>
+                {content.thumbnail ? (
+                  <div className="w-full h-full relative overflow-hidden group-hover:scale-105 transition-transform">
+                    <Image
+                      src={content.thumbnail}
+                      alt={content.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 256px"
+                      priority={false}
+                    />
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Play className="h-12 w-12 text-white drop-shadow-lg" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Play className="h-12 w-12 text-white" />
+                  </div>
+                )}
                 <span className="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-1 rounded">
                   {content.duration}
                 </span>
@@ -275,9 +291,9 @@ export default function HomePage(): JSX.Element {
                         'w-6 h-6 rounded-full mr-2 flex items-center justify-center text-white text-xs font-bold',
                         content.creator?.id === 'ado' ? 'gradient-ado' : 'gradient-hikakin'
                       )}>
-                        {content.creator?.displayName?.charAt(0) || '?'}
+                        {content.creator?.name?.charAt(0) || '?'}
                       </div>
-                      <span className="font-medium">{content.creator?.displayName || 'Unknown'}</span>
+                      <span className="font-medium">{content.creator?.name || 'Unknown'}</span>
                     </div>
                     <div className="flex items-center">
                       <Eye className="h-3 w-3 mr-1" />
@@ -343,12 +359,12 @@ export default function HomePage(): JSX.Element {
               'w-12 h-12 rounded-full mr-3 flex-shrink-0 flex items-center justify-center text-white font-bold',
               content.creator?.id === 'ado' ? 'gradient-ado' : 'gradient-hikakin'
             )}>
-              {content.creator?.displayName?.charAt(0) || '?'}
+              {content.creator?.name?.charAt(0) || '?'}
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center flex-wrap">
-                  <h4 className="font-bold mr-2">{content.creator?.displayName || 'Unknown'}</h4>
+                  <h4 className="font-bold mr-2">{content.creator?.name || 'Unknown'}</h4>
                   <span className="text-muted-foreground text-sm">@{content.creator?.name || 'unknown'}</span>
                   <div className="flex items-center ml-3 text-sm text-muted-foreground">
                     <Clock className="h-3 w-3 mr-1" />

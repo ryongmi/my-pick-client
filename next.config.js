@@ -4,6 +4,51 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  images: {
+    remotePatterns: [
+      // 기존 외부 이미지 직접 접근 (fallback)
+      // {
+      //   protocol: 'https',
+      //   hostname: 'i.ytimg.com',
+      //   pathname: '/**',
+      // },
+      // {
+      //   protocol: 'https',
+      //   hostname: 'yt3.ggpht.com',
+      //   pathname: '/**',
+      // },
+      // {
+      //   protocol: 'https',
+      //   hostname: 'pbs.twimg.com',
+      //   pathname: '/**',
+      // },
+      // {
+      //   protocol: 'https',
+      //   hostname: 'abs.twimg.com',
+      //   pathname: '/**',
+      // },
+      // my-pick-server 프록시 (로컬 개발) - 포트 8200
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '8000',
+        pathname: '/api/proxy/image',
+      },
+      // my-pick-server 프록시 (로컬 개발) - 포트 8300
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '8300',
+        pathname: '/api/proxy/image',
+      },
+      // my-pick-server 프록시 (프로덕션 - 필요 시 주석 해제)
+      // {
+      //   protocol: 'https',
+      //   hostname: 'api.mypick.com',
+      //   pathname: '/api/proxy/image',
+      // },
+    ],
+  },
 };
 
 export default nextConfig;

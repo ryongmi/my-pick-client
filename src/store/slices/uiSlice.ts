@@ -4,8 +4,6 @@ import { Notification } from '@/types';
 interface UIState {
   // 사이드바 및 네비게이션
   sidebarOpen: boolean;
-  adminSidebarOpen: boolean;
-  currentView: 'user' | 'admin' | 'profile';
   
   // 모달 및 드롭다운
   activeModal: string | null;
@@ -22,11 +20,10 @@ interface UIState {
   // 알림
   notifications: Notification[];
   unreadCount: number;
-  
-  // 테마 및 설정
-  theme: 'light' | 'dark' | 'auto';
+
+  // 설정
   language: string;
-  
+
   // 필터 상태
   filters: {
     selectedCreators: string[];
@@ -48,8 +45,6 @@ interface UIState {
 
 const initialState: UIState = {
   sidebarOpen: true,
-  adminSidebarOpen: true,
-  currentView: 'user',
   activeModal: null,
   dropdowns: {
     dashboard: false,
@@ -60,7 +55,6 @@ const initialState: UIState = {
   globalLoading: false,
   notifications: [],
   unreadCount: 0,
-  theme: 'light',
   language: 'ko',
   filters: {
     selectedCreators: ['all'],
@@ -82,25 +76,6 @@ const uiSlice = createSlice({
     },
     setSidebarOpen: (state, action: PayloadAction<boolean>) => {
       state.sidebarOpen = action.payload;
-    },
-    
-    // 관리자 사이드바 토글
-    toggleAdminSidebar: (state) => {
-      state.adminSidebarOpen = !state.adminSidebarOpen;
-    },
-    setAdminSidebarOpen: (state, action: PayloadAction<boolean>) => {
-      state.adminSidebarOpen = action.payload;
-    },
-    
-    // 현재 뷰 변경
-    setCurrentView: (state, action: PayloadAction<'user' | 'admin' | 'profile'>) => {
-      state.currentView = action.payload;
-      // 뷰 변경 시 모든 드롭다운 닫기
-      state.dropdowns = {
-        dashboard: false,
-        notification: false,
-        profile: false,
-      };
     },
     
     // 모달 관리
@@ -166,15 +141,12 @@ const uiSlice = createSlice({
     setUnreadCount: (state, action: PayloadAction<number>) => {
       state.unreadCount = action.payload;
     },
-    
-    // 테마 및 설정
-    setTheme: (state, action: PayloadAction<'light' | 'dark' | 'auto'>) => {
-      state.theme = action.payload;
-    },
+
+    // 설정
     setLanguage: (state, action: PayloadAction<string>) => {
       state.language = action.payload;
     },
-    
+
     // 필터 관리
     setCreatorFilter: (state, action: PayloadAction<string[]>) => {
       state.filters.selectedCreators = action.payload;
@@ -203,7 +175,6 @@ const uiSlice = createSlice({
       // 모바일에서는 사이드바 기본적으로 닫기
       if (action.payload) {
         state.sidebarOpen = false;
-        state.adminSidebarOpen = false;
       }
     },
     
@@ -227,9 +198,6 @@ const uiSlice = createSlice({
 export const {
   toggleSidebar,
   setSidebarOpen,
-  toggleAdminSidebar,
-  setAdminSidebarOpen,
-  setCurrentView,
   openModal,
   closeModal,
   toggleDropdown,
@@ -241,7 +209,6 @@ export const {
   markAllNotificationsAsRead,
   setNotifications,
   setUnreadCount,
-  setTheme,
   setLanguage,
   setCreatorFilter,
   setPlatformFilter,
