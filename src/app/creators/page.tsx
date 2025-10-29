@@ -105,7 +105,7 @@ export default function CreatorsPage(): JSX.Element {
     }
   };
 
-  const _getPlatformIcon = (platformType: string): JSX.Element | null => {
+  const getPlatformIcon = (platformType: string): JSX.Element | null => {
     switch (platformType) {
       case 'youtube':
         return <Youtube className="h-4 w-4 text-red-600" />;
@@ -244,10 +244,18 @@ export default function CreatorsPage(): JSX.Element {
                                   <p className="text-sm text-muted-foreground">
                                     구독자 {formatNumber(creator.subscriberCount || 0)} • {creator.videoCount || 0}개 영상
                                   </p>
-                                  {creator.platformCount && creator.platformCount > 0 && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {creator.platformCount}개 플랫폼
-                                    </p>
+                                  {creator.platforms && creator.platforms.length > 0 && (
+                                    <div className="flex items-center gap-1 mt-1">
+                                      {creator.platforms.map((platform) => (
+                                        <div
+                                          key={platform.platformId}
+                                          title={`${platform.platformType.toUpperCase()}${platform.platformUsername ? ` - ${platform.platformUsername}` : ''}`}
+                                          className="cursor-help"
+                                        >
+                                          {getPlatformIcon(platform.platformType)}
+                                        </div>
+                                      ))}
+                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -312,6 +320,19 @@ export default function CreatorsPage(): JSX.Element {
                         <p className="text-xs text-muted-foreground">
                           {formatNumber(creator.subscriberCount || 0)} 구독자
                         </p>
+                        {creator.platforms && creator.platforms.length > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            {creator.platforms.map((platform) => (
+                              <div
+                                key={platform.platformId}
+                                title={`${platform.platformType.toUpperCase()}${platform.platformUsername ? ` - ${platform.platformUsername}` : ''}`}
+                                className="cursor-help"
+                              >
+                                {getPlatformIcon(platform.platformType)}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <Button

@@ -40,6 +40,14 @@ export interface UserProfile {
 // UserProfile을 User로 재export (하위 호환성)
 export type User = UserProfile;
 
+// 플랫폼 정보 타입 - 서버 PlatformInfo DTO에 맞춤
+export interface PlatformInfo {
+  platformType: 'youtube' | 'twitter';
+  platformId: string;
+  platformUsername?: string;
+  platformUrl?: string;
+}
+
 // Creator 타입 - 서버 CreatorSearchResultDto에 맞춤
 export interface Creator {
   id: string;
@@ -54,16 +62,17 @@ export interface Creator {
   videoCount?: number;
   totalViews?: number;
 
-  // 플랫폼 수
-  platformCount?: number;
+  // 플랫폼 정보
+  platformCount?: number; // 하위 호환성 유지
+  platforms?: PlatformInfo[]; // 실제 플랫폼 데이터
 
   createdAt: string;
   updatedAt?: string;
 }
 
-// 크리에이터 상세 정보 (플랫폼 포함)
-export interface CreatorWithPlatforms extends Creator {
-  platforms: Platform[];
+// 크리에이터 상세 정보 (플랫폼 상세 포함)
+export interface CreatorWithPlatforms extends Omit<Creator, 'platforms'> {
+  platforms: Platform[]; // 더 상세한 Platform 타입 사용
 }
 
 // Platform 타입 - 서버 구조에 맞게 확장
