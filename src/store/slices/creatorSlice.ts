@@ -73,9 +73,9 @@ export const fetchCreators = createAsyncThunk(
   async (params: {
     page?: number;
     limit?: number;
-    search?: string;
+    name?: string;
     platform?: string;
-    sortBy?: string;
+    orderBy?: string;
   } = {}, { rejectWithValue }) => {
     try {
       const response = await creatorService.getCreators(params);
@@ -93,9 +93,9 @@ export const fetchMoreCreators = createAsyncThunk(
   async (params: {
     page: number;
     limit?: number;
-    search?: string;
+    name?: string;
     platform?: string;
-    sortBy?: string;
+    orderBy?: string;
   }, { rejectWithValue }) => {
     try {
       const response = await creatorService.getCreators(params);
@@ -275,7 +275,6 @@ const creatorSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCreators.fulfilled, (state, action) => {
-        console.log('fetchCreators.fulfilled', action.payload);
         state.isLoading = false;
         const payload = action.payload as {
           items?: Creator[];
@@ -312,7 +311,6 @@ const creatorSlice = createSlice({
         state.isLoadingMore = true;
       })
       .addCase(fetchMoreCreators.fulfilled, (state, action) => {
-        console.log('fetchMoreCreators.fulfilled', action.payload);
         state.isLoadingMore = false;
         const payload = action.payload as {
           items?: Creator[];

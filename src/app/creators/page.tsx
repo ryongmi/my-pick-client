@@ -16,7 +16,7 @@ export default function CreatorsPage(): JSX.Element {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Creator[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('followers');
+  const [orderBy, setOrderBy] = useState<string>('followers');
   
   const dispatch = useAppDispatch();
   const { creators, followedCreators, isLoading, isFollowing } = useAppSelector(state => state.creator);
@@ -27,7 +27,7 @@ export default function CreatorsPage(): JSX.Element {
       try {
         // Redux를 통해 크리에이터 데이터 로드
         await dispatch(fetchCreators({ 
-          sortBy: sortBy, 
+          orderBy: orderBy, 
           platform: selectedPlatform 
         })).unwrap();
         
@@ -39,7 +39,7 @@ export default function CreatorsPage(): JSX.Element {
       }
     };
     void loadInitialData();
-  }, [dispatch, sortBy, selectedPlatform]);
+  }, [dispatch, orderBy, selectedPlatform]);
 
   // 구독 상태 변경 이벤트 리스너
   useEffect(() => {
@@ -62,10 +62,10 @@ export default function CreatorsPage(): JSX.Element {
     try {
       // Redux를 통해 검색
       const response = await dispatch(fetchCreators({
-        search: searchTerm,
+        name: searchTerm,
         platform: selectedPlatform,
-        sortBy: sortBy,
-        limit: 10
+        orderBy: orderBy,
+        limit: 15
       })).unwrap();
       setSearchResults((response.items as Creator[]) || []);
     } catch (_error) {
@@ -178,8 +178,8 @@ export default function CreatorsPage(): JSX.Element {
                 <option value="twitter">Twitter</option>
               </select>
               <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                value={orderBy}
+                onChange={(e) => setOrderBy(e.target.value)}
                 className="px-3 py-2 border border-input rounded-md"
               >
                 <option value="followers">팔로워 순</option>
