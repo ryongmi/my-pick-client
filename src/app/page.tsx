@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, Clock, Heart, Bookmark, Play, Youtube, Twitter, User } from 'lucide-react';
@@ -12,9 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { setPlatformFilter, clearFilters } from '@/store/slices/uiSlice';
 import { setSelectedPlatform, selectSelectedPlatform } from '@/store/slices/platformSlice';
-import { updateFollowedCreators } from '@/store/slices/creatorSlice';
-import { mockGetFollowedCreators } from '@/data/creators';
-import { Creator } from '@/types';
+import { fetchCreators } from '@/store/slices/creatorSlice';
 import {
   fetchContent,
   fetchMoreContent,
@@ -35,9 +33,14 @@ export default function HomePage(): JSX.Element {
   const { filters } = useUI();
   const { contents, isLoading, hasMore, isLoadingMore, pagination } = useContent();
   const { isLoggedIn, user, loading, isAuthenticated } = useAuth();
-  const { followedCreators } = useAppSelector(state => state.creator);
+  const { creators } = useAppSelector(state => state.creator);
   const selectedPlatform = useAppSelector(selectSelectedPlatform);
   const loadingRef = useRef<HTMLDivElement>(null);
+
+  // isSubscribed 필드를 기반으로 구독 중인 크리에이터 필터링
+  const followedCreators = useMemo(() => {
+    return creators.filter(creator => creator.isSubscribed === true);
+  }, [creators]);
 
   // 인증 상태 디버깅
   useEffect(() => {
@@ -61,14 +64,13 @@ export default function HomePage(): JSX.Element {
 
   // 팔로우한 크리에이터 초기 로드
   useEffect(() => {
-    if (followedCreators.length === 0) {
+    if (creators.length === 0) {
       const loadFollowed = async (): Promise<void> => {
-        const followed = await mockGetFollowedCreators();
-        dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
+        await dispatch(fetchCreators({})).unwrap();
       };
       loadFollowed();
     }
-  }, [dispatch, followedCreators.length]);
+  }, [dispatch, creators.length]);
 
   // 컴포넌트 마운트 시 콘텐츠 로드
   useEffect(() => {

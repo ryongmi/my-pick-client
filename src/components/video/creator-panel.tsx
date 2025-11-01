@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
-  Play, 
-  Eye, 
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Play,
+  Eye,
   ExternalLink,
   Bell,
   BellOff,
@@ -16,10 +16,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { followCreator, unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
-import { mockGetFollowedCreators } from '@/data/creators';
+import { followCreator, unfollowCreator, fetchCreators } from '@/store/slices/creatorSlice';
 import { cn, formatNumber, formatDate } from '@/lib/utils';
-import type { Creator } from '@/types';
+// import type { Creator } from '@/types';
 
 interface CreatorPanelProps {
   creatorId: string;
@@ -136,29 +135,35 @@ const MOCK_CREATOR_DATA = {
 
 export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps): JSX.Element {
   const dispatch = useAppDispatch();
-  const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
+  const { creators, isFollowing } = useAppSelector(state => state.creator);
   const [notificationEnabled, setNotificationEnabled] = useState(false);
   const [showAllVideos, setShowAllVideos] = useState(false);
+
+  // isSubscribed 필드를 기반으로 구독 중인 크리에이터 필터링
+  const followedCreators = useMemo(() => {
+    return creators.filter(creator => creator.isSubscribed === true);
+  }, [creators]);
 
   // Mock 데이터에서 크리에이터 정보 가져오기
   const creatorData = MOCK_CREATOR_DATA[creatorId as keyof typeof MOCK_CREATOR_DATA];
 
   // 현재 크리에이터의 구독 상태 확인
-  const isFollowingCreator = creatorData ? followedCreators.some(
-    creator => creator.id === creatorData.id
-  ) : false;
+  const isFollowingCreator = useMemo(() => {
+    return creatorData ? followedCreators.some(
+      creator => creator.id === creatorData.id
+    ) : false;
+  }, [creatorData, followedCreators]);
 
   // 구독한 크리에이터 목록 초기 로드
   useEffect(() => {
     const loadFollowedCreators = async (): Promise<void> => {
-      const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
+      await dispatch(fetchCreators({})).unwrap();
     };
-    
-    if (followedCreators.length === 0) {
+
+    if (creators.length === 0) {
       loadFollowedCreators();
     }
-  }, [dispatch, followedCreators.length]);
+  }, [dispatch, creators.length]);
 
   useEffect(() => {
     // 구독 중인 크리에이터의 경우 알림 설정 상태 확인

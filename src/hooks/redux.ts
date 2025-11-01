@@ -20,7 +20,6 @@ export const useIsLoading = (): boolean => useAppSelector((state) => state.auth.
 export const useSidebarOpen = (): boolean => useAppSelector((state) => state.ui.sidebarOpen);
 export const useFilters = (): RootState['ui']['filters'] => useAppSelector((state) => state.ui.filters);
 
-export const useFollowedCreators = (): RootState['creator']['followedCreators'] => useAppSelector((state) => state.creator.followedCreators);
 export const useSelectedCreator = (): RootState['creator']['selectedCreator'] => useAppSelector((state) => state.creator.selectedCreator);
 
 export const useContents = (): RootState['content']['contents'] => useAppSelector((state) => state.content.contents);

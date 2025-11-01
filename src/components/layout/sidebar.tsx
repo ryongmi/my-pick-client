@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Plus } from 'lucide-react';
@@ -8,40 +8,25 @@ import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useUI } from '@/hooks/redux';
 import { setCreatorFilter, setSidebarOpen } from '@/store/slices/uiSlice';
-import { updateFollowedCreators } from '@/store/slices/creatorSlice';
+import { fetchCreators } from '@/store/slices/creatorSlice';
 import { cn } from '@/lib/utils';
-import { Creator } from '@/types';
-import { mockGetFollowedCreators } from '@/data/creators';
-
-const _MOCK_CREATORS = [
-  {
-    id: 'ado',
-    name: 'Ado',
-    avatar: '',
-    platforms: ['youtube', 'twitter'],
-    newContentCount: 5,
-  },
-  {
-    id: 'hikakin',
-    name: '히카킨',
-    avatar: '',
-    platforms: ['youtube', 'twitter'],
-    newContentCount: 2,
-  },
-];
 
 export function Sidebar(): JSX.Element {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { sidebarOpen, filters, isMobile } = useUI();
-  const { followedCreators } = useAppSelector(state => state.creator);
+  const { creators } = useAppSelector(state => state.creator);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // isSubscribed 필드를 기반으로 구독 중인 크리에이터 필터링
+  const followedCreators = useMemo(() => {
+    return creators.filter(creator => creator.isSubscribed === true);
+  }, [creators]);
 
   // 구독 중인 크리에이터 로드
   useEffect(() => {
     const loadFollowedCreators = async (): Promise<void> => {
-      const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
+      await dispatch(fetchCreators({})).unwrap();
     };
     loadFollowedCreators();
 

@@ -66,6 +66,9 @@ export interface Creator {
   platformCount?: number; // 하위 호환성 유지
   platforms?: PlatformInfo[]; // 실제 플랫폼 데이터
 
+  // 구독 여부 (로그인 시에만 포함)
+  isSubscribed?: boolean;
+
   createdAt: string;
   updatedAt?: string;
 }

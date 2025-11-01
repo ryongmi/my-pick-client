@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, Plus, Users, Youtube, Twitter, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { fetchCreators, followCreator, unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
-import { mockGetFollowedCreators } from '@/data/creators';
+import { fetchCreators, followCreator, unfollowCreator } from '@/store/slices/creatorSlice';
 import { Creator } from '@/types';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 
@@ -17,23 +16,24 @@ export default function CreatorsPage(): JSX.Element {
   const [searchResults, setSearchResults] = useState<Creator[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
   const [orderBy, setOrderBy] = useState<string>('followers');
-  
+
   const dispatch = useAppDispatch();
-  const { creators, followedCreators, isLoading, isFollowing } = useAppSelector(state => state.creator);
+  const { creators, isLoading, isFollowing } = useAppSelector(state => state.creator);
+
+  // isSubscribed 필드를 기반으로 구독 중인 크리에이터 필터링
+  const followedCreators = useMemo(() => {
+    return creators.filter(creator => creator.isSubscribed === true);
+  }, [creators]);
 
   // 초기 데이터 로드
   useEffect(() => {
     const loadInitialData = async (): Promise<void> => {
       try {
-        // Redux를 통해 크리에이터 데이터 로드
-        await dispatch(fetchCreators({ 
-          orderBy: orderBy, 
-          platform: selectedPlatform 
+        // Redux를 통해 크리에이터 데이터 로드 (isSubscribed 필드 포함)
+        await dispatch(fetchCreators({
+          orderBy: orderBy,
+          platform: selectedPlatform
         })).unwrap();
-        
-        // 팔로우된 크리에이터 데이터 로드 (mock에서 가져와서 Redux에 저장)
-        const followed = await mockGetFollowedCreators();
-        dispatch(updateFollowedCreators(followed.data as Creator[]));
       } catch (_error) {
         // 초기 데이터 로드 실패
       }
@@ -41,16 +41,19 @@ export default function CreatorsPage(): JSX.Element {
     void loadInitialData();
   }, [dispatch, orderBy, selectedPlatform]);
 
-  // 구독 상태 변경 이벤트 리스너
+  // 구독 상태 변경 이벤트 리스너 (다른 컴포넌트에서 발생한 변경사항 동기화)
   useEffect(() => {
     const handleFollowChange = async (): Promise<void> => {
-      const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators(followed.data as Creator[]));
+      // 크리에이터 목록 다시 조회하여 isSubscribed 상태 최신화
+      await dispatch(fetchCreators({
+        orderBy: orderBy,
+        platform: selectedPlatform
+      })).unwrap();
     };
 
     window.addEventListener('followersChanged', handleFollowChange);
     return (): void => window.removeEventListener('followersChanged', handleFollowChange);
-  }, [dispatch]);
+  }, [dispatch, orderBy, selectedPlatform]);
 
   // 검색 함수
   const handleSearch = async (): Promise<void> => {
@@ -89,15 +92,21 @@ export default function CreatorsPage(): JSX.Element {
 
   // 팔로우/언팔로우
   const handleFollowToggle = async (creator: Creator): Promise<void> => {
-    const isFollowed = followedCreators.some(c => c.id === creator.id);
-    
+    const isFollowed = creator.isSubscribed === true;
+
     try {
       if (isFollowed) {
         await dispatch(unfollowCreator(creator.id)).unwrap();
       } else {
         await dispatch(followCreator(creator)).unwrap();
       }
-      
+
+      // 구독 상태 변경 후 크리에이터 목록 최신화
+      await dispatch(fetchCreators({
+        orderBy: orderBy,
+        platform: selectedPlatform
+      })).unwrap();
+
       // 다른 컴포넌트들에게 알림
       window.dispatchEvent(new CustomEvent('followersChanged'));
     } catch (_error) {

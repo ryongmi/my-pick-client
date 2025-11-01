@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, Twitter, Eye, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useAuth } from '@/hooks/useAuth';
-import { unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
+import { fetchCreators, unfollowCreator } from '@/store/slices/creatorSlice';
 import { fetchBookmarks, removeBookmark, toggleBookmarkOptimistic } from '@/store/slices/contentSlice';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/utils';
-import { mockGetFollowedCreators } from '@/data/creators';
-import { Creator } from '@/types';
+// Removed mock import
+// import { Creator } from '@/types';
 
 const MOCK_USER_STATS = {
   followedCreators: 12,
@@ -50,15 +50,19 @@ const MOCK_ACTIVITY = [
 export function ProfileView(): JSX.Element {
   const { user } = useAuth();
   const dispatch = useAppDispatch();
-  const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
+  const { creators, isFollowing } = useAppSelector(state => state.creator);
   const { bookmarkedContents, isLoadingBookmarks } = useAppSelector(state => state.content);
   const [activeTab, setActiveTab] = useState('activity');
+
+  // isSubscribed 필드를 기반으로 구독 중인 크리에이터 필터링
+  const followedCreators = useMemo(() => {
+    return creators.filter(creator => creator.isSubscribed === true);
+  }, [creators]);
 
   // 구독 중인 크리에이터 로드
   useEffect(() => {
     const loadFollowedCreators = async (): Promise<void> => {
-      const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
+      await dispatch(fetchCreators({})).unwrap();
     };
     loadFollowedCreators();
 

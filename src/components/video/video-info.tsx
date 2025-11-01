@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
-  Eye, 
-  Heart, 
-  Bookmark, 
-  Share2, 
-  Clock, 
-  ThumbsUp, 
-  Youtube, 
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Eye,
+  Heart,
+  Bookmark,
+  Share2,
+  Clock,
+  ThumbsUp,
+  Youtube,
   MoreHorizontal,
   Flag,
   Download,
@@ -22,10 +22,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { followCreator, unfollowCreator, updateFollowedCreators } from '@/store/slices/creatorSlice';
-import { mockGetFollowedCreators } from '@/data/creators';
+import { followCreator, unfollowCreator, fetchCreators } from '@/store/slices/creatorSlice';
 import { cn, formatNumber, formatDate } from '@/lib/utils';
-import type { Creator, Content } from '@/types';
+import type { Content } from '@/types';
 
 interface VideoInfoProps {
   videoId: string;
@@ -86,19 +85,26 @@ const MOCK_VIDEO_DATA = {
 
 export function VideoInfo({ videoId, content }: VideoInfoProps): JSX.Element {
   const dispatch = useAppDispatch();
-  const { followedCreators, isFollowing } = useAppSelector(state => state.creator);
+  const { creators, isFollowing } = useAppSelector(state => state.creator);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showMoreActions, setShowMoreActions] = useState(false);
 
+  // isSubscribed 필드를 기반으로 구독 중인 크리에이터 필터링
+  const followedCreators = useMemo(() => {
+    return creators.filter(creator => creator.isSubscribed === true);
+  }, [creators]);
+
   // Content prop이 있으면 사용, 없으면 Mock 데이터 사용 (하위 호환)
   const videoData = content || MOCK_VIDEO_DATA[videoId as keyof typeof MOCK_VIDEO_DATA];
 
   // 현재 크리에이터의 구독 상태 확인
-  const isFollowingCreator = videoData?.creator ? followedCreators.some(
-    creator => creator.id === videoData.creator?.id
-  ) : false;
+  const isFollowingCreator = useMemo(() => {
+    return videoData?.creator ? followedCreators.some(
+      creator => creator.id === videoData.creator?.id
+    ) : false;
+  }, [videoData, followedCreators]);
 
   useEffect(() => {
     if (videoData) {
@@ -110,14 +116,13 @@ export function VideoInfo({ videoId, content }: VideoInfoProps): JSX.Element {
   // 구독한 크리에이터 목록 초기 로드
   useEffect(() => {
     const loadFollowedCreators = async (): Promise<void> => {
-      const followed = await mockGetFollowedCreators();
-      dispatch(updateFollowedCreators((followed.data as Creator[]) || []));
+      await dispatch(fetchCreators({})).unwrap();
     };
-    
-    if (followedCreators.length === 0) {
+
+    if (creators.length === 0) {
       loadFollowedCreators();
     }
-  }, [dispatch, followedCreators.length]);
+  }, [dispatch, creators.length]);
 
   if (!videoData) {
     return (

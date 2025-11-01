@@ -5,13 +5,12 @@ import { creatorService } from '@/services';
 interface CreatorState {
   // 크리에이터 데이터
   creators: Creator[];
-  followedCreators: Creator[];
   featuredCreators: Creator[];
-  
+
   // 현재 선택된 크리에이터
   selectedCreator: Creator | null;
   creatorStats: CreatorStats | null;
-  
+
   // 페이지네이션
   pagination: {
     page: number;
@@ -21,21 +20,21 @@ interface CreatorState {
     hasNext: boolean;
     hasPrev: boolean;
   };
-  
+
   // 로딩 상태
   isLoading: boolean;
   isLoadingStats: boolean;
   isFollowing: boolean;
   isSyncing: boolean;
-  
+
   // 에러 상태
   error: string | null;
-  
+
   // 검색 및 필터
   searchQuery: string;
   platformFilter: string;
   sortBy: 'name' | 'followers' | 'content' | 'recent';
-  
+
   // 무한 스크롤
   hasMore: boolean;
   isLoadingMore: boolean;
@@ -43,7 +42,6 @@ interface CreatorState {
 
 const initialState: CreatorState = {
   creators: [],
-  followedCreators: [],
   featuredCreators: [],
   selectedCreator: null,
   creatorStats: null,
@@ -222,16 +220,11 @@ const creatorSlice = createSlice({
       state.pagination.page = 1;
       state.hasMore = true;
     },
-    
-    // 팔로우된 크리에이터 업데이트
-    updateFollowedCreators: (state, action: PayloadAction<Creator[]>) => {
-      state.followedCreators = action.payload;
-    },
-    
+
     // 크리에이터 데이터 업데이트
     updateCreator: (state, action: PayloadAction<{ id: string; updates: Partial<Creator> }>) => {
       const { id, updates } = action.payload;
-      
+
       // creators 배열에서 업데이트
       const creatorIndex = state.creators.findIndex(c => c.id === id);
       if (creatorIndex !== -1) {
@@ -243,19 +236,7 @@ const creatorSlice = createSlice({
           }
         });
       }
-      
-      // followedCreators 배열에서 업데이트
-      const followedIndex = state.followedCreators.findIndex(c => c.id === id);
-      if (followedIndex !== -1) {
-        const existingFollowed = state.followedCreators[followedIndex];
-        Object.keys(updates).forEach(key => {
-          if (updates[key as keyof Creator] !== undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (existingFollowed as any)[key] = updates[key as keyof Creator];
-          }
-        });
-      }
-      
+
       // selectedCreator 업데이트
       if (state.selectedCreator && state.selectedCreator.id === id) {
         Object.keys(updates).forEach(key => {
@@ -378,15 +359,14 @@ const creatorSlice = createSlice({
       .addCase(followCreator.fulfilled, (state, action) => {
         state.isFollowing = false;
         const creator = action.payload;
-        
-        // 팔로우된 크리에이터 목록에 추가 (중복 체크)
-        if (!state.followedCreators.find(c => c.id === creator.id)) {
-          state.followedCreators.push(creator);
-        }
-        
-        // creators 목록에도 추가 (없는 경우)
-        if (!state.creators.find(c => c.id === creator.id)) {
-          state.creators.push(creator);
+
+        // creators 목록에서 해당 크리에이터의 isSubscribed를 true로 업데이트
+        const creatorIndex = state.creators.findIndex(c => c.id === creator.id);
+        if (creatorIndex !== -1 && state.creators[creatorIndex]) {
+          state.creators[creatorIndex]!.isSubscribed = true;
+        } else {
+          // 목록에 없으면 추가 (isSubscribed: true)
+          state.creators.push({ ...creator, isSubscribed: true });
         }
       })
       .addCase(followCreator.rejected, (state, action) => {
@@ -402,9 +382,12 @@ const creatorSlice = createSlice({
       .addCase(unfollowCreator.fulfilled, (state, action) => {
         state.isFollowing = false;
         const creatorId = action.payload;
-        
-        // 팔로우된 크리에이터 목록에서 제거
-        state.followedCreators = state.followedCreators.filter(c => c.id !== creatorId);
+
+        // creators 목록에서 해당 크리에이터의 isSubscribed를 false로 업데이트
+        const creatorIndex = state.creators.findIndex(c => c.id === creatorId);
+        if (creatorIndex !== -1 && state.creators[creatorIndex]) {
+          state.creators[creatorIndex]!.isSubscribed = false;
+        }
       })
       .addCase(unfollowCreator.rejected, (state, action) => {
         state.isFollowing = false;
@@ -451,7 +434,6 @@ export const {
   setPlatformFilter,
   setSortBy,
   resetPagination,
-  updateFollowedCreators,
   updateCreator,
 } = creatorSlice.actions;
 

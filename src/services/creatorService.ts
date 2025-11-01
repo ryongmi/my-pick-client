@@ -45,7 +45,7 @@ export class CreatorService extends BaseService {
    */
   async followCreator(creatorId: string): Promise<void> {
     try {
-      await mypickApi.post(`/me/subscriptions/${creatorId}`);
+      await mypickApi.post(`/subscriptions/${creatorId}`);
     } catch (error) {
       this.handleError(error);
     }
@@ -56,7 +56,7 @@ export class CreatorService extends BaseService {
    */
   async unfollowCreator(creatorId: string): Promise<void> {
     try {
-      await mypickApi.delete(`/me/subscriptions/${creatorId}`);
+      await mypickApi.delete(`/subscriptions/${creatorId}`);
     } catch (error) {
       this.handleError(error);
     }

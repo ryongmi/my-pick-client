@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Play, Eye, Clock, Youtube, Star, TrendingUp, Heart, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -173,10 +173,15 @@ const MOCK_RELATED_VIDEOS: Video[] = [
 ];
 
 export function RelatedVideos({ currentVideoId }: RelatedVideosProps): JSX.Element {
-  const { followedCreators } = useAppSelector(state => state.creator);
+  const { creators } = useAppSelector(state => state.creator);
   const [activeTab, setActiveTab] = useState<'personalized' | 'trending' | 'same_creator'>('personalized');
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // isSubscribed 필드를 기반으로 구독 중인 크리에이터 필터링
+  const followedCreators = useMemo(() => {
+    return creators.filter(creator => creator.isSubscribed === true);
+  }, [creators]);
 
   // 개인화된 추천 알고리즘
   const getPersonalizedVideos = (videos: Video[], currentId: string): Video[] => {
