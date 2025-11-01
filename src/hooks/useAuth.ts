@@ -1,5 +1,4 @@
 import { useAuthContext } from '@/context/AuthContext';
-import { useAppSelector } from '@/hooks/redux';
 import type { User } from '@/types';
 
 interface UseAuthReturn {
@@ -24,11 +23,8 @@ interface UseAuthReturn {
  * const { user, isAuthenticated, logout } = useAuth();
  */
 export function useAuth(): UseAuthReturn {
-  // AuthContext에서 기본 인증 정보 가져오기
-  const { user, loading, isLoggedIn, error, logout, refreshUser } = useAuthContext();
-
-  // Redux에서 isInitialized 상태 추가로 가져오기
-  const { isInitialized } = useAppSelector((state) => state.auth);
+  // AuthContext에서 기본 인증 정보 가져오기 (isInitialized 포함)
+  const { user, loading, isLoggedIn, isInitialized, error, logout, refreshUser } = useAuthContext();
 
   return {
     user,

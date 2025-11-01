@@ -32,7 +32,7 @@ export default function HomePage(): JSX.Element {
   const dispatch = useAppDispatch();
   const { filters } = useUI();
   const { contents, isLoading, hasMore, isLoadingMore, pagination } = useContent();
-  const { isLoggedIn, user, loading, isAuthenticated } = useAuth();
+  const { isLoggedIn, user, loading, isAuthenticated, isInitialized } = useAuth();
   const { creators } = useAppSelector(state => state.creator);
   const selectedPlatform = useAppSelector(selectSelectedPlatform);
   const loadingRef = useRef<HTMLDivElement>(null);
@@ -62,30 +62,58 @@ export default function HomePage(): JSX.Element {
     window.location.href = ssoStartUrl;
   };
 
-  // 팔로우한 크리에이터 초기 로드
+  // 초기화 완료 후 크리에이터 로드 (최초 1회만)
   useEffect(() => {
-    if (creators.length === 0) {
-      const loadFollowed = async (): Promise<void> => {
-        await dispatch(fetchCreators({})).unwrap();
-      };
-      loadFollowed();
+    // 초기화 완료되지 않았으면 대기
+    if (!isInitialized) {
+      return;
     }
-  }, [dispatch, creators.length]);
 
-  // 컴포넌트 마운트 시 콘텐츠 로드
+    // 크리에이터가 이미 로드되었으면 스킵
+    if (creators.length > 0) {
+      return;
+    }
+
+    const loadCreators = async (): Promise<void> => {
+      try {
+        // eslint-disable-next-line no-console
+        console.log('[DEBUG] Loading creators...');
+        await dispatch(fetchCreators({})).unwrap();
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[ERROR] Failed to load creators:', error);
+      }
+    };
+
+    loadCreators();
+  }, [dispatch, isInitialized, creators.length]);
+
+  // 크리에이터 로드 완료 후 콘텐츠 로드 (필터 변경 시에도 재로드)
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[DEBUG] Fetching content with filters:', {
-      creators: filters.selectedCreators,
-      platforms: [selectedPlatform],
-      // sortBy: 'newest'
-    });
-    dispatch(fetchContent({
-      creators: filters.selectedCreators,
-      platforms: [selectedPlatform],
-      // sortBy: 'newest'
-    }));
-  }, [dispatch, filters.selectedCreators, selectedPlatform]);
+    // 초기화 완료되지 않았으면 대기
+    if (!isInitialized) {
+      return;
+    }
+
+    const loadContent = async (): Promise<void> => {
+      try {
+        // eslint-disable-next-line no-console
+        console.log('[DEBUG] Fetching content with filters:', {
+          creators: filters.selectedCreators,
+          platforms: [selectedPlatform],
+        });
+        await dispatch(fetchContent({
+          creators: filters.selectedCreators,
+          platforms: [selectedPlatform],
+        })).unwrap();
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[ERROR] Failed to load content:', error);
+      }
+    };
+
+    loadContent();
+  }, [dispatch, isInitialized, filters.selectedCreators, selectedPlatform]);
 
   // contents 배열 변경 감지 (디버깅용)
   useEffect(() => {

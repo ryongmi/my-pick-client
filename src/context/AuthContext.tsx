@@ -9,6 +9,7 @@ interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
   isLoggedIn: boolean;
+  isInitialized: boolean;
   error: string | null;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -95,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     user,
     loading: isLoading,
     isLoggedIn: isAuthenticated,
+    isInitialized,
     error,
     logout,
     refreshUser,
