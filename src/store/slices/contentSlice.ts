@@ -256,12 +256,14 @@ const contentSlice = createSlice({
         state.isLoading = false;
         const payload = (action.payload as unknown) as {
           items?: unknown[];
-          totalItems?: number;
-          page?: number;
-          limit?: number;
-          totalPages?: number;
-          hasPreviousPage?: boolean;
-          hasNextPage?: boolean;
+          pageInfo?: {
+            totalItems?: number;
+            page?: number;
+            limit?: number;
+            totalPages?: number;
+            hasPreviousPage?: boolean;
+            hasNextPage?: boolean;
+          };
         };
 
         // items를 contents로 매핑하고 viewCount 등 계산 필드 추가
@@ -274,14 +276,14 @@ const contentSlice = createSlice({
         }));
 
         state.pagination = {
-          page: payload.page || 1,
-          limit: payload.limit || 20,
-          total: payload.totalItems || 0,
-          totalPages: payload.totalPages || 0,
-          hasNext: payload.hasNextPage || false,
-          hasPrev: payload.hasPreviousPage || false
+          page: payload.pageInfo?.page || 1,
+          limit: payload.pageInfo?.limit || 20,
+          total: payload.pageInfo?.totalItems || 0,
+          totalPages: payload.pageInfo?.totalPages || 0,
+          hasNext: payload.pageInfo?.hasNextPage || false,
+          hasPrev: payload.pageInfo?.hasPreviousPage || false
         };
-        state.hasMore = payload.hasNextPage || false;
+        state.hasMore = payload.pageInfo?.hasNextPage || false;
       })
       .addCase(fetchContent.rejected, (state, action) => {
         state.isLoading = false;
@@ -325,12 +327,14 @@ const contentSlice = createSlice({
         state.isLoadingMore = false;
         const payload = (action.payload as unknown) as {
           items?: unknown[];
-          totalItems?: number;
-          page?: number;
-          limit?: number;
-          totalPages?: number;
-          hasPreviousPage?: boolean;
-          hasNextPage?: boolean;
+          pageInfo?: {
+            totalItems?: number;
+            page?: number;
+            limit?: number;
+            totalPages?: number;
+            hasPreviousPage?: boolean;
+            hasNextPage?: boolean;
+          };
         };
 
         // items를 contents로 매핑하고 viewCount 등 계산 필드 추가
@@ -345,14 +349,14 @@ const contentSlice = createSlice({
         // 기존 콘텐츠에 새 콘텐츠 추가
         state.contents = [...state.contents, ...mappedContents];
         state.pagination = {
-          page: payload.page || state.pagination.page,
-          limit: payload.limit || state.pagination.limit,
-          total: payload.totalItems || state.pagination.total,
-          totalPages: payload.totalPages || state.pagination.totalPages,
-          hasNext: payload.hasNextPage || false,
-          hasPrev: payload.hasPreviousPage || false
+          page: payload.pageInfo?.page || state.pagination.page,
+          limit: payload.pageInfo?.limit || state.pagination.limit,
+          total: payload.pageInfo?.totalItems || state.pagination.total,
+          totalPages: payload.pageInfo?.totalPages || state.pagination.totalPages,
+          hasNext: payload.pageInfo?.hasNextPage || false,
+          hasPrev: payload.pageInfo?.hasPreviousPage || false
         };
-        state.hasMore = payload.hasNextPage || false;
+        state.hasMore = payload.pageInfo?.hasNextPage || false;
       })
       .addCase(fetchMoreContent.rejected, (state, action) => {
         state.isLoadingMore = false;
@@ -369,12 +373,14 @@ const contentSlice = createSlice({
         state.isLoadingBookmarks = false;
         const payload = (action.payload as unknown) as {
           items?: unknown[];
-          totalItems?: number;
-          page?: number;
-          limit?: number;
-          totalPages?: number;
-          hasPreviousPage?: boolean;
-          hasNextPage?: boolean;
+          pageInfo?: {
+            totalItems?: number;
+            page?: number;
+            limit?: number;
+            totalPages?: number;
+            hasPreviousPage?: boolean;
+            hasNextPage?: boolean;
+          };
         };
 
         // items를 bookmarkedContents로 매핑하고 viewCount 등 계산 필드 추가
@@ -387,10 +393,10 @@ const contentSlice = createSlice({
         }));
 
         state.bookmarkPagination = {
-          page: payload.page || state.bookmarkPagination.page,
-          limit: payload.limit || state.bookmarkPagination.limit,
-          total: payload.totalItems || state.bookmarkPagination.total,
-          hasNext: payload.hasNextPage || state.bookmarkPagination.hasNext
+          page: payload.pageInfo?.page || state.bookmarkPagination.page,
+          limit: payload.pageInfo?.limit || state.bookmarkPagination.limit,
+          total: payload.pageInfo?.totalItems || state.bookmarkPagination.total,
+          hasNext: payload.pageInfo?.hasNextPage || state.bookmarkPagination.hasNext
         };
       })
       .addCase(fetchBookmarks.rejected, (state, action) => {

@@ -111,7 +111,7 @@ export default function HomePage(): JSX.Element {
         page: pagination.page + 1,
         creators: filters.selectedCreators,
         platforms: [selectedPlatform],
-        sortBy: 'newest'
+        // sortBy: 'newest'
       }));
     } else {
       // eslint-disable-next-line no-console
@@ -201,33 +201,8 @@ export default function HomePage(): JSX.Element {
     }
   };
 
-  // Redux store에서 가져온 콘텐츠 사용 (무한스크롤 반영)
+  // Redux store에서 가져온 콘텐츠 사용 (서버에서 이미 필터링됨)
   const displayContent = contents;
-
-  const filteredContent = displayContent.filter(content => {
-    // 크리에이터 필터 - 팔로우한 크리에이터 기준으로 필터링
-    let creatorMatch = false;
-
-    if (filters.selectedCreators.includes('all')) {
-      // 전체 보기 시 로직 개선
-      if (followedCreators.length > 0) {
-        // 팔로우한 크리에이터가 있으면 해당 크리에이터만 표시
-        const followedCreatorIds = followedCreators.map(c => c.id);
-        creatorMatch = content.creator ? followedCreatorIds.includes(content.creator.id) : false;
-      } else {
-        // 팔로우한 크리에이터가 없으면 모든 컨텐츠 표시 (초기 사용자)
-        creatorMatch = true;
-      }
-    } else {
-      // 특정 크리에이터 선택 시
-      creatorMatch = content.creator ? filters.selectedCreators.includes(content.creator.id) : false;
-    }
-
-    // 플랫폼 필터
-    const platformMatch = selectedPlatform === 'all' || content.platform === selectedPlatform;
-
-    return creatorMatch && platformMatch;
-  });
 
   const renderContentCard = (content: {
     id: string;
@@ -273,9 +248,11 @@ export default function HomePage(): JSX.Element {
                     <Play className="h-12 w-12 text-white" />
                   </div>
                 )}
+                {/*  
                 <span className="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-1 rounded">
                   {content.duration}
                 </span>
+                */}
                 <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded flex items-center">
                   <Youtube className="h-3 w-3 mr-1" />
                   YouTube
@@ -572,9 +549,9 @@ export default function HomePage(): JSX.Element {
                   </div>
                 ))}
               </div>
-            ) : filteredContent.length > 0 ? (
+            ) : displayContent.length > 0 ? (
               <>
-                {filteredContent.map((content, index) => (
+                {displayContent.map((content, index) => (
                   <div key={content.id} className={index > 0 ? "mt-6" : ""}>
                     {renderContentCard(content)}
                   </div>
@@ -582,7 +559,7 @@ export default function HomePage(): JSX.Element {
               </>
             ) : (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">선택한 필터에 맞는 콘텐츠가 없습니다.</p>
+                <p className="text-muted-foreground">콘텐츠가 없습니다.</p>
               </div>
             )}
 
@@ -604,7 +581,7 @@ export default function HomePage(): JSX.Element {
             </div> : null}
 
           {/* 모든 콘텐츠 로드 완료 메시지 */}
-          {!hasMore && !isLoading && filteredContent.length > 0 && (
+          {!hasMore && !isLoading && displayContent.length > 0 && (
             <div className="py-8 text-center">
               <span className="text-muted-foreground text-sm">모든 콘텐츠를 불러왔습니다</span>
             </div>
