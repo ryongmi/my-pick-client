@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { useAuth } from '@/hooks/useAuth';
 import { followCreator, unfollowCreator, fetchCreators } from '@/store/slices/creatorSlice';
 import { cn, formatNumber, formatDate } from '@/lib/utils';
 import type { Content } from '@/types';
@@ -85,6 +86,7 @@ const MOCK_VIDEO_DATA = {
 
 export function VideoInfo({ videoId, content }: VideoInfoProps): JSX.Element {
   const dispatch = useAppDispatch();
+  const { isInitialized } = useAuth();
   const { creators, isFollowing } = useAppSelector(state => state.creator);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -115,6 +117,11 @@ export function VideoInfo({ videoId, content }: VideoInfoProps): JSX.Element {
 
   // 구독한 크리에이터 목록 초기 로드
   useEffect(() => {
+    // 초기화 완료되지 않았으면 대기
+    if (!isInitialized) {
+      return;
+    }
+
     const loadFollowedCreators = async (): Promise<void> => {
       await dispatch(fetchCreators({})).unwrap();
     };
@@ -122,7 +129,7 @@ export function VideoInfo({ videoId, content }: VideoInfoProps): JSX.Element {
     if (creators.length === 0) {
       loadFollowedCreators();
     }
-  }, [dispatch, creators.length]);
+  }, [dispatch, isInitialized, creators.length]);
 
   if (!videoData) {
     return (

@@ -48,7 +48,7 @@ const MOCK_ACTIVITY = [
 // MOCK_FOLLOWED_CREATORS 제거 - 실제 데이터 사용
 
 export function ProfileView(): JSX.Element {
-  const { user } = useAuth();
+  const { user, isInitialized } = useAuth();
   const dispatch = useAppDispatch();
   const { creators, isFollowing } = useAppSelector(state => state.creator);
   const { bookmarkedContents, isLoadingBookmarks } = useAppSelector(state => state.content);
@@ -61,6 +61,11 @@ export function ProfileView(): JSX.Element {
 
   // 구독 중인 크리에이터 로드
   useEffect(() => {
+    // 초기화 완료되지 않았으면 대기
+    if (!isInitialized) {
+      return;
+    }
+
     const loadFollowedCreators = async (): Promise<void> => {
       await dispatch(fetchCreators({})).unwrap();
     };
@@ -73,7 +78,7 @@ export function ProfileView(): JSX.Element {
 
     window.addEventListener('followersChanged', handleFollowChange);
     return (): void => window.removeEventListener('followersChanged', handleFollowChange);
-  }, [dispatch]);
+  }, [dispatch, isInitialized]);
 
   // 컴포넌트 마운트 시 북마크 데이터 로드
   useEffect(() => {

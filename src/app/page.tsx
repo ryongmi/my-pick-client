@@ -42,18 +42,6 @@ export default function HomePage(): JSX.Element {
     return creators.filter(creator => creator.isSubscribed === true);
   }, [creators]);
 
-  // 인증 상태 디버깅
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[HomePage] Auth Status:', {
-      isLoggedIn,
-      isAuthenticated,
-      hasUser: !!user,
-      loading,
-      userId: user?.id
-    });
-  }, [isLoggedIn, isAuthenticated, user, loading]);
-
   // SSO 로그인 처리
   const handleLogin = (): void => {
     const returnUrl = typeof window !== 'undefined' ? window.location.pathname : '/';
@@ -115,31 +103,13 @@ export default function HomePage(): JSX.Element {
     loadContent();
   }, [dispatch, isInitialized, filters.selectedCreators, selectedPlatform]);
 
-  // contents 배열 변경 감지 (디버깅용)
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[DEBUG] Contents updated:', {
-      count: contents.length,
-      hasMore,
-      isLoadingMore,
-      currentPage: pagination.page
-    });
-  }, [contents, hasMore, isLoadingMore, pagination.page]);
-
   // 무한 스크롤 로직
   const loadMoreContent = useCallback((): void => {
     if (hasMore && !isLoadingMore && !isLoading) {
-      // eslint-disable-next-line no-console
-      console.log('[DEBUG] Loading more content:', {
-        nextPage: pagination.page + 1,
-        creators: filters.selectedCreators,
-        platforms: [selectedPlatform]
-      });
       dispatch(fetchMoreContent({
         page: pagination.page + 1,
         creators: filters.selectedCreators,
         platforms: [selectedPlatform],
-        // sortBy: 'newest'
       }));
     } else {
       // eslint-disable-next-line no-console

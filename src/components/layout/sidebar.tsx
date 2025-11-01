@@ -7,6 +7,7 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useUI } from '@/hooks/redux';
+import { useAuth } from '@/hooks/useAuth';
 import { setCreatorFilter, setSidebarOpen } from '@/store/slices/uiSlice';
 import { fetchCreators } from '@/store/slices/creatorSlice';
 import { cn } from '@/lib/utils';
@@ -16,6 +17,7 @@ export function Sidebar(): JSX.Element {
   const router = useRouter();
   const { sidebarOpen, filters, isMobile } = useUI();
   const { creators } = useAppSelector(state => state.creator);
+  const { isInitialized } = useAuth();
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // isSubscribed 필드를 기반으로 구독 중인 크리에이터 필터링
@@ -25,6 +27,11 @@ export function Sidebar(): JSX.Element {
 
   // 구독 중인 크리에이터 로드
   useEffect(() => {
+    // 초기화 완료되지 않았으면 대기
+    if (!isInitialized) {
+      return;
+    }
+
     const loadFollowedCreators = async (): Promise<void> => {
       await dispatch(fetchCreators({})).unwrap();
     };
@@ -37,7 +44,7 @@ export function Sidebar(): JSX.Element {
 
     window.addEventListener('followersChanged', handleFollowChange);
     return (): void => window.removeEventListener('followersChanged', handleFollowChange);
-  }, [dispatch]);
+  }, [dispatch, isInitialized]);
 
   // 외부 클릭 감지 및 사이드바 닫기
   useEffect(() => {
