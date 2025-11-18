@@ -59,7 +59,7 @@ export interface MyPickUser extends User {
   };
 }
 
-// 크리에이터 신청 정보
+// 크리에이터 신청 정보 (서버 스펙에 맞춤)
 export interface CreatorApplication {
   id: string;
   userId: string;
@@ -68,22 +68,22 @@ export interface CreatorApplication {
   reviewedAt?: string;
   reviewedBy?: string;
   rejectionReason?: string;
-  
-  // 신청 정보
+
+  // 신청 정보 (서버에서 자동 수집된 데이터 포함)
   applicationData: {
-    channelName: string;
+    platform: 'youtube' | 'twitter';
     channelId: string;
     channelUrl: string;
-    subscriberCount: number;
-    contentCategory: string | string[]; // 기존 호환성을 위해 둘 다 허용
-    description: string;
-    sampleVideos: string[];
-    businessEmail?: string;
-    socialLinks?: {
-      instagram?: string;
-      twitter?: string;
-      website?: string;
-    };
+    registrationMessage?: string;
+    // 서버에서 자동으로 수집된 정보
+    channelName?: string;
+    subscriberCount?: number;
+    videoCount?: number;
+    description?: string;
+    thumbnailUrl?: string;
+    customUrl?: string;
+    country?: string;
+    publishedAt?: string;
   };
 
   // 신청자 정보 (조인된 데이터)

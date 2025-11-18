@@ -112,34 +112,46 @@ export function CreatorStatusModal({ isOpen, onClose }: CreatorStatusModalProps)
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">채널명</label>
-                  <p className="mt-1 font-medium">{currentApplication.applicationData.channelName}</p>
+                  <label className="block text-sm font-medium text-gray-500">플랫폼</label>
+                  <p className="mt-1 font-medium capitalize">{currentApplication.applicationData.platform}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500">구독자 수</label>
-                  <p className="mt-1 font-medium">
-                    {currentApplication.applicationData.subscriberCount.toLocaleString()}명
-                  </p>
+                  <label className="block text-sm font-medium text-gray-500">채널 ID</label>
+                  <p className="mt-1 font-medium">{currentApplication.applicationData.channelId}</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-500">카테고리</label>
-                  <div className="mt-1">
-                    {Array.isArray(currentApplication.applicationData.contentCategory) ? (
-                      <div className="flex flex-wrap gap-1">
-                        {currentApplication.applicationData.contentCategory.map((category, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-2 py-1 bg-indigo-100 text-indigo-800 text-xs font-medium rounded-full"
-                          >
-                            {category}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <p>{currentApplication.applicationData.contentCategory}</p>
-                    )}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-500">채널 URL</label>
+                  <a
+                    href={currentApplication.applicationData.channelUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 text-blue-600 hover:underline block truncate"
+                  >
+                    {currentApplication.applicationData.channelUrl}
+                  </a>
+                </div>
+                {currentApplication.applicationData.channelName && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">채널명</label>
+                    <p className="mt-1 font-medium">{currentApplication.applicationData.channelName}</p>
                   </div>
-                </div>
+                )}
+                {currentApplication.applicationData.subscriberCount !== undefined && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">구독자 수</label>
+                    <p className="mt-1 font-medium">
+                      {currentApplication.applicationData.subscriberCount.toLocaleString()}명
+                    </p>
+                  </div>
+                )}
+                {currentApplication.applicationData.videoCount !== undefined && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">비디오 수</label>
+                    <p className="mt-1 font-medium">
+                      {currentApplication.applicationData.videoCount.toLocaleString()}개
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-500">신청일</label>
                   <p className="mt-1">
@@ -148,12 +160,23 @@ export function CreatorStatusModal({ isOpen, onClose }: CreatorStatusModalProps)
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-500">채널 설명</label>
-                <p className="mt-1 text-sm p-3 bg-gray-50 rounded">
-                  {currentApplication.applicationData.description}
-                </p>
-              </div>
+              {currentApplication.applicationData.description && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">채널 설명</label>
+                  <p className="mt-1 text-sm p-3 bg-gray-50 rounded">
+                    {currentApplication.applicationData.description}
+                  </p>
+                </div>
+              )}
+
+              {currentApplication.applicationData.registrationMessage && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">신청 메시지</label>
+                  <p className="mt-1 text-sm p-3 bg-gray-50 rounded">
+                    {currentApplication.applicationData.registrationMessage}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

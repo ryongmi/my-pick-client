@@ -3,23 +3,12 @@ import { CreatorApplication } from '@/types/userManagement';
 import { mypickApi } from '@/lib/httpClient';
 import { errorUtils } from '@/lib/httpClient';
 
-// 신청 데이터 타입
+// 신청 데이터 타입 (서버 CreateRegistrationDto에 맞춤)
 export interface CreatorApplicationFormData {
-  channelName: string;
+  platform: 'youtube' | 'twitter';
   channelId: string;
   channelUrl: string;
-  subscriberCount: number;
-  contentCategories: string[];
-  description: string;
-  businessEmail?: string;
-  socialLinks?: {
-    instagram?: string;
-    twitter?: string;
-    website?: string;
-  };
-  sampleVideos: string[];
-  // API 호환성을 위한 index signature 추가
-  [key: string]: unknown;
+  registrationMessage?: string;
 }
 
 // 슬라이스 상태 타입
@@ -53,9 +42,7 @@ export const submitCreatorApplication = createAsyncThunk(
   'creatorApplication/submit',
   async (formData: CreatorApplicationFormData, { rejectWithValue }) => {
     try {
-      // Creator application API not implemented yet in server
-      // Using mypick API as placeholder until server implements creator applications
-      const response = await mypickApi.post('/creators/applications', formData);
+      const response = await mypickApi.post('/creator-registrations', formData);
       return response.data;
     } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '신청 제출에 실패했습니다.';
@@ -84,8 +71,7 @@ export const resubmitCreatorApplication = createAsyncThunk(
   'creatorApplication/resubmit',
   async (formData: CreatorApplicationFormData, { rejectWithValue }) => {
     try {
-      // Creator resubmit API not implemented yet in server
-      const response = await mypickApi.post('/creators/applications', formData);
+      const response = await mypickApi.post('/creator-registrations', formData);
       return response.data;
     } catch (error: unknown) {
       const errorMessage = errorUtils.getUserMessage(error) || '재신청에 실패했습니다.';
