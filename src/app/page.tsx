@@ -85,14 +85,16 @@ export default function HomePage(): JSX.Element {
 
     const loadContent = async (): Promise<void> => {
       try {
+        const platforms = selectedPlatform === 'all' ? [] : [selectedPlatform];
+        const creatorIds = filters.selectedCreators.includes('all') ? [] : filters.selectedCreators;
         // eslint-disable-next-line no-console
         console.log('[DEBUG] Fetching content with filters:', {
-          creators: filters.selectedCreators,
-          platforms: [selectedPlatform],
+          creatorIds,
+          platforms,
         });
         await dispatch(fetchContent({
-          creators: filters.selectedCreators,
-          platforms: [selectedPlatform],
+          creatorIds,
+          platforms,
         })).unwrap();
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -106,10 +108,12 @@ export default function HomePage(): JSX.Element {
   // 무한 스크롤 로직
   const loadMoreContent = useCallback((): void => {
     if (hasMore && !isLoadingMore && !isLoading) {
+      const platforms = selectedPlatform === 'all' ? [] : [selectedPlatform];
+      const creatorIds = filters.selectedCreators.includes('all') ? [] : filters.selectedCreators;
       dispatch(fetchMoreContent({
         page: pagination.page + 1,
-        creators: filters.selectedCreators,
-        platforms: [selectedPlatform],
+        creatorIds,
+        platforms,
       }));
     } else {
       // eslint-disable-next-line no-console

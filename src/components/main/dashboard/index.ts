@@ -1,1 +1,1 @@
-export { ProfileView } from './profile-view';
+// ProfileView has been moved to src/app/profile/page.tsx

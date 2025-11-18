@@ -1,5 +1,5 @@
 // Main Dashboard Components
-export * from './dashboard';
+// (ProfileView has been moved to src/app/profile/page.tsx)
 
 // Creator Application Components
 export { CreatorApplicationModal } from './creator-application-modal';

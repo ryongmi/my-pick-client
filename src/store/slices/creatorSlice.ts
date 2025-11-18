@@ -86,6 +86,23 @@ export const fetchCreators = createAsyncThunk(
   }
 );
 
+export const fetchMySubscriptions = createAsyncThunk(
+  'creator/fetchMySubscriptions',
+  async (params: {
+    page?: number;
+    limit?: number;
+  } = {}, { rejectWithValue }) => {
+    try {
+      const response = await creatorService.getMySubscriptions(params);
+      return response;
+    } catch (error: unknown) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : '구독 크리에이터 조회에 실패했습니다.'
+      );
+    }
+  }
+);
+
 export const fetchMoreCreators = createAsyncThunk(
   'creator/fetchMoreCreators',
   async (params: {
@@ -282,6 +299,43 @@ const creatorSlice = createSlice({
         }
       })
       .addCase(fetchCreators.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Fetch my subscriptions
+    builder
+      .addCase(fetchMySubscriptions.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchMySubscriptions.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const payload = action.payload as {
+          items?: Creator[];
+          pageInfo?: {
+            totalItems: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+            hasPreviousPage: boolean;
+            hasNextPage: boolean;
+          };
+        };
+        state.creators = payload.items || [];
+        if (payload.pageInfo) {
+          state.pagination = {
+            page: payload.pageInfo.page,
+            limit: payload.pageInfo.limit,
+            total: payload.pageInfo.totalItems,
+            totalPages: payload.pageInfo.totalPages,
+            hasNext: payload.pageInfo.hasNextPage,
+            hasPrev: payload.pageInfo.hasPreviousPage,
+          };
+          state.hasMore = payload.pageInfo.hasNextPage;
+        }
+      })
+      .addCase(fetchMySubscriptions.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

@@ -64,7 +64,7 @@ const initialState: ContentState = {
   isLiking: false,
   error: null,
   filters: {
-    creators: [],
+    creatorIds: [],
     platforms: [],
     sortBy: 'newest',
     searchQuery: '',
@@ -86,7 +86,7 @@ export const fetchContent = createAsyncThunk(
   async (params: {
     page?: number;
     limit?: number;
-    creators?: string[];
+    creatorIds?: string[];
     platforms?: string[];
     search?: string;
     sortBy?: string;
@@ -106,7 +106,7 @@ export const fetchMoreContent = createAsyncThunk(
   async (params: {
     page: number;
     limit?: number;
-    creators?: string[];
+    creatorIds?: string[];
     platforms?: string[];
     search?: string;
     sortBy?: string;
@@ -217,7 +217,7 @@ const contentSlice = createSlice({
     },
     clearFilters: (state) => {
       state.filters = {
-        creators: [],
+        creatorIds: [],
         platforms: [],
         sortBy: 'newest',
         searchQuery: '',

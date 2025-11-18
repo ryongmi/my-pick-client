@@ -211,7 +211,7 @@ export interface TwitterMedia {
 
 // 필터 및 검색
 export interface ContentFilter {
-  creators: string[];
+  creatorIds: string[];
   platforms: Platform['type'][];
   dateRange?: {
     start: Date;

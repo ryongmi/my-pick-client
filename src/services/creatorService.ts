@@ -77,6 +77,20 @@ export class CreatorService extends BaseService {
   }
 
   /**
+   * 내가 구독한 크리에이터 목록 조회 (페이지네이션)
+   */
+  async getMySubscriptions(params?: { page?: number; limit?: number }): Promise<PaginatedResponse<unknown>> {
+    try {
+      const response = await mypickApi.get<PaginatedResponse<unknown>>('/subscriptions', {
+        params,
+      });
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
    * 크리에이터 구독자 목록 조회
    */
   async getCreatorSubscribers(creatorId: string): Promise<unknown> {
