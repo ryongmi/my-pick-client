@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, Users, Youtube, X, Star } from 'lucide-react';
+import { Search, Plus, Users, Youtube, Star } from 'lucide-react';
+import { XLogo } from '@/components/icons/XLogo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -119,11 +120,7 @@ export default function CreatorsPage(): JSX.Element {
       case 'youtube':
         return <Youtube className="h-4 w-4 text-red-600" />;
       case 'twitter':
-        return (
-          <div className="border-2 border-black rounded p-0.5 flex items-center justify-center">
-            <X className="h-3 w-3 text-black" />
-          </div>
-        );
+        return <XLogo className="text-black" size={16} />;
       default:
         return null;
     }

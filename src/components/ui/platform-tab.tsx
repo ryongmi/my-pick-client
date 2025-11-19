@@ -1,14 +1,15 @@
 'use client';
 
 import { forwardRef } from 'react';
-import { Youtube, X, Instagram, Music, Tv } from 'lucide-react';
+import { Youtube, Instagram, Music, Tv } from 'lucide-react';
+import { XLogo } from '@/components/icons/XLogo';
 import { cn } from '@/lib/utils';
 import { PlatformTabProps } from '@/types/platform';
 
 // 아이콘 매핑
 const ICON_MAP = {
   Youtube,
-  Twitter: X, // X (구 Twitter)
+  Twitter: XLogo, // X (구 Twitter)
   Instagram,
   Music,
   Tv,
@@ -36,15 +37,13 @@ export const PlatformTab = forwardRef<HTMLButtonElement, PlatformTabProps>(
       >
         {IconComponent ? (
           platform.icon === 'Twitter' ? (
-            <div className="border-2 border-black rounded p-0.5 flex items-center justify-center mr-2">
-              <IconComponent className="h-3 w-3 text-black" />
-            </div>
+            <IconComponent
+              className="mr-2 text-black"
+              size={16}
+            />
           ) : (
             <IconComponent
-              className={cn(
-                'h-4 w-4 mr-2',
-                platform.color
-              )}
+              className={cn('h-4 w-4 mr-2', platform.color)}
             />
           )
         ) : null}

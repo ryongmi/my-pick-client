@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, X, Eye, Clock } from 'lucide-react';
+import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, Eye, Clock } from 'lucide-react';
+import { XLogo } from '@/components/icons/XLogo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -285,9 +286,7 @@ export default function ProfilePage(): JSX.Element {
                             </>
                           ) : (
                             <>
-                              <div className="border-2 border-black rounded p-0.5 flex items-center justify-center">
-                                <X className="h-2.5 w-2.5 text-black" />
-                              </div>
+                              <XLogo className="text-black" size={14} />
                               <span className="bg-black text-white px-1 rounded">X</span>
                             </>
                           )}

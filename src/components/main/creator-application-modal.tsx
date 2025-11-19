@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Youtube, X as XIcon, AlertCircle } from 'lucide-react';
+import { X, Youtube, AlertCircle } from 'lucide-react';
+import { XLogo } from '@/components/icons/XLogo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -107,9 +108,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
               {formData.platform === 'youtube' ? (
                 <Youtube className="h-5 w-5 text-red-500" />
               ) : (
-                <div className="border-2 border-black rounded p-1 flex items-center justify-center">
-                  <XIcon className="h-4 w-4 text-black" />
-                </div>
+                <XLogo className="text-black" size={20} />
               )}
               크리에이터 신청
             </h2>
@@ -160,9 +159,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
                   )}
                   title="X는 현재 지원하지 않습니다"
                 >
-                  <div className="border-2 border-gray-400 rounded p-1 flex items-center justify-center">
-                    <XIcon className="h-4 w-4 text-gray-400" />
-                  </div>
+                  <XLogo className="text-gray-400" size={20} />
                   <span className="font-medium">X</span>
                   <span className="text-xs">(준비중)</span>
                 </button>

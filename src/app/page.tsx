@@ -3,7 +3,8 @@
 import { useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Eye, Clock, Heart, Bookmark, Play, Youtube, X, User } from 'lucide-react';
+import { Eye, Clock, Heart, Bookmark, Play, Youtube, User } from 'lucide-react';
+import { XLogo } from '@/components/icons/XLogo';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -353,9 +354,7 @@ export default function HomePage(): JSX.Element {
                   </div>
                 </div>
                 <div className="text-xs px-2 py-1 rounded flex items-center gap-1">
-                  <div className="border-2 border-black rounded p-0.5 flex items-center justify-center">
-                    <X className="h-2.5 w-2.5 text-black" />
-                  </div>
+                  <XLogo className="text-black" size={16} />
                   <span className="text-foreground">X</span>
                 </div>
               </div>
@@ -531,9 +530,7 @@ export default function HomePage(): JSX.Element {
               onClick={() => handlePlatformFilter('twitter')}
               className="gap-1.5"
             >
-              <div className="border-2 border-black rounded p-0.5 flex items-center justify-center">
-                <X className="h-3 w-3 text-black" />
-              </div>
+              <XLogo className="text-black" size={16} />
               X
             </Button>
           </div>
