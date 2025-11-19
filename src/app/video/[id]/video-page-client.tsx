@@ -1,12 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Share2, MoreHorizontal } from 'lucide-react';
 import { VideoPlayer } from '@/components/video/video-player';
 import { VideoInfo } from '@/components/video/video-info';
-import { CreatorPanel } from '@/components/video/creator-panel';
-import { RelatedVideos } from '@/components/video/related-videos';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { fetchContentDetail } from '@/store/slices/contentSlice';
@@ -16,11 +14,9 @@ interface VideoPageClientProps {
   creatorId: string;
 }
 
-export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps): JSX.Element {
+export function VideoPageClient({ videoId }: VideoPageClientProps): JSX.Element {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isTheaterMode, setIsTheaterMode] = useState(false);
 
   const { selectedContent, isLoading, error } = useAppSelector((state) => state.content);
 
@@ -67,10 +63,6 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps): J
       navigator.clipboard.writeText(window.location.href);
       // TODO: 토스트 메시지 표시
     }
-  };
-
-  const handleTheaterModeToggle = (): void => {
-    setIsTheaterMode(!isTheaterMode);
   };
 
   // 로딩 중
@@ -136,98 +128,14 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps): J
       </div>
 
       <div className="max-w-[1600px] mx-auto p-2 lg:p-3">
-        <div className={`grid gap-2 lg:gap-3 transition-all duration-300 ${
-          isTheaterMode 
-            ? 'grid-cols-1' 
-            : sidebarCollapsed 
-              ? 'grid-cols-1 xl:grid-cols-6' 
-              : 'grid-cols-1 xl:grid-cols-12'
-        }`}>
-          {/* 메인 비디오 영역 */}
-          <div className={`${
-            isTheaterMode
-              ? 'col-span-1'
-              : sidebarCollapsed
-                ? 'xl:col-span-5'
-                : 'xl:col-span-9'
-          }`}>
-            <div className="space-y-2 lg:space-y-3">
-              {/* 비디오 플레이어 */}
-              <div className="relative">
-                <VideoPlayer videoId={youtubePlatformId} />
-                
-                {/* 극장 모드 토글 버튼 */}
-                <div className="absolute top-4 right-4 hidden lg:block">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleTheaterModeToggle}
-                    className="bg-black/50 hover:bg-black/70 text-white"
-                  >
-                    {isTheaterMode ? '일반 모드' : '극장 모드'}
-                  </Button>
-                </div>
-              </div>
-
-              {/* 비디오 정보 */}
-              <VideoInfo videoId={videoId} content={selectedContent} />
-              
-              {/* 극장 모드일 때만 관련 영상 하단에 표시 */}
-              {isTheaterMode ? <div className="mt-8">
-                  <h2 className="text-xl font-bold mb-4">관련 영상</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <RelatedVideos currentVideoId={videoId} />
-                  </div>
-                </div> : null}
-            </div>
+        <div className="space-y-2 lg:space-y-3">
+          {/* 비디오 플레이어 */}
+          <div className="relative">
+            <VideoPlayer videoId={youtubePlatformId} />
           </div>
 
-          {/* 우측 사이드바 (극장 모드가 아닐 때만) */}
-          {!isTheaterMode && (
-            <div className={`${
-              sidebarCollapsed ? 'xl:col-span-1' : 'xl:col-span-3'
-            }`}>
-              <div className="space-y-2">
-                {/* 사이드바 접기/펼치기 버튼 */}
-                <div className="hidden xl:flex justify-end">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  >
-                    {sidebarCollapsed ? '펼치기' : '접기'}
-                  </Button>
-                </div>
-
-                {!sidebarCollapsed && (
-                  <>
-                    {/* 크리에이터 패널 */}
-                    <div className="sticky top-4">
-                      <CreatorPanel 
-                        creatorId={creatorId}
-                        currentVideoId={videoId}
-                      />
-                    </div>
-                    
-                    {/* 관련 영상 */}
-                    <div className="lg:hidden xl:block">
-                      <RelatedVideos currentVideoId={videoId} />
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* 모바일/태블릿용 관련 영상 (하단) - 극장 모드가 아닐 때만 */}
-          {!isTheaterMode && (
-            <div className="xl:hidden col-span-full">
-              <div className="mt-8">
-                <h2 className="text-xl font-bold mb-4">관련 영상</h2>
-                <RelatedVideos currentVideoId={videoId} />
-              </div>
-            </div>
-          )}
+          {/* 비디오 정보 */}
+          <VideoInfo videoId={videoId} content={selectedContent} />
         </div>
 
         {/* 플로팅 액션 버튼 (모바일) */}
