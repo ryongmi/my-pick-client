@@ -135,8 +135,8 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps): J
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto p-4 lg:p-6">
-        <div className={`grid gap-4 lg:gap-6 transition-all duration-300 ${
+      <div className="max-w-[1600px] mx-auto p-2 lg:p-3">
+        <div className={`grid gap-2 lg:gap-3 transition-all duration-300 ${
           isTheaterMode 
             ? 'grid-cols-1' 
             : sidebarCollapsed 
@@ -151,7 +151,7 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps): J
                 ? 'xl:col-span-5' 
                 : 'xl:col-span-8'
           }`}>
-            <div className="space-y-4 lg:space-y-6">
+            <div className="space-y-2 lg:space-y-3">
               {/* 비디오 플레이어 */}
               <div className="relative">
                 <VideoPlayer videoId={youtubePlatformId} />
@@ -187,7 +187,7 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps): J
             <div className={`${
               sidebarCollapsed ? 'xl:col-span-1' : 'xl:col-span-4'
             }`}>
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {/* 사이드바 접기/펼치기 버튼 */}
                 <div className="hidden xl:flex justify-end">
                   <Button
