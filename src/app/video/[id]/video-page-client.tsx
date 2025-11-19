@@ -145,11 +145,11 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps): J
         }`}>
           {/* 메인 비디오 영역 */}
           <div className={`${
-            isTheaterMode 
-              ? 'col-span-1' 
-              : sidebarCollapsed 
-                ? 'xl:col-span-5' 
-                : 'xl:col-span-8'
+            isTheaterMode
+              ? 'col-span-1'
+              : sidebarCollapsed
+                ? 'xl:col-span-5'
+                : 'xl:col-span-9'
           }`}>
             <div className="space-y-2 lg:space-y-3">
               {/* 비디오 플레이어 */}
@@ -185,7 +185,7 @@ export function VideoPageClient({ videoId, creatorId }: VideoPageClientProps): J
           {/* 우측 사이드바 (극장 모드가 아닐 때만) */}
           {!isTheaterMode && (
             <div className={`${
-              sidebarCollapsed ? 'xl:col-span-1' : 'xl:col-span-4'
+              sidebarCollapsed ? 'xl:col-span-1' : 'xl:col-span-3'
             }`}>
               <div className="space-y-2">
                 {/* 사이드바 접기/펼치기 버튼 */}
