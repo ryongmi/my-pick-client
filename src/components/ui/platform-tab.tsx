@@ -1,14 +1,14 @@
 'use client';
 
 import { forwardRef } from 'react';
-import { Youtube, Twitter, Instagram, Music, Tv } from 'lucide-react';
+import { Youtube, X, Instagram, Music, Tv } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlatformTabProps } from '@/types/platform';
 
 // 아이콘 매핑
 const ICON_MAP = {
   Youtube,
-  Twitter,
+  Twitter: X, // X (구 Twitter)
   Instagram,
   Music,
   Tv,

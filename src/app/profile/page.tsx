@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, Twitter, Eye, Clock } from 'lucide-react';
+import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, X, Eye, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -285,8 +285,8 @@ export default function ProfilePage(): JSX.Element {
                             </>
                           ) : (
                             <>
-                              <Twitter className="h-3 w-3 mr-1 text-blue-400" />
-                              <span className="bg-blue-400 px-1 rounded">Twitter</span>
+                              <X className="h-3 w-3 mr-1 text-black" />
+                              <span className="bg-black text-white px-1 rounded">X</span>
                             </>
                           )}
                         </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Youtube, Twitter, AlertCircle } from 'lucide-react';
+import { X, Youtube, X as XIcon, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -48,7 +48,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
       if (formData.platform === 'youtube' && !formData.channelUrl.includes('youtube.com/')) {
         newErrors.channelUrl = '올바른 YouTube 채널 URL을 입력해주세요.';
       } else if (formData.platform === 'twitter' && !formData.channelUrl.includes('twitter.com/') && !formData.channelUrl.includes('x.com/')) {
-        newErrors.channelUrl = '올바른 Twitter URL을 입력해주세요.';
+        newErrors.channelUrl = '올바른 X URL을 입력해주세요.';
       }
     }
 
@@ -107,7 +107,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
               {formData.platform === 'youtube' ? (
                 <Youtube className="h-5 w-5 text-red-500" />
               ) : (
-                <Twitter className="h-5 w-5 text-blue-500" />
+                <XIcon className="h-5 w-5 text-black" />
               )}
               크리에이터 신청
             </h2>
@@ -156,10 +156,10 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
                     'p-3 rounded-lg border-2 flex items-center justify-center gap-2 transition-colors',
                     'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
                   )}
-                  title="Twitter는 현재 지원하지 않습니다"
+                  title="X는 현재 지원하지 않습니다"
                 >
-                  <Twitter className="h-5 w-5" />
-                  <span className="font-medium">Twitter</span>
+                  <XIcon className="h-5 w-5" />
+                  <span className="font-medium">X</span>
                   <span className="text-xs">(준비중)</span>
                 </button>
               </div>
@@ -182,7 +182,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
                 <p className="text-xs text-muted-foreground mt-1">
                   {formData.platform === 'youtube'
                     ? 'YouTube 채널의 고유 ID를 입력하세요'
-                    : 'Twitter 사용자 이름을 입력하세요'}
+                    : 'X 사용자 이름을 입력하세요'}
                 </p>
               )}
             </div>
@@ -198,7 +198,7 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
                 placeholder={
                   formData.platform === 'youtube'
                     ? 'https://www.youtube.com/channel/UC...'
-                    : 'https://twitter.com/username'
+                    : 'https://x.com/username'
                 }
                 className={cn(errors.channelUrl && 'border-red-500')}
               />

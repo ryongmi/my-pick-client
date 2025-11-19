@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, Users, Youtube, Twitter, Star } from 'lucide-react';
+import { Search, Plus, Users, Youtube, X, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -119,7 +119,7 @@ export default function CreatorsPage(): JSX.Element {
       case 'youtube':
         return <Youtube className="h-4 w-4 text-red-600" />;
       case 'twitter':
-        return <Twitter className="h-4 w-4 text-blue-400" />;
+        return <X className="h-4 w-4 text-black" />;
       default:
         return null;
     }
@@ -184,7 +184,7 @@ export default function CreatorsPage(): JSX.Element {
               >
                 <option value="all">모든 플랫폼</option>
                 <option value="youtube">YouTube</option>
-                <option value="twitter">Twitter</option>
+                <option value="twitter">X</option>
               </select>
               <select
                 value={orderBy}

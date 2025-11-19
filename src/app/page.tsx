@@ -3,7 +3,7 @@
 import { useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Eye, Clock, Heart, Bookmark, Play, Youtube, Twitter, User } from 'lucide-react';
+import { Eye, Clock, Heart, Bookmark, Play, Youtube, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
@@ -353,7 +353,7 @@ export default function HomePage(): JSX.Element {
                   </div>
                 </div>
                 <div className="bg-black text-white text-xs px-2 py-1 rounded flex items-center">
-                  <Twitter className="h-3 w-3 mr-1" />
+                  <X className="h-3 w-3 mr-1" />
                   X
                 </div>
               </div>
@@ -528,7 +528,7 @@ export default function HomePage(): JSX.Element {
               size="sm"
               onClick={() => handlePlatformFilter('twitter')}
             >
-              <Twitter className="h-4 w-4 mr-1" />
+              <X className="h-4 w-4 mr-1" />
               X
             </Button>
           </div>
