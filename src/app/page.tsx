@@ -353,8 +353,8 @@ export default function HomePage(): JSX.Element {
                   </div>
                 </div>
                 <div className="text-xs px-2 py-1 rounded flex items-center gap-1">
-                  <div className="bg-black rounded-full p-0.5 flex items-center justify-center">
-                    <X className="h-2.5 w-2.5 text-white" />
+                  <div className="border-2 border-black rounded p-0.5 flex items-center justify-center">
+                    <X className="h-2.5 w-2.5 text-black" />
                   </div>
                   <span className="text-foreground">X</span>
                 </div>
@@ -531,8 +531,8 @@ export default function HomePage(): JSX.Element {
               onClick={() => handlePlatformFilter('twitter')}
               className="gap-1.5"
             >
-              <div className="bg-black rounded-full p-0.5 flex items-center justify-center">
-                <X className="h-3 w-3 text-white" />
+              <div className="border-2 border-black rounded p-0.5 flex items-center justify-center">
+                <X className="h-3 w-3 text-black" />
               </div>
               X
             </Button>

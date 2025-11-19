@@ -36,8 +36,8 @@ export const PlatformTab = forwardRef<HTMLButtonElement, PlatformTabProps>(
       >
         {IconComponent ? (
           platform.icon === 'Twitter' ? (
-            <div className="bg-black rounded-full p-0.5 flex items-center justify-center mr-2">
-              <IconComponent className="h-3 w-3 text-white" />
+            <div className="border-2 border-black rounded p-0.5 flex items-center justify-center mr-2">
+              <IconComponent className="h-3 w-3 text-black" />
             </div>
           ) : (
             <IconComponent

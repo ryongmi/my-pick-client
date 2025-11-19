@@ -285,8 +285,8 @@ export default function ProfilePage(): JSX.Element {
                             </>
                           ) : (
                             <>
-                              <div className="bg-black rounded-full p-0.5 flex items-center justify-center">
-                                <X className="h-2.5 w-2.5 text-white" />
+                              <div className="border-2 border-black rounded p-0.5 flex items-center justify-center">
+                                <X className="h-2.5 w-2.5 text-black" />
                               </div>
                               <span className="bg-black text-white px-1 rounded">X</span>
                             </>

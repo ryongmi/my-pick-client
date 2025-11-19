@@ -120,8 +120,8 @@ export default function CreatorsPage(): JSX.Element {
         return <Youtube className="h-4 w-4 text-red-600" />;
       case 'twitter':
         return (
-          <div className="bg-black rounded-full p-0.5 flex items-center justify-center">
-            <X className="h-3 w-3 text-white" />
+          <div className="border-2 border-black rounded p-0.5 flex items-center justify-center">
+            <X className="h-3 w-3 text-black" />
           </div>
         );
       default:

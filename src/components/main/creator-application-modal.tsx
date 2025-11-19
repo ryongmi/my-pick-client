@@ -107,8 +107,8 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
               {formData.platform === 'youtube' ? (
                 <Youtube className="h-5 w-5 text-red-500" />
               ) : (
-                <div className="bg-black rounded-full p-1 flex items-center justify-center">
-                  <XIcon className="h-4 w-4 text-white" />
+                <div className="border-2 border-black rounded p-1 flex items-center justify-center">
+                  <XIcon className="h-4 w-4 text-black" />
                 </div>
               )}
               크리에이터 신청
@@ -160,8 +160,8 @@ export function CreatorApplicationModal({ isOpen, onClose }: CreatorApplicationM
                   )}
                   title="X는 현재 지원하지 않습니다"
                 >
-                  <div className="bg-black rounded-full p-1 flex items-center justify-center">
-                    <XIcon className="h-4 w-4 text-white" />
+                  <div className="border-2 border-gray-400 rounded p-1 flex items-center justify-center">
+                    <XIcon className="h-4 w-4 text-gray-400" />
                   </div>
                   <span className="font-medium">X</span>
                   <span className="text-xs">(준비중)</span>
