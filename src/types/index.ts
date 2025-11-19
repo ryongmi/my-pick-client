@@ -42,7 +42,7 @@ export type User = UserProfile;
 
 // 플랫폼 정보 타입 - 서버 PlatformInfo DTO에 맞춤
 export interface PlatformInfo {
-  platformType: 'youtube' | 'twitter';
+  platformType: 'youtube' | 'twitter'; // twitter = X (구 Twitter)
   platformId: string;
   platformUsername?: string;
   platformUrl?: string;
@@ -81,7 +81,7 @@ export interface CreatorWithPlatforms extends Omit<Creator, 'platforms'> {
 // Platform 타입 - 서버 구조에 맞게 확장
 export interface Platform {
   id?: string; // 서버에서 생성되는 ID
-  type: 'youtube' | 'twitter' | 'instagram' | 'tiktok';
+  type: 'youtube' | 'twitter' | 'instagram' | 'tiktok'; // twitter = X (구 Twitter)
   platformId: string;
   username?: string;
   url: string;
@@ -126,12 +126,12 @@ export interface ContentSyncInfo {
 // Content 타입 - 백엔드 my-pick-server에 맞춤
 export interface Content {
   id: string;
-  type: 'youtube_video' | 'twitter_post' | 'instagram_post';
+  type: 'youtube_video' | 'twitter_post' | 'instagram_post'; // twitter_post = X 포스트
   title: string;
   description?: string;
   thumbnail: string;
   url: string;
-  platform: 'youtube' | 'twitter' | 'instagram' | 'tiktok';
+  platform: 'youtube' | 'twitter' | 'instagram' | 'tiktok'; // twitter = X (구 Twitter)
   platformId: string;
   duration?: number; // 초 단위
   publishedAt: string;
@@ -188,9 +188,9 @@ export interface YouTubeVideo extends Omit<Content, 'platform'> {
   licensedContent: boolean;
 }
 
-// Twitter 특화 타입
+// X (구 Twitter) 특화 타입
 export interface TwitterPost extends Omit<Content, 'platform'> {
-  platform: 'twitter';
+  platform: 'twitter'; // X (구 Twitter)
   tweetId: string;
   retweetCount: number;
   replyCount: number;

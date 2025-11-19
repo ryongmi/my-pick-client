@@ -3,7 +3,7 @@ export interface PlatformConfig {
   id: string;
   name: string;
   displayName: string;
-  icon: string; // Lucide icon 이름 (예: 'Youtube', 'Twitter')
+  icon: string; // Lucide icon 이름 (예: 'Youtube', 'Twitter' - X(구 Twitter)용)
   color: string; // Tailwind CSS 클래스 (예: 'text-red-600')
   bgColor: string; // Tailwind CSS 클래스 (예: 'bg-red-600')
   isEnabled: boolean;

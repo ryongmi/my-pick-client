@@ -332,7 +332,7 @@ export default function HomePage(): JSX.Element {
         </Link>
       );
     } else {
-      // Twitter 포스트
+      // X 포스트
       return (
         <Card key={content.id} className="p-4 hover:shadow-lg transition-shadow">
           <div className="flex items-start">
@@ -352,9 +352,9 @@ export default function HomePage(): JSX.Element {
                     <span>{formatDate(content.publishedAt, 'relative')}</span>
                   </div>
                 </div>
-                <div className="bg-blue-400 text-white text-xs px-2 py-1 rounded flex items-center">
+                <div className="bg-black text-white text-xs px-2 py-1 rounded flex items-center">
                   <Twitter className="h-3 w-3 mr-1" />
-                  Twitter
+                  X
                 </div>
               </div>
               <p className="mb-3">{content.title}</p>
@@ -432,7 +432,7 @@ export default function HomePage(): JSX.Element {
               MyPick
             </h2>
             <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-              좋아하는 크리에이터의 YouTube와 Twitter 콘텐츠를 <br />
+              좋아하는 크리에이터의 YouTube와 X 콘텐츠를 <br />
               한 곳에서 쉽고 빠르게 관리하세요.
             </p>
 
@@ -448,7 +448,7 @@ export default function HomePage(): JSX.Element {
               </div>
               <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-white/30">
                 <div className="text-3xl font-bold text-orange-600 mb-2">🐦</div>
-                <div className="text-sm text-gray-500">Twitter 포스트</div>
+                <div className="text-sm text-gray-500">X 포스트</div>
               </div>
             </div>
           </div>
@@ -529,7 +529,7 @@ export default function HomePage(): JSX.Element {
               onClick={() => handlePlatformFilter('twitter')}
             >
               <Twitter className="h-4 w-4 mr-1" />
-              Twitter
+              X
             </Button>
           </div>
 

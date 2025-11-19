@@ -104,7 +104,7 @@ export function extractYouTubeVideoId(url: string): string | null {
   return null;
 }
 
-// Twitter 사용자명 추출
+// X (구 Twitter) 사용자명 추출
 export function extractTwitterUsername(url: string): string | null {
   const pattern = /(?:twitter\.com\/|x\.com\/)([a-zA-Z0-9_]+)/;
   const match = url.match(pattern);
@@ -115,7 +115,7 @@ export function extractTwitterUsername(url: string): string | null {
 export function getPlatformIcon(platform: string): string {
   const icons: Record<string, string> = {
     youtube: '🎥',
-    twitter: '🐦',
+    twitter: '✖️', // X (구 Twitter)
     instagram: '📷',
     tiktok: '🎵',
   };
@@ -126,7 +126,7 @@ export function getPlatformIcon(platform: string): string {
 export function getPlatformColor(platform: string): string {
   const colors: Record<string, string> = {
     youtube: 'bg-red-600',
-    twitter: 'bg-blue-400',
+    twitter: 'bg-black', // X (구 Twitter)
     instagram: 'bg-pink-600',
     tiktok: 'bg-black',
   };
