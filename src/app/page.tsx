@@ -525,13 +525,14 @@ export default function HomePage(): JSX.Element {
               YouTube
             </Button>
             <Button
-              variant={selectedPlatform === 'twitter' ? 'default' : 'outline'}
+              variant="outline"
               size="sm"
-              onClick={() => handlePlatformFilter('twitter')}
-              className="gap-1.5"
+              disabled
+              className="gap-1.5 opacity-50 cursor-not-allowed"
+              title="X는 현재 준비 중입니다"
             >
-              <XLogo className="text-black" size={16} />
-              X
+              <XLogo className="text-gray-400" size={16} />
+              X (준비중)
             </Button>
           </div>
 
