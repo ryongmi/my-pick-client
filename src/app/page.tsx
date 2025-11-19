@@ -352,9 +352,11 @@ export default function HomePage(): JSX.Element {
                     <span>{formatDate(content.publishedAt, 'relative')}</span>
                   </div>
                 </div>
-                <div className="bg-black text-white text-xs px-2 py-1 rounded flex items-center">
-                  <X className="h-3 w-3 mr-1" />
-                  X
+                <div className="text-xs px-2 py-1 rounded flex items-center gap-1">
+                  <div className="bg-black rounded-full p-0.5 flex items-center justify-center">
+                    <X className="h-2.5 w-2.5 text-white" />
+                  </div>
+                  <span className="text-foreground">X</span>
                 </div>
               </div>
               <p className="mb-3">{content.title}</p>
@@ -527,8 +529,11 @@ export default function HomePage(): JSX.Element {
               variant={selectedPlatform === 'twitter' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handlePlatformFilter('twitter')}
+              className="gap-1.5"
             >
-              <X className="h-4 w-4 mr-1" />
+              <div className="bg-black rounded-full p-0.5 flex items-center justify-center">
+                <X className="h-3 w-3 text-white" />
+              </div>
               X
             </Button>
           </div>

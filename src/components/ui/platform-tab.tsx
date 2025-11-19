@@ -34,12 +34,20 @@ export const PlatformTab = forwardRef<HTMLButtonElement, PlatformTabProps>(
         role="tab"
         aria-selected={isSelected}
       >
-        {IconComponent ? <IconComponent 
-            className={cn(
-              'h-4 w-4 mr-2',
-              platform.color
-            )} 
-          /> : null}
+        {IconComponent ? (
+          platform.icon === 'Twitter' ? (
+            <div className="bg-black rounded-full p-0.5 flex items-center justify-center mr-2">
+              <IconComponent className="h-3 w-3 text-white" />
+            </div>
+          ) : (
+            <IconComponent
+              className={cn(
+                'h-4 w-4 mr-2',
+                platform.color
+              )}
+            />
+          )
+        ) : null}
         <span>{platform.displayName}</span>
       </button>
     );

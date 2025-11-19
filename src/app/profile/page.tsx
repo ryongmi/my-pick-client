@@ -277,15 +277,17 @@ export default function ProfilePage(): JSX.Element {
                         {content.duration ? <span className="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-1 rounded">
                             {content.duration}
                           </span> : null}
-                        <div className="absolute top-2 left-2 text-white text-xs px-2 py-1 rounded flex items-center">
+                        <div className="absolute top-2 left-2 text-xs px-2 py-1 rounded flex items-center gap-1">
                           {content.platform === 'youtube' ? (
                             <>
-                              <Youtube className="h-3 w-3 mr-1 text-red-600" />
-                              <span className="bg-red-600 px-1 rounded">YouTube</span>
+                              <Youtube className="h-3 w-3 text-red-600" />
+                              <span className="bg-red-600 text-white px-1 rounded">YouTube</span>
                             </>
                           ) : (
                             <>
-                              <X className="h-3 w-3 mr-1 text-black" />
+                              <div className="bg-black rounded-full p-0.5 flex items-center justify-center">
+                                <X className="h-2.5 w-2.5 text-white" />
+                              </div>
                               <span className="bg-black text-white px-1 rounded">X</span>
                             </>
                           )}

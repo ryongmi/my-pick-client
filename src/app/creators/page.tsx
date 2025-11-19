@@ -119,7 +119,11 @@ export default function CreatorsPage(): JSX.Element {
       case 'youtube':
         return <Youtube className="h-4 w-4 text-red-600" />;
       case 'twitter':
-        return <X className="h-4 w-4 text-black" />;
+        return (
+          <div className="bg-black rounded-full p-0.5 flex items-center justify-center">
+            <X className="h-3 w-3 text-white" />
+          </div>
+        );
       default:
         return null;
     }
