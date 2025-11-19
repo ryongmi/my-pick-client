@@ -2,14 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Play,
-  Eye,
   ExternalLink,
   Bell,
-  BellOff,
-  ChevronRight,
-  Trophy,
-  Clock
+  BellOff
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -134,12 +129,11 @@ const MOCK_CREATOR_DATA = {
   },
 };
 
-export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps): JSX.Element {
+export function CreatorPanel({ creatorId }: CreatorPanelProps): JSX.Element {
   const dispatch = useAppDispatch();
   const { isInitialized } = useAuth();
   const { creators, isFollowing } = useAppSelector(state => state.creator);
   const [notificationEnabled, setNotificationEnabled] = useState(false);
-  const [showAllVideos, setShowAllVideos] = useState(false);
 
   // isSubscribed 필드를 기반으로 구독 중인 크리에이터 필터링
   const followedCreators = useMemo(() => {
@@ -235,18 +229,6 @@ export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps): 
   const handleChannelVisit = (): void => {
     window.open(creatorData.socialLinks.youtube, '_blank');
   };
-
-  const handleVideoClick = (videoId: string): void => {
-    if (videoId !== currentVideoId) {
-      // TODO: 비디오 페이지로 네비게이션
-      // eslint-disable-next-line no-console
-      console.log('Navigate to video:', videoId);
-    }
-  };
-
-  const displayedVideos = showAllVideos 
-    ? creatorData.recentVideos 
-    : creatorData.recentVideos.slice(0, 3);
 
   return (
     <div className="space-y-4">
@@ -380,110 +362,6 @@ export function CreatorPanel({ creatorId, currentVideoId }: CreatorPanelProps): 
         </CardContent>
       </Card>
 
-      {/* 최근 영상 */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold">최근 영상</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowAllVideos(!showAllVideos)}
-              className="text-xs"
-            >
-              {showAllVideos ? '접기' : '더보기'}
-              <ChevronRight className={cn(
-                "h-3 w-3 ml-1 transition-transform",
-                showAllVideos && "rotate-90"
-              )} />
-            </Button>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="pt-0">
-          <div className="space-y-3">
-            {displayedVideos.map((video) => (
-              <div
-                key={video.id}
-                onClick={() => handleVideoClick(video.id)}
-                className={cn(
-                  "flex space-x-3 p-2 rounded-lg cursor-pointer transition-colors group",
-                  video.id === currentVideoId 
-                    ? "bg-primary/10 border border-primary/20" 
-                    : "hover:bg-muted/50"
-                )}
-              >
-                {/* 썸네일 */}
-                <div className="relative w-20 h-12 flex-shrink-0">
-                  <div className={cn(
-                    "w-full h-full rounded bg-gradient-to-br flex items-center justify-center",
-                    creatorData.bannerColor
-                  )}>
-                    <Play className="h-4 w-4 text-white" />
-                  </div>
-                  
-                  <div className="absolute bottom-1 right-1 bg-black/75 text-white text-xs px-1.5 py-0.5 rounded">
-                    {video.duration}
-                  </div>
-                </div>
-
-                {/* 비디오 정보 */}
-                <div className="flex-1 min-w-0">
-                  <h4 className={cn(
-                    "text-sm font-medium line-clamp-2 mb-1 group-hover:text-primary",
-                    video.id === currentVideoId && "text-primary"
-                  )}>
-                    {video.title}
-                  </h4>
-                  
-                  <div className="flex items-center space-x-3 text-xs text-muted-foreground">
-                    <div className="flex items-center">
-                      <Eye className="h-3 w-3 mr-1" />
-                      <span>{formatNumber(video.viewCount)}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="h-3 w-3 mr-1" />
-                      <span>{video.publishedAt}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 주요 성과 */}
-      {creatorData.milestones.length > 0 && (
-        <Card>
-          <CardHeader className="pb-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-yellow-500" />
-              주요 성과
-            </h3>
-          </CardHeader>
-          
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              {creatorData.milestones.map((milestone, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className={cn(
-                    "w-2 h-2 rounded-full",
-                    milestone.type === 'subscriber' ? "bg-blue-500" : 
-                    milestone.type === 'view' ? "bg-green-500" : "bg-purple-500"
-                  )} />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{milestone.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDate(milestone.date, 'short')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
