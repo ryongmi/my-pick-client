@@ -101,7 +101,7 @@ export function Header(): JSX.Element {
           {/* 우측 메뉴 */}
           <div className="mr-3 flex items-center space-x-3">
             {/* 대시보드 */}
-            <div className="relative">
+            {/* <div className="relative">
               <Button
                 variant="ghost"
                 size="icon"
@@ -143,10 +143,10 @@ export function Header(): JSX.Element {
                     </div>
                   </div>
                 </div> : null}
-            </div>
+            </div> */}
 
             {/* 알림 */}
-            <div className="relative">
+            {/* <div className="relative">
               <Button
                 variant="ghost"
                 size="icon"
@@ -190,7 +190,7 @@ export function Header(): JSX.Element {
                     </div>
                   </div>
                 </div> : null}
-            </div>
+            </div> */}
 
             {/* 프로필 */}
             <div className="relative">
