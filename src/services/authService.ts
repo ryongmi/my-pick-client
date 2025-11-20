@@ -49,6 +49,12 @@ export class AuthService extends BaseService {
       // authApi는 이미 언패킹되어 response.data에 직접 접근 가능
       const { accessToken, user } = response.data;
 
+      // accessToken이 빈 문자열이거나 user.id가 없으면 로그아웃 상태로 처리
+      if (!accessToken || accessToken === '' || !user || !user.id || user.id === '') {
+        tokenManager.clearAccessToken();
+        return { user: null };
+      }
+
       // AccessToken 저장
       tokenManager.setAccessToken(accessToken);
 
