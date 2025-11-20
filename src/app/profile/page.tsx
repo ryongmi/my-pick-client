@@ -51,7 +51,7 @@ export default function ProfilePage(): JSX.Element {
   const dispatch = useAppDispatch();
   const { creators, isFollowing } = useAppSelector(state => state.creator);
   const { bookmarkedContents, isLoadingBookmarks } = useAppSelector(state => state.content);
-  const [activeTab, setActiveTab] = useState('activity');
+  const [activeTab, setActiveTab] = useState('creators');
 
   // 구독 중인 크리에이터는 creators 배열을 그대로 사용 (이미 구독한 것만 반환됨)
   const followedCreators = useMemo(() => {
@@ -134,10 +134,10 @@ export default function ProfilePage(): JSX.Element {
   };
 
   const tabs = [
-    { id: 'activity', label: '활동 내역', icon: Activity },
+    // { id: 'activity', label: '활동 내역', icon: Activity },
     { id: 'creators', label: '내 크리에이터', icon: User },
     { id: 'bookmarks', label: '북마크', icon: Bookmark },
-    { id: 'settings', label: '설정', icon: Settings },
+    // { id: 'settings', label: '설정', icon: Settings },
   ];
 
   const renderTabContent = (): JSX.Element | null => {
