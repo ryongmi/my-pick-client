@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, Users, Youtube, Star } from 'lucide-react';
+import { Search, Plus, Users, Youtube, Star, RotateCcw } from 'lucide-react';
 import { XLogo } from '@/components/icons/XLogo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,15 +58,11 @@ export default function CreatorsPage(): JSX.Element {
 
   // 검색 함수
   const handleSearch = async (): Promise<void> => {
-    if (!searchTerm.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
     try {
-      // Redux를 통해 검색
+      // Redux를 통해 검색 (검색어가 비어있어도 모든 크리에이터 조회)
+      const trimmedSearch = searchTerm.trim();
       const response = await dispatch(fetchCreators({
-        name: searchTerm,
+        ...(trimmedSearch && { name: trimmedSearch }), // 검색어가 있을 때만 name 파라미터 추가
         platform: selectedPlatform,
         orderBy: orderBy,
         limit: 15
@@ -77,12 +73,12 @@ export default function CreatorsPage(): JSX.Element {
     }
   };
 
-  // 검색어가 비어있을 때 검색 결과 초기화
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setSearchResults([]);
-    }
-  }, [searchTerm]);
+  // 검색어가 비어있을 때 검색 결과 초기화 (비활성화)
+  // useEffect(() => {
+  //   if (!searchTerm.trim()) {
+  //     setSearchResults([]);
+  //   }
+  // }, [searchTerm]);
 
   // 엔터키 검색
   const handleKeyPress = (e: React.KeyboardEvent): void => {
