@@ -3,7 +3,8 @@
 import { useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Plus } from 'lucide-react';
+import { Plus, Youtube } from 'lucide-react';
+import { XLogo } from '@/components/icons/XLogo';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useUI } from '@/hooks/redux';
@@ -202,9 +203,21 @@ export function Sidebar(): JSX.Element {
                 )}
                 <div className="ml-3 flex-1">
                   <p className="font-medium text-sm">{creator.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {creator.platformCount ? `${creator.platformCount}개 플랫폼` : '플랫폼 정보 없음'}
-                  </p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    {creator.platforms && creator.platforms.length > 0 ? (
+                      creator.platforms.map((platform) => (
+                        <div key={platform.platformId} className="flex items-center">
+                          {platform.platformType === 'youtube' ? (
+                            <Youtube className="h-3 w-3 text-red-600" />
+                          ) : platform.platformType === 'twitter' ? (
+                            <XLogo className="text-black" size={12} />
+                          ) : null}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-muted-foreground">플랫폼 정보 없음</p>
+                    )}
+                  </div>
                 </div>
                 {/* 새 콘텐츠 카운트 - 크리에이터별 고정값 */}
                 {((): JSX.Element | null => {
