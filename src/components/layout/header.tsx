@@ -329,8 +329,11 @@ export function Header(): JSX.Element {
               <Button
                 variant="default"
                 onClick={() => {
-                  // 로그인 페이지로 리다이렉트 (auth-server의 OAuth 로그인)
-                  window.location.href = `${process.env.NEXT_PUBLIC_AUTH_URL}/auth/google`;
+                  // SSO 로그인 처리 (page.tsx와 동일한 패턴)
+                  const returnUrl = typeof window !== 'undefined' ? window.location.pathname : '/';
+                  const redirectUri = encodeURIComponent(`${window.location.origin}${returnUrl}`);
+                  const ssoStartUrl = `${process.env.NEXT_PUBLIC_AUTH_API_URL}/auth/login?redirect_uri=${redirectUri}`;
+                  window.location.href = ssoStartUrl;
                 }}
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
               >
