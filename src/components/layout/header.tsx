@@ -226,7 +226,7 @@ export function Header(): JSX.Element {
                     >
                       내 프로필
                     </Button>
-                    <Button
+                    {/* <Button
                       variant="ghost"
                       className="w-full justify-start"
                       onClick={() => {
@@ -235,7 +235,7 @@ export function Header(): JSX.Element {
                       }}
                     >
                       설정
-                    </Button>
+                    </Button> */}
 
                     {/* 크리에이터 신청 관련 메뉴 */}
                     {applicationStatus === 'none' && (
