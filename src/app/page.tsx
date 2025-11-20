@@ -33,7 +33,7 @@ export default function HomePage(): JSX.Element {
   const dispatch = useAppDispatch();
   const { filters } = useUI();
   const { contents, isLoading, hasMore, isLoadingMore, pagination } = useContent();
-  const { isLoggedIn, user, loading, isAuthenticated, isInitialized } = useAuth();
+  const { isLoggedIn, loading, isInitialized } = useAuth();
   const { creators } = useAppSelector(state => state.creator);
   const selectedPlatform = useAppSelector(selectSelectedPlatform);
   const loadingRef = useRef<HTMLDivElement>(null);

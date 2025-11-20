@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { CreatorApplication } from '@/types/userManagement';
-import { mypickApi } from '@/lib/httpClient';
-import { errorUtils } from '@/lib/httpClient';
+import { creatorApplicationService } from '@/services/creatorApplicationService';
+import { ServiceError } from '@/services/base';
 
 // 신청 데이터 타입 (서버 CreateRegistrationDto에 맞춤)
 export interface CreatorApplicationFormData {
@@ -42,10 +42,12 @@ export const submitCreatorApplication = createAsyncThunk(
   'creatorApplication/submit',
   async (formData: CreatorApplicationFormData, { rejectWithValue }) => {
     try {
-      const response = await mypickApi.post('/creator-registrations', formData);
-      return response.data;
+      const response = await creatorApplicationService.submitApplication(formData);
+      return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error) || '신청 제출에 실패했습니다.';
+      const errorMessage = error instanceof ServiceError
+        ? error.message
+        : '신청 제출에 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
   }
@@ -56,11 +58,12 @@ export const fetchApplicationStatus = createAsyncThunk(
   'creatorApplication/fetchStatus',
   async (_, { rejectWithValue }) => {
     try {
-      // Creator application status API not implemented yet
-      // Return null to indicate no application found
-      return null;
+      const response = await creatorApplicationService.getMyApplicationStatus();
+      return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error) || '신청 상태 조회에 실패했습니다.';
+      const errorMessage = error instanceof ServiceError
+        ? error.message
+        : '신청 상태 조회에 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
   }
@@ -71,10 +74,12 @@ export const resubmitCreatorApplication = createAsyncThunk(
   'creatorApplication/resubmit',
   async (formData: CreatorApplicationFormData, { rejectWithValue }) => {
     try {
-      const response = await mypickApi.post('/creator-registrations', formData);
-      return response.data;
+      const response = await creatorApplicationService.submitApplication(formData);
+      return response;
     } catch (error: unknown) {
-      const errorMessage = errorUtils.getUserMessage(error) || '재신청에 실패했습니다.';
+      const errorMessage = error instanceof ServiceError
+        ? error.message
+        : '재신청에 실패했습니다.';
       return rejectWithValue(errorMessage);
     }
   }

@@ -5,7 +5,7 @@ interface CreatorPanelProps {
   currentVideoId?: string;
 }
 
-export function CreatorPanel({ creatorId }: CreatorPanelProps): JSX.Element {
+export function CreatorPanel({ creatorId: _creatorId }: CreatorPanelProps): JSX.Element {
   // 크리에이터 패널이 완전히 제거됨
 
   return (

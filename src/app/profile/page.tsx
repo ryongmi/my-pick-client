@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { User, Settings, Bookmark, Activity, Edit, Star, Play, Youtube, Eye, Clock } from 'lucide-react';
+import { User, Bookmark, Edit, Star, Play, Youtube, Eye, Clock } from 'lucide-react';
 import { XLogo } from '@/components/icons/XLogo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
