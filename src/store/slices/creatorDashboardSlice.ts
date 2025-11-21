@@ -6,6 +6,7 @@ import type {
   ContentStatus,
   ContentFilters,
 } from '@/types/creatorDashboard';
+import { LimitType } from '@/types/creatorDashboard';
 
 // ==================== INITIAL STATE ====================
 
@@ -32,7 +33,7 @@ const initialState: CreatorDashboardState = {
   isLoading: false,
   error: null,
   page: 1,
-  limit: 20,
+  limit: LimitType.THIRTY,
   hasMore: true,
 };
 
@@ -158,7 +159,7 @@ const creatorDashboardSlice = createSlice({
     },
 
     // limit 변경
-    setLimit: (state, action: PayloadAction<number>) => {
+    setLimit: (state, action: PayloadAction<LimitType>) => {
       state.limit = action.payload;
       state.page = 1; // limit 변경 시 페이지 초기화
     },

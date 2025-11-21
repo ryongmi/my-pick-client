@@ -1,4 +1,5 @@
 import type { Creator, Content } from './index';
+import { LimitType } from '@krgeobuk/core/enum';
 
 /**
  * 콘텐츠 상태 Enum
@@ -11,6 +12,11 @@ export enum ContentStatus {
   FLAGGED = 'flagged',
   REMOVED = 'removed',
 }
+
+/**
+ * LimitType re-export
+ */
+export { LimitType };
 
 /**
  * 콘텐츠 상태 표시 레이블
@@ -83,7 +89,7 @@ export interface CreatorDashboardState {
 
   // 페이지네이션
   page: number;
-  limit: number;
+  limit: LimitType;
   hasMore: boolean;
 }
 

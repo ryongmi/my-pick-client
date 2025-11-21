@@ -41,7 +41,7 @@ import {
   selectSelectedContentIds,
   selectIsLoading,
 } from '@/store/slices/creatorDashboardSlice';
-import { ContentStatus, ContentStatusLabel } from '@/types/creatorDashboard';
+import { ContentStatus, ContentStatusLabel, LimitType } from '@/types/creatorDashboard';
 import { cn, formatNumber, formatDate } from '@/lib/utils';
 
 export default function CreatorDashboardPage(): JSX.Element {
@@ -159,7 +159,7 @@ export default function CreatorDashboardPage(): JSX.Element {
   };
 
   // limit 변경 핸들러
-  const handleLimitChange = (newLimit: number) => {
+  const handleLimitChange = (newLimit: LimitType) => {
     dispatch(setLimit(newLimit));
   };
 
@@ -295,13 +295,13 @@ export default function CreatorDashboardPage(): JSX.Element {
             {/* 페이지당 개수 선택 */}
             <select
               value={limit}
-              onChange={(e) => handleLimitChange(Number(e.target.value))}
+              onChange={(e) => handleLimitChange(Number(e.target.value) as LimitType)}
               className="rounded-md border border-input bg-background px-3 py-2"
             >
-              <option value={10}>10개씩</option>
-              <option value={20}>20개씩</option>
-              <option value={30}>30개씩</option>
-              <option value={50}>50개씩</option>
+              <option value={LimitType.FIFTEEN}>{LimitType.FIFTEEN}개씩</option>
+              <option value={LimitType.THIRTY}>{LimitType.THIRTY}개씩</option>
+              <option value={LimitType.FIFTY}>{LimitType.FIFTY}개씩</option>
+              <option value={LimitType.HUNDRED}>{LimitType.HUNDRED}개씩</option>
             </select>
 
             {/* 일괄 작업 버튼 */}
