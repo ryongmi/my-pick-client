@@ -29,6 +29,8 @@ import {
   deleteContent,
   bulkUpdateContentStatus,
   setFilters,
+  setPage,
+  setLimit,
   toggleContentSelection,
   toggleAllContentSelection,
   clearSelection,
@@ -55,6 +57,9 @@ export default function CreatorDashboardPage(): JSX.Element {
   const filters = useAppSelector(selectFilters);
   const selectedContentIds = useAppSelector(selectSelectedContentIds);
   const isLoading = useAppSelector(selectIsLoading);
+  const { page, limit, totalContents, totalPages } = useAppSelector(
+    (state) => state.creatorDashboard
+  );
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -73,12 +78,14 @@ export default function CreatorDashboardPage(): JSX.Element {
           const params: {
             creatorId: string;
             page?: number;
+            limit?: number;
             platform?: string;
             sortBy?: string;
             sortOrder?: 'ASC' | 'DESC';
           } = {
             creatorId: result.creator.id,
-            page: 1,
+            page: page,
+            limit: limit,
             sortBy: filters.sortBy,
             sortOrder: filters.sortOrder.toUpperCase() as 'ASC' | 'DESC',
           };
@@ -95,7 +102,7 @@ export default function CreatorDashboardPage(): JSX.Element {
     };
 
     loadData();
-  }, [dispatch, isInitialized, filters.platform, filters.sortBy, filters.sortOrder]);
+  }, [dispatch, isInitialized, page, limit, filters.platform, filters.sortBy, filters.sortOrder]);
 
   // 필터 변경 핸들러
   const handleFilterChange = (key: string, value: string) => {
@@ -143,6 +150,17 @@ export default function CreatorDashboardPage(): JSX.Element {
     } catch (error) {
       console.error('Failed to bulk update:', error);
     }
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (newPage: number) => {
+    dispatch(setPage(newPage));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // limit 변경 핸들러
+  const handleLimitChange = (newLimit: number) => {
+    dispatch(setLimit(newLimit));
   };
 
   // 로딩 상태
@@ -272,6 +290,18 @@ export default function CreatorDashboardPage(): JSX.Element {
               <option value="all">모든 상태</option>
               <option value={ContentStatus.ACTIVE}>공개</option>
               <option value={ContentStatus.INACTIVE}>비공개</option>
+            </select>
+
+            {/* 페이지당 개수 선택 */}
+            <select
+              value={limit}
+              onChange={(e) => handleLimitChange(Number(e.target.value))}
+              className="rounded-md border border-input bg-background px-3 py-2"
+            >
+              <option value={10}>10개씩</option>
+              <option value={20}>20개씩</option>
+              <option value={30}>30개씩</option>
+              <option value={50}>50개씩</option>
             </select>
 
             {/* 일괄 작업 버튼 */}
@@ -431,6 +461,55 @@ export default function CreatorDashboardPage(): JSX.Element {
           )}
         </CardContent>
       </Card>
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+            >
+              이전
+            </Button>
+
+            {/* 페이지 번호 버튼 */}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+              // 현재 페이지 근처만 표시
+              if (
+                pageNum === 1 ||
+                pageNum === totalPages ||
+                (pageNum >= page - 2 && pageNum <= page + 2)
+              ) {
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === page ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              } else if (pageNum === page - 3 || pageNum === page + 3) {
+                return <span key={pageNum}>...</span>;
+              }
+              return null;
+            })}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+            >
+              다음
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* 삭제 확인 모달 */}
       {showDeleteConfirm && (

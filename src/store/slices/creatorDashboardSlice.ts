@@ -21,6 +21,7 @@ const initialState: CreatorDashboardState = {
   myCreatorInfo: null,
   contents: [],
   totalContents: 0,
+  totalPages: 0,
   isLoadingContents: false,
   contentsError: null,
   stats: null,
@@ -63,6 +64,7 @@ export const fetchMyContents = createAsyncThunk(
     params: {
       creatorId: string;
       page?: number;
+      limit?: number;
       platform?: string;
       sortBy?: string;
       sortOrder?: 'ASC' | 'DESC';
@@ -155,6 +157,12 @@ const creatorDashboardSlice = createSlice({
       state.page = 1;
     },
 
+    // limit 변경
+    setLimit: (state, action: PayloadAction<number>) => {
+      state.limit = action.payload;
+      state.page = 1; // limit 변경 시 페이지 초기화
+    },
+
     // 콘텐츠 선택 토글
     toggleContentSelection: (state, action: PayloadAction<string>) => {
       const contentId = action.payload;
@@ -220,6 +228,7 @@ const creatorDashboardSlice = createSlice({
         state.isLoadingContents = false;
         state.contents = action.payload.items;
         state.totalContents = action.payload.pageInfo.totalItems;
+        state.totalPages = action.payload.pageInfo.totalPages;
         state.hasMore = action.payload.pageInfo.page < action.payload.pageInfo.totalPages;
       })
       .addCase(fetchMyContents.rejected, (state, action) => {
@@ -292,6 +301,7 @@ const creatorDashboardSlice = createSlice({
 export const {
   setFilters,
   resetFilters,
+  setLimit,
   toggleContentSelection,
   toggleAllContentSelection,
   clearSelection,

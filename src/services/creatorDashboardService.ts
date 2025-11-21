@@ -56,6 +56,7 @@ class CreatorDashboardService {
 
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.limit) queryParams.append('limit', params.limit.toString());
+    else queryParams.append('limit', '20'); // 기본값 20
     if (params.platform && params.platform !== 'all')
       queryParams.append('platforms', params.platform);
     if (params.sortBy) queryParams.append('sortBy', params.sortBy);

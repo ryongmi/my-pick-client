@@ -62,6 +62,7 @@ export interface CreatorDashboardState {
   // 콘텐츠 목록
   contents: Content[];
   totalContents: number;
+  totalPages: number;
   isLoadingContents: boolean;
   contentsError: string | null;
 
