@@ -34,7 +34,7 @@ class CreatorDashboardService {
 
   /**
    * 크리에이터 본인의 콘텐츠 목록 조회
-   * GET /content?creatorIds={myCreatorId}&page=1&limit=20
+   * GET /content?creatorIds={myCreatorId}&page=1&limit=20&includeAllStatuses=true
    */
   async getMyContents(params: {
     creatorId: string;
@@ -54,6 +54,7 @@ class CreatorDashboardService {
   }> {
     const queryParams = new URLSearchParams();
     queryParams.append('creatorIds', params.creatorId);
+    queryParams.append('includeAllStatuses', 'true'); // 크리에이터 본인의 모든 상태 콘텐츠 조회
 
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.limit) queryParams.append('limit', params.limit.toString());
