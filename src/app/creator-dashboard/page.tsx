@@ -274,7 +274,7 @@ export default function CreatorDashboardPage(): JSX.Element {
             <select
               value={filters.platform}
               onChange={(e) => handleFilterChange('platform', e.target.value)}
-              className="rounded-md border border-input bg-background px-3 py-2"
+              className="rounded-md border border-input bg-background px-3 py-2 pr-8 min-w-[120px]"
             >
               <option value="all">모든 플랫폼</option>
               <option value="youtube">YouTube</option>
@@ -285,7 +285,7 @@ export default function CreatorDashboardPage(): JSX.Element {
             <select
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="rounded-md border border-input bg-background px-3 py-2"
+              className="rounded-md border border-input bg-background px-3 py-2 pr-8 min-w-[110px]"
             >
               <option value="all">모든 상태</option>
               <option value={ContentStatus.ACTIVE}>공개</option>
@@ -296,7 +296,7 @@ export default function CreatorDashboardPage(): JSX.Element {
             <select
               value={limit}
               onChange={(e) => handleLimitChange(Number(e.target.value) as LimitType)}
-              className="rounded-md border border-input bg-background px-3 py-2"
+              className="rounded-md border border-input bg-background px-3 py-2 pr-8 min-w-[100px]"
             >
               <option value={LimitType.FIFTEEN}>{LimitType.FIFTEEN}개씩</option>
               <option value={LimitType.THIRTY}>{LimitType.THIRTY}개씩</option>
