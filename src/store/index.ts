@@ -9,6 +9,7 @@ import notificationSlice from './slices/notificationSlice';
 import platformSlice from './slices/platformSlice';
 import creatorApplicationSlice from './slices/creatorApplicationSlice';
 import videoDetailSlice from './slices/videoDetailSlice';
+import creatorDashboardSlice from './slices/creatorDashboardSlice';
 
 // Root reducer
 const rootReducer = combineReducers({
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   platform: platformSlice,
   creatorApplication: creatorApplicationSlice,
   videoDetail: videoDetailSlice,
+  creatorDashboard: creatorDashboardSlice,
 });
 
 // Store configuration
