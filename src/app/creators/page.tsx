@@ -177,7 +177,7 @@ export default function CreatorsPage(): JSX.Element {
               <select
                 value={selectedPlatform}
                 onChange={(e) => setSelectedPlatform(e.target.value)}
-                className="px-3 py-2 border border-input rounded-md"
+                className="px-3 py-2 pr-8 border border-input rounded-md min-w-[120px]"
               >
                 <option value="all">모든 플랫폼</option>
                 <option value="youtube">YouTube</option>
@@ -186,7 +186,7 @@ export default function CreatorsPage(): JSX.Element {
               <select
                 value={orderBy}
                 onChange={(e) => setOrderBy(e.target.value)}
-                className="px-3 py-2 border border-input rounded-md"
+                className="px-3 py-2 pr-8 border border-input rounded-md min-w-[130px]"
               >
                 <option value="followers">팔로워 순</option>
                 <option value="name">이름 순</option>
