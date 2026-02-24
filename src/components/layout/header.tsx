@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Menu, Star, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { useUI } from '@/hooks/redux';
 import { useAuth } from '@/hooks/useAuth';
 import {
   toggleSidebar,
+  toggleDashboardSidebar,
   toggleDropdown,
   closeAllDropdowns,
 } from '@/store/slices/uiSlice';
@@ -28,9 +29,13 @@ import { CreatorStatusModal } from '@/components/main/creator-status-modal';
 export function Header(): JSX.Element {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated } = useAuth();
   const { dropdowns } = useUI();
   const { applicationStatus, isApplicationModalOpen, isStatusModalOpen } = useAppSelector(state => state.creatorApplication);
+
+  // 크리에이터 대시보드 페이지인지 확인
+  const isDashboardPage = pathname?.startsWith('/creator-dashboard');
 
   // 크리에이터 신청 상태 초기화
   useEffect(() => {
@@ -69,7 +74,12 @@ export function Header(): JSX.Element {
               data-sidebar-toggle
               onClick={(e) => {
                 e.stopPropagation();
-                dispatch(toggleSidebar());
+                // 크리에이터 대시보드 페이지면 대시보드 사이드바 토글, 아니면 메인 사이드바 토글
+                if (isDashboardPage) {
+                  dispatch(toggleDashboardSidebar());
+                } else {
+                  dispatch(toggleSidebar());
+                }
               }}
               className="mr-3"
             >

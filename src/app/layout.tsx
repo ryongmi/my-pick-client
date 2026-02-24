@@ -2,6 +2,7 @@
 
 import { Inter } from 'next/font/google';
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import './globals.css';
 import { Providers } from '@/components/providers/Providers';
 import { Header } from '@/components/layout/header';
@@ -14,11 +15,15 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 /**
  * 루트 레이아웃
  * - Providers (Redux, ThemeProvider, AuthProvider, AuthGuard 포함)
- * - Header + Sidebar (모든 페이지 공통)
+ * - Header + Sidebar (모든 페이지 공통, 단 크리에이터 대시보드에서는 Sidebar 숨김)
  */
 function RootLayoutClient({ children }: { children: React.ReactNode }): JSX.Element {
   const dispatch = useAppDispatch();
+  const pathname = usePathname();
   const { sidebarOpen } = useUI();
+
+  // 크리에이터 대시보드 페이지인지 확인
+  const isDashboardPage = pathname?.startsWith('/creator-dashboard');
 
   useEffect(() => {
     const checkMobile = (): void => {
@@ -33,8 +38,9 @@ function RootLayoutClient({ children }: { children: React.ReactNode }): JSX.Elem
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      {sidebarOpen ? <Sidebar /> : null}
-      <main className="mt-16 overflow-auto">
+      {/* 크리에이터 대시보드가 아닐 때만 전역 사이드바 표시 */}
+      {!isDashboardPage && sidebarOpen && <Sidebar />}
+      <main className={isDashboardPage ? '' : 'mt-16 overflow-auto'}>
         {children}
       </main>
     </div>

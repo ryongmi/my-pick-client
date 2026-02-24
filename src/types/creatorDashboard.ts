@@ -77,6 +77,14 @@ export interface CreatorDashboardState {
   isLoadingStats: boolean;
   statsError: string | null;
 
+  // 플랫폼 관리
+  platforms: CreatorPlatform[];
+  isLoadingPlatforms: boolean;
+  platformsError: string | null;
+  isAddPlatformModalOpen: boolean;
+  isEditPlatformModalOpen: boolean;
+  editingPlatform: CreatorPlatform | null;
+
   // 필터 및 정렬
   filters: ContentFilters;
 
@@ -106,4 +114,69 @@ export interface UpdateContentStatusRequest {
 export interface BulkUpdateContentStatusRequest {
   contentIds: string[];
   status: ContentStatus;
+}
+
+/**
+ * 크리에이터 플랫폼 (GET /creators/:id/platforms 응답)
+ * 백엔드 CreatorPlatformEntity와 동일
+ */
+export interface CreatorPlatform {
+  id: string;
+  creatorId: string;
+  platformType: 'youtube' | 'twitter';
+  platformId: string;
+  platformUsername?: string;
+  platformUrl?: string;
+  displayName?: string;
+  isActive: boolean;
+
+  // 통계 정보
+  followerCount?: number;
+  contentCount?: number;
+  totalViews?: number;
+
+  // 동기화 정보
+  lastSyncAt?: string;
+  syncStatus?: 'active' | 'error' | 'disabled';
+  syncProgress?: {
+    total: number;
+    synced: number;
+    failed: number;
+    lastError?: string;
+  };
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * 플랫폼 추가 요청 (POST /creators/me/platforms)
+ */
+export interface CreatePlatformRequest {
+  platformType: 'youtube' | 'twitter';
+  platformId: string;
+  platformUsername?: string;
+  platformUrl?: string;
+}
+
+/**
+ * 플랫폼 수정 요청 (PATCH /creators/me/platforms/:platformId)
+ */
+export interface UpdatePlatformRequest {
+  platformUsername?: string;
+  platformUrl?: string;
+}
+
+/**
+ * 플랫폼 관리 상태 (Redux)
+ */
+export interface PlatformManagementState {
+  platforms: CreatorPlatform[];
+  isLoadingPlatforms: boolean;
+  platformsError: string | null;
+
+  // 모달 상태
+  isAddModalOpen: boolean;
+  isEditModalOpen: boolean;
+  editingPlatform: CreatorPlatform | null;
 }

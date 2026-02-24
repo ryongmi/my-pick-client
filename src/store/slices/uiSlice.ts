@@ -4,7 +4,8 @@ import { Notification } from '@/types';
 interface UIState {
   // 사이드바 및 네비게이션
   sidebarOpen: boolean;
-  
+  dashboardSidebarOpen: boolean; // 크리에이터 대시보드 전용 사이드바
+
   // 모달 및 드롭다운
   activeModal: string | null;
   dropdowns: {
@@ -45,6 +46,7 @@ interface UIState {
 
 const initialState: UIState = {
   sidebarOpen: true,
+  dashboardSidebarOpen: true, // 데스크톱에서는 기본적으로 열림
   activeModal: null,
   dropdowns: {
     dashboard: false,
@@ -76,6 +78,14 @@ const uiSlice = createSlice({
     },
     setSidebarOpen: (state, action: PayloadAction<boolean>) => {
       state.sidebarOpen = action.payload;
+    },
+
+    // 대시보드 사이드바 토글
+    toggleDashboardSidebar: (state) => {
+      state.dashboardSidebarOpen = !state.dashboardSidebarOpen;
+    },
+    setDashboardSidebarOpen: (state, action: PayloadAction<boolean>) => {
+      state.dashboardSidebarOpen = action.payload;
     },
     
     // 모달 관리
@@ -175,6 +185,7 @@ const uiSlice = createSlice({
       // 모바일에서는 사이드바 기본적으로 닫기
       if (action.payload) {
         state.sidebarOpen = false;
+        state.dashboardSidebarOpen = false;
       }
     },
     
@@ -198,6 +209,8 @@ const uiSlice = createSlice({
 export const {
   toggleSidebar,
   setSidebarOpen,
+  toggleDashboardSidebar,
+  setDashboardSidebarOpen,
   openModal,
   closeModal,
   toggleDropdown,

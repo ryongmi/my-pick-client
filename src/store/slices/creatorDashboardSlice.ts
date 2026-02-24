@@ -1,10 +1,14 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../index';
 import { creatorDashboardService } from '@/services/creatorDashboardService';
+import { creatorPlatformService } from '@/services/creatorPlatformService';
 import type {
   CreatorDashboardState,
   ContentStatus,
   ContentFilters,
+  CreatorPlatform,
+  CreatePlatformRequest,
+  UpdatePlatformRequest,
 } from '@/types/creatorDashboard';
 import { LimitType } from '@/types/creatorDashboard';
 
@@ -28,6 +32,12 @@ const initialState: CreatorDashboardState = {
   stats: null,
   isLoadingStats: false,
   statsError: null,
+  platforms: [],
+  isLoadingPlatforms: false,
+  platformsError: null,
+  isAddPlatformModalOpen: false,
+  isEditPlatformModalOpen: false,
+  editingPlatform: null,
   filters: initialFilters,
   selectedContentIds: [],
   isLoading: false,
@@ -140,6 +150,83 @@ export const bulkUpdateContentStatus = createAsyncThunk(
   }
 );
 
+/**
+ * 플랫폼 목록 조회
+ */
+export const fetchMyPlatforms = createAsyncThunk(
+  'creatorDashboard/fetchMyPlatforms',
+  async (_, { rejectWithValue }) => {
+    try {
+      const platforms = await creatorPlatformService.getMyPlatforms();
+      return platforms;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : '플랫폼 목록을 불러오는데 실패했습니다.'
+      );
+    }
+  }
+);
+
+/**
+ * 플랫폼 추가
+ */
+export const addPlatform = createAsyncThunk(
+  'creatorDashboard/addPlatform',
+  async (data: CreatePlatformRequest, { rejectWithValue, dispatch }) => {
+    try {
+      await creatorPlatformService.addPlatform(data);
+      // 플랫폼 목록 다시 조회
+      await dispatch(fetchMyPlatforms());
+      return;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : '플랫폼 추가에 실패했습니다.'
+      );
+    }
+  }
+);
+
+/**
+ * 플랫폼 수정
+ */
+export const updatePlatform = createAsyncThunk(
+  'creatorDashboard/updatePlatform',
+  async (
+    { platformId, data }: { platformId: string; data: UpdatePlatformRequest },
+    { rejectWithValue, dispatch }
+  ) => {
+    try {
+      await creatorPlatformService.updatePlatform(platformId, data);
+      // 플랫폼 목록 다시 조회
+      await dispatch(fetchMyPlatforms());
+      return;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : '플랫폼 수정에 실패했습니다.'
+      );
+    }
+  }
+);
+
+/**
+ * 플랫폼 삭제
+ */
+export const deletePlatform = createAsyncThunk(
+  'creatorDashboard/deletePlatform',
+  async (platformId: string, { rejectWithValue, dispatch }) => {
+    try {
+      await creatorPlatformService.deletePlatform(platformId);
+      // 플랫폼 목록 다시 조회
+      await dispatch(fetchMyPlatforms());
+      return;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : '플랫폼 삭제에 실패했습니다.'
+      );
+    }
+  }
+);
+
 // ==================== SLICE ====================
 
 const creatorDashboardSlice = createSlice({
@@ -200,6 +287,26 @@ const creatorDashboardSlice = createSlice({
       state.error = null;
       state.contentsError = null;
       state.statsError = null;
+      state.platformsError = null;
+    },
+
+    // 플랫폼 모달 관리
+    openAddPlatformModal: (state) => {
+      state.isAddPlatformModalOpen = true;
+    },
+
+    closeAddPlatformModal: (state) => {
+      state.isAddPlatformModalOpen = false;
+    },
+
+    openEditPlatformModal: (state, action: PayloadAction<CreatorPlatform>) => {
+      state.isEditPlatformModalOpen = true;
+      state.editingPlatform = action.payload;
+    },
+
+    closeEditPlatformModal: (state) => {
+      state.isEditPlatformModalOpen = false;
+      state.editingPlatform = null;
     },
   },
   extraReducers: (builder) => {
@@ -295,6 +402,63 @@ const creatorDashboardSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       });
+
+    // ==================== fetchMyPlatforms ====================
+    builder
+      .addCase(fetchMyPlatforms.pending, (state) => {
+        state.isLoadingPlatforms = true;
+        state.platformsError = null;
+      })
+      .addCase(fetchMyPlatforms.fulfilled, (state, action) => {
+        state.isLoadingPlatforms = false;
+        state.platforms = action.payload;
+      })
+      .addCase(fetchMyPlatforms.rejected, (state, action) => {
+        state.isLoadingPlatforms = false;
+        state.platformsError = action.payload as string;
+      });
+
+    // ==================== addPlatform ====================
+    builder
+      .addCase(addPlatform.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(addPlatform.fulfilled, (state) => {
+        state.isLoading = false;
+        state.isAddPlatformModalOpen = false;
+      })
+      .addCase(addPlatform.rejected, (state, action) => {
+        state.isLoading = false;
+        state.platformsError = action.payload as string;
+      });
+
+    // ==================== updatePlatform ====================
+    builder
+      .addCase(updatePlatform.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updatePlatform.fulfilled, (state) => {
+        state.isLoading = false;
+        state.isEditPlatformModalOpen = false;
+        state.editingPlatform = null;
+      })
+      .addCase(updatePlatform.rejected, (state, action) => {
+        state.isLoading = false;
+        state.platformsError = action.payload as string;
+      });
+
+    // ==================== deletePlatform ====================
+    builder
+      .addCase(deletePlatform.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(deletePlatform.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(deletePlatform.rejected, (state, action) => {
+        state.isLoading = false;
+        state.platformsError = action.payload as string;
+      });
   },
 });
 
@@ -308,6 +472,10 @@ export const {
   clearSelection,
   setPage,
   clearError,
+  openAddPlatformModal,
+  closeAddPlatformModal,
+  openEditPlatformModal,
+  closeEditPlatformModal,
 } = creatorDashboardSlice.actions;
 
 // ==================== SELECTORS ====================
@@ -319,5 +487,16 @@ export const selectFilters = (state: RootState) => state.creatorDashboard.filter
 export const selectSelectedContentIds = (state: RootState) =>
   state.creatorDashboard.selectedContentIds;
 export const selectIsLoading = (state: RootState) => state.creatorDashboard.isLoading;
+
+// Platform selectors
+export const selectMyPlatforms = (state: RootState) => state.creatorDashboard.platforms;
+export const selectIsLoadingPlatforms = (state: RootState) =>
+  state.creatorDashboard.isLoadingPlatforms;
+export const selectPlatformsError = (state: RootState) => state.creatorDashboard.platformsError;
+export const selectIsAddPlatformModalOpen = (state: RootState) =>
+  state.creatorDashboard.isAddPlatformModalOpen;
+export const selectIsEditPlatformModalOpen = (state: RootState) =>
+  state.creatorDashboard.isEditPlatformModalOpen;
+export const selectEditingPlatform = (state: RootState) => state.creatorDashboard.editingPlatform;
 
 export default creatorDashboardSlice.reducer;

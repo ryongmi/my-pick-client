@@ -78,6 +78,24 @@ export interface CreatorWithPlatforms extends Omit<Creator, 'platforms'> {
   platforms: Platform[]; // 더 상세한 Platform 타입 사용
 }
 
+// Platform 통계 정보
+export interface PlatformStatistics {
+  followerCount?: number;
+  subscriberCount?: number;
+  contentCount?: number;
+  totalViews?: number;
+  totalLikes?: number;
+  updatedAt?: string;
+}
+
+// Platform 동기화 진행 상황
+export interface PlatformSyncProgress {
+  total: number;
+  synced: number;
+  failed: number;
+  lastError?: string;
+}
+
 // Platform 타입 - 서버 구조에 맞게 확장
 export interface Platform {
   id?: string; // 서버에서 생성되는 ID
@@ -87,13 +105,23 @@ export interface Platform {
   url: string;
   displayName?: string; // 서버 필드 추가
   isActive: boolean;
+
+  // 통계 정보 (중첩 객체)
+  statistics?: PlatformStatistics;
+
+  // 하위 호환성을 위한 직접 필드들
   followerCount?: number;
-  contentCount?: number; // 서버 필드 추가
-  totalViews?: number; // 서버 필드 추가
+  contentCount?: number;
+  totalViews?: number;
+
   lastSync?: string;
   lastSyncAt?: Date; // 서버 필드명
   syncStatus?: 'active' | 'error' | 'disabled'; // 서버 필드 추가
-  // 영상 동기화 관련 필드
+
+  // 동기화 진행 상황 (중첩 객체)
+  syncProgress?: PlatformSyncProgress;
+
+  // 영상 동기화 관련 필드 (하위 호환성)
   videoSyncStatus?: 'never_synced' | 'in_progress' | 'completed' | 'failed';
   lastVideoSyncAt?: Date;
   totalVideoCount?: number;
