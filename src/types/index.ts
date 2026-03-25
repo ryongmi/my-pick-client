@@ -151,7 +151,7 @@ export interface ContentSyncInfo {
   syncStatus: 'pending' | 'syncing' | 'completed' | 'failed';
 }
 
-// Content 타입 - 백엔드 my-pick-server에 맞춤
+// Content 타입 - 백엔드 mypick-server에 맞춤
 export interface Content {
   id: string;
   type: 'youtube_video' | 'twitter_post' | 'instagram_post'; // twitter_post = X 포스트
