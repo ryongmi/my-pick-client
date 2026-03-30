@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 개요
 
-my-pick-client는 크리에이터/유튜버 팬들을 위한 통합 콘텐츠 허브의 프론트엔드 애플리케이션입니다. Next.js 14 App Router와 Redux Toolkit을 사용하여 구축된 현대적인 React 애플리케이션입니다.
+mypick-client는 크리에이터/유튜버 팬들을 위한 통합 콘텐츠 허브의 프론트엔드 애플리케이션입니다. Next.js 14 App Router와 Redux Toolkit을 사용하여 구축된 현대적인 React 애플리케이션입니다.
 
 ## 핵심 명령어
 

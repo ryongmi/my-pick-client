@@ -3,7 +3,7 @@
 ## 📋 프로젝트 개요
 
 MyPick 서비스는 YouTube 크리에이터들을 위한 콘텐츠 관리 플랫폼입니다. 
-전역 사용자 역할/권한 관리는 portal-client에서 담당하므로, my-pick-client의 사용자 관리는 **MyPick 서비스에 특화된 기능**에 집중합니다.
+전역 사용자 역할/권한 관리는 portal-client에서 담당하므로, mypick-client의 사용자 관리는 **MyPick 서비스에 특화된 기능**에 집중합니다.
 
 ## 🎯 현재 상태 분석
 

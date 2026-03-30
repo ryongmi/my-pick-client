@@ -89,7 +89,7 @@ MyPick Client는 크리에이터/유튜버 팬들을 위한 통합 콘텐츠 허
 ## 📁 상세 프로젝트 구조
 
 ```
-my-pick-client/
+mypick-client/
 ├── src/
 │   ├── app/                           # Next.js App Router
 │   │   ├── (auth)/                   # 인증 관련 페이지 그룹
@@ -426,8 +426,8 @@ interface CommunityFeatures {
 ### 개발 환경 설정
 ```bash
 # 프로젝트 클론
-git clone https://github.com/your-org/my-pick-client.git
-cd my-pick-client
+git clone https://github.com/your-org/mypick-client.git
+cd mypick-client
 
 # 의존성 설치 (pnpm 권장)
 pnpm install

@@ -27,21 +27,21 @@ const nextConfig = {
       //   hostname: 'abs.twimg.com',
       //   pathname: '/**',
       // },
-      // my-pick-server 프록시 (로컬 개발) - 포트 8200
+      // mypick-server 프록시 (로컬 개발) - 포트 8200
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '8000',
         pathname: '/api/proxy/image',
       },
-      // my-pick-server 프록시 (로컬 개발) - 포트 8300
+      // mypick-server 프록시 (로컬 개발) - 포트 8300
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '8300',
         pathname: '/api/proxy/image',
       },
-      // my-pick-server 프록시 (프로덕션 - 필요 시 주석 해제)
+      // mypick-server 프록시 (프로덕션 - 필요 시 주석 해제)
       // {
       //   protocol: 'https',
       //   hostname: 'api.mypick.com',

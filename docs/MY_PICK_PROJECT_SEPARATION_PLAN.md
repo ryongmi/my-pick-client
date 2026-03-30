@@ -1,8 +1,8 @@
-# my-pick 프로젝트 분리 계획서
+# mypick 프로젝트 분리 계획서
 
 ## 📋 개요
 
-my-pick-client를 사용자 페이지와 관리자 페이지로 분리하여 확장성, 보안성, 유지보수성을 향상시키는 프로젝트입니다. 현재 하나의 프로젝트에서 라우팅으로 구분되어 있는 구조를 독립적인 두 개의 프로젝트로 분리합니다.
+mypick-client를 사용자 페이지와 관리자 페이지로 분리하여 확장성, 보안성, 유지보수성을 향상시키는 프로젝트입니다. 현재 하나의 프로젝트에서 라우팅으로 구분되어 있는 구조를 독립적인 두 개의 프로젝트로 분리합니다.
 
 ### 목표
 - **확장성**: 각 사용자 그룹에 최적화된 독립적인 개발 및 배포
@@ -14,7 +14,7 @@ my-pick-client를 사용자 페이지와 관리자 페이지로 분리하여 확
 
 ### 프로젝트 구조 현황
 ```
-my-pick-client/
+mypick-client/
 ├── src/
 │   ├── app/
 │   │   ├── (admin)/        # 관리자 페이지 (분리 대상)
@@ -34,7 +34,7 @@ my-pick-client/
 
 ### 기능별 분류
 
-#### 🟢 사용자 전용 기능 (my-pick-web)
+#### 🟢 사용자 전용 기능 (mypick-web)
 - **페이지**: 메인 대시보드, 크리에이터 탐색, 비디오 시청, 프로필 관리
 - **컴포넌트**: 
   - `components/main/` - 메인 대시보드 컴포넌트
@@ -47,7 +47,7 @@ my-pick-client/
   - `videoDetailSlice.ts` - 비디오 상세 상태
   - `notificationSlice.ts` - 알림 상태
 
-#### 🔴 관리자 전용 기능 (my-pick-admin)
+#### 🔴 관리자 전용 기능 (mypick-admin)
 - **페이지**: 관리자 대시보드, 사용자 관리, 크리에이터 관리, 콘텐츠 관리
 - **컴포넌트**:
   - `components/admin/` - 모든 관리자 컴포넌트
@@ -70,7 +70,7 @@ my-pick-client/
 
 ## 📦 공유 라이브러리 패키지 설계
 
-### @krgeobuk/my-pick-ui
+### @krgeobuk/mypick-ui
 ```typescript
 // UI 컴포넌트 라이브러리
 export {
@@ -90,7 +90,7 @@ export {
 export * from './types/ui';
 ```
 
-### @krgeobuk/my-pick-common
+### @krgeobuk/mypick-common
 ```typescript
 // 공통 타입, 인터페이스, 유틸리티
 export type {
@@ -114,7 +114,7 @@ export {
 export * from './constants';
 ```
 
-### @krgeobuk/my-pick-auth
+### @krgeobuk/mypick-auth
 ```typescript
 // 인증 관련 컴포넌트 및 훅
 export {
@@ -133,7 +133,7 @@ export {
 export { authSlice } from './store';
 ```
 
-### @krgeobuk/my-pick-http
+### @krgeobuk/mypick-http
 ```typescript
 // HTTP 클라이언트 및 API 서비스
 export { ApiClient } from './client';
@@ -153,37 +153,37 @@ export {
 **예상 소요시간**: 1-2주
 
 #### 작업 내용
-1. **@krgeobuk/my-pick-ui 패키지 생성**
+1. **@krgeobuk/mypick-ui 패키지 생성**
    ```bash
-   # shared-lib/packages/my-pick-ui 생성
-   pnpm create-package @krgeobuk/my-pick-ui
+   # shared-lib/packages/mypick-ui 생성
+   pnpm create-package @krgeobuk/mypick-ui
    ```
    - 기존 `components/ui/` 컴포넌트 이전
    - Tailwind CSS 스타일 포함
    - Storybook 설정 (선택사항)
 
-2. **@krgeobuk/my-pick-common 패키지 생성**
+2. **@krgeobuk/mypick-common 패키지 생성**
    ```bash
-   # shared-lib/packages/my-pick-common 생성
-   pnpm create-package @krgeobuk/my-pick-common
+   # shared-lib/packages/mypick-common 생성
+   pnpm create-package @krgeobuk/mypick-common
    ```
    - `types/index.ts` 이전
    - `lib/utils.ts` 유틸리티 함수 이전
    - 공통 상수 및 열거형 이전
 
-3. **@krgeobuk/my-pick-auth 패키지 생성**
+3. **@krgeobuk/mypick-auth 패키지 생성**
    ```bash
-   # shared-lib/packages/my-pick-auth 생성
-   pnpm create-package @krgeobuk/my-pick-auth
+   # shared-lib/packages/mypick-auth 생성
+   pnpm create-package @krgeobuk/mypick-auth
    ```
    - `components/auth/` 컴포넌트 이전
    - `hooks/useAuth.ts` 관련 훅 이전
    - `store/slices/authSlice.ts` 이전
 
-4. **@krgeobuk/my-pick-http 패키지 생성**
+4. **@krgeobuk/mypick-http 패키지 생성**
    ```bash
-   # shared-lib/packages/my-pick-http 생성
-   pnpm create-package @krgeobuk/my-pick-http
+   # shared-lib/packages/mypick-http 생성
+   pnpm create-package @krgeobuk/mypick-http
    ```
    - `lib/api.ts` API 클라이언트 이전
    - API 서비스 함수들 모듈화
@@ -191,39 +191,39 @@ export {
 #### 검증 기준
 - [ ] 모든 패키지가 빌드 성공
 - [ ] 타입 검사 통과
-- [ ] 기존 my-pick-client에서 공유 라이브러리 사용 가능
+- [ ] 기존 mypick-client에서 공유 라이브러리 사용 가능
 
 ### 2단계: 관리자 프로젝트 분리 🚀
 **예상 소요시간**: 2-3주
 
-#### my-pick-admin 프로젝트 생성
+#### mypick-admin 프로젝트 생성
 ```bash
 # 프로젝트 루트에서
-npx create-next-app@latest my-pick-admin --typescript --tailwind --eslint --app --src-dir
+npx create-next-app@latest mypick-admin --typescript --tailwind --eslint --app --src-dir
 ```
 
 #### 관리자 기능 이전
 1. **페이지 이전**
-   - `app/(admin)/` → `my-pick-admin/src/app/`
+   - `app/(admin)/` → `mypick-admin/src/app/`
    - 라우팅 구조 재구성
 
 2. **컴포넌트 이전**
-   - `components/admin/` → `my-pick-admin/src/components/admin/`
-   - `components/layout/admin-*` → `my-pick-admin/src/components/layout/`
+   - `components/admin/` → `mypick-admin/src/components/admin/`
+   - `components/layout/admin-*` → `mypick-admin/src/components/layout/`
 
 3. **상태 관리 이전**
-   - `adminSlice.ts` → `my-pick-admin/src/store/slices/`
-   - `userManagementSlice.ts` → `my-pick-admin/src/store/slices/`
-   - `creatorApplicationSlice.ts` → `my-pick-admin/src/store/slices/`
+   - `adminSlice.ts` → `mypick-admin/src/store/slices/`
+   - `userManagementSlice.ts` → `mypick-admin/src/store/slices/`
+   - `creatorApplicationSlice.ts` → `mypick-admin/src/store/slices/`
 
 4. **공유 라이브러리 의존성 추가**
    ```json
    {
      "dependencies": {
-       "@krgeobuk/my-pick-ui": "workspace:*",
-       "@krgeobuk/my-pick-common": "workspace:*",
-       "@krgeobuk/my-pick-auth": "workspace:*",
-       "@krgeobuk/my-pick-http": "workspace:*"
+       "@krgeobuk/mypick-ui": "workspace:*",
+       "@krgeobuk/mypick-common": "workspace:*",
+       "@krgeobuk/mypick-auth": "workspace:*",
+       "@krgeobuk/mypick-http": "workspace:*"
      }
    }
    ```
@@ -231,7 +231,7 @@ npx create-next-app@latest my-pick-admin --typescript --tailwind --eslint --app 
 #### 보안 강화
 1. **관리자 전용 인증 가드**
    ```typescript
-   // my-pick-admin/src/middleware.ts
+   // mypick-admin/src/middleware.ts
    export function middleware(request: NextRequest) {
      // 관리자 권한 검증 로직
    }
@@ -239,7 +239,7 @@ npx create-next-app@latest my-pick-admin --typescript --tailwind --eslint --app 
 
 2. **환경 변수 분리**
    ```bash
-   # my-pick-admin/.env.local
+   # mypick-admin/.env.local
    NEXT_PUBLIC_API_URL=https://api.mypick.com
    NEXT_PUBLIC_ADMIN_DOMAIN=admin.mypick.com
    ```
@@ -267,10 +267,10 @@ npx create-next-app@latest my-pick-admin --typescript --tailwind --eslint --app 
    ```json
    {
      "dependencies": {
-       "@krgeobuk/my-pick-ui": "workspace:*",
-       "@krgeobuk/my-pick-common": "workspace:*",
-       "@krgeobuk/my-pick-auth": "workspace:*",
-       "@krgeobuk/my-pick-http": "workspace:*"
+       "@krgeobuk/mypick-ui": "workspace:*",
+       "@krgeobuk/mypick-common": "workspace:*",
+       "@krgeobuk/mypick-auth": "workspace:*",
+       "@krgeobuk/mypick-http": "workspace:*"
      }
    }
    ```
@@ -282,8 +282,8 @@ npx create-next-app@latest my-pick-admin --typescript --tailwind --eslint --app 
    import { User } from '@/types';
    
    // After
-   import { Button } from '@krgeobuk/my-pick-ui';
-   import { User } from '@krgeobuk/my-pick-common';
+   import { Button } from '@krgeobuk/mypick-ui';
+   import { User } from '@krgeobuk/mypick-common';
    ```
 
 #### 점진적 리네이밍
@@ -291,7 +291,7 @@ npx create-next-app@latest my-pick-admin --typescript --tailwind --eslint --app 
    ```json
    // package.json
    {
-     "name": "my-pick-web",
+     "name": "mypick-web",
    }
    ```
 
@@ -311,7 +311,7 @@ npx create-next-app@latest my-pick-admin --typescript --tailwind --eslint --app 
 
 #### Docker 설정
 ```dockerfile
-# my-pick-web/Dockerfile
+# mypick-web/Dockerfile
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
@@ -328,7 +328,7 @@ CMD ["node", "server.js"]
 ```
 
 ```dockerfile
-# my-pick-admin/Dockerfile
+# mypick-admin/Dockerfile
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
@@ -349,8 +349,8 @@ CMD ["node", "server.js"]
 # docker-compose.yml
 version: '3.8'
 services:
-  my-pick-web:
-    build: ./my-pick-web
+  mypick-web:
+    build: ./mypick-web
     ports:
       - "3000:3000"
     environment:
@@ -358,8 +358,8 @@ services:
     networks:
       - msa-network
 
-  my-pick-admin:
-    build: ./my-pick-admin
+  mypick-admin:
+    build: ./mypick-admin
     ports:
       - "3001:3001"
     environment:
@@ -376,11 +376,11 @@ networks:
 #### CI/CD 파이프라인
 ```yaml
 # .github/workflows/deploy-web.yml
-name: Deploy my-pick-web
+name: Deploy mypick-web
 on:
   push:
     branches: [main]
-    paths: ['my-pick-web/**']
+    paths: ['mypick-web/**']
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -388,7 +388,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build and Deploy
         run: |
-          cd my-pick-web
+          cd mypick-web
           npm ci
           npm run build
           # 배포 스크립트
@@ -396,11 +396,11 @@ jobs:
 
 ```yaml
 # .github/workflows/deploy-admin.yml
-name: Deploy my-pick-admin
+name: Deploy mypick-admin
 on:
   push:
     branches: [main]
-    paths: ['my-pick-admin/**']
+    paths: ['mypick-admin/**']
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -408,7 +408,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build and Deploy
         run: |
-          cd my-pick-admin
+          cd mypick-admin
           npm ci
           npm run build
           # 배포 스크립트
@@ -468,15 +468,15 @@ jobs:
 ## 📋 체크리스트
 
 ### Phase 1: 공유 라이브러리 생성
-- [ ] @krgeobuk/my-pick-ui 패키지 생성 및 컴포넌트 이전
-- [ ] @krgeobuk/my-pick-common 패키지 생성 및 타입/유틸리티 이전
-- [ ] @krgeobuk/my-pick-auth 패키지 생성 및 인증 관련 코드 이전
-- [ ] @krgeobuk/my-pick-http 패키지 생성 및 API 클라이언트 이전
+- [ ] @krgeobuk/mypick-ui 패키지 생성 및 컴포넌트 이전
+- [ ] @krgeobuk/mypick-common 패키지 생성 및 타입/유틸리티 이전
+- [ ] @krgeobuk/mypick-auth 패키지 생성 및 인증 관련 코드 이전
+- [ ] @krgeobuk/mypick-http 패키지 생성 및 API 클라이언트 이전
 - [ ] 모든 패키지 빌드 및 타입 검사 통과
 - [ ] 기존 프로젝트에서 공유 라이브러리 사용 확인
 
 ### Phase 2: 관리자 프로젝트 분리
-- [ ] my-pick-admin 프로젝트 생성
+- [ ] mypick-admin 프로젝트 생성
 - [ ] 관리자 페이지 및 컴포넌트 이전
 - [ ] 관리자 상태 관리 이전
 - [ ] 공유 라이브러리 의존성 설정
@@ -487,7 +487,7 @@ jobs:
 - [ ] 관리자 관련 코드 완전 제거
 - [ ] 공유 라이브러리 의존성 설정
 - [ ] Import 경로 업데이트
-- [ ] my-pick-client → my-pick-web 리네이밍
+- [ ] mypick-client → mypick-web 리네이밍
 - [ ] 기능 동작 및 성능 확인
 
 ### Phase 4: 배포 및 인프라
@@ -506,7 +506,7 @@ jobs:
 
 ## 🔗 관련 문서
 
-- [현재 my-pick-client CLAUDE.md](./my-pick-client/CLAUDE.md)
+- [현재 mypick-client CLAUDE.md](./mypick-client/CLAUDE.md)
 - [공유 라이브러리 가이드](./shared-lib/CLAUDE.md)
 - [krgeobuk 인프라 아키텍처](./CLAUDE.md)
 
